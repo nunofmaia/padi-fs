@@ -8,7 +8,7 @@
 %
 
 \documentclass[times, 10pt,twocolumn]{article} 
-\usepackage{latex8}
+\usepackage{padi-fs}
 \usepackage{times}
 
 %\documentstyle[times,art10,twocolumn,latex8]{article}
@@ -26,13 +26,16 @@
 \thispagestyle{empty}
 
 \begin{abstract}
-   The ABSTRACT is to be in fully-justified italicized text, at the top 
-   of the left-hand column, below the author and affiliation 
-   information. Use the word ``Abstract'' as the title, in 12-point 
-   Times, boldface type, centered relative to the column, initially 
-   capitalized. The abstract is to be in 10-point, single-spaced type. 
-   The abstract may be up to 3 inches (7.62 cm) long. Leave two blank 
-   lines after the Abstract, then begin the main text. 
+   PADI-FS is a simple distributed file system that allows users to manage
+   sets of files. Users that want to have their files replicated on several
+   machines and to be always available can use PADI-FS to fulfill their
+   needs and wishes. The system provides to the user some simples operations
+   for them to manipulate their files as if they were on their local machine.\\
+
+   This paper describes the architecture of the system being developed, the
+   solutions to the problems we can face when building this kind of system
+   and the reasons that led us to those same solutions, comparing them to
+   other possible solutions we thought were not appropriate for this system.
 \end{abstract}
 
 
@@ -40,29 +43,58 @@
 %------------------------------------------------------------------------- 
 \section{Introduction}
 
-Please follow the steps outlined below when submitting your 
-manuscript to the IEEE Computer Society Press. Note there have 
-been some changes to the measurements from previous instructions. 
+Computers use a file system to store, retrieve and update files. The file
+system provides an interface to manage the organization and the access of
+the data stored in it.
+
+A distributed file system extends the regular file system allowing the
+access to files from multiple machines. This kind of system makes possible
+for a large number of users on their own machines to access the same files.
+
+There are lots of implementations of distributed systems, such as AFS 
+(Andrew File System), Google File System and HDFS (Hadoop Distributed File 
+System). With the implementation of PADI-FS, we aim to do something very
+similar but a lot simpler.
 
 %------------------------------------------------------------------------- 
-\section{Instructions}
+\section{Architecture}
 
-Please read the following carefully.
+The PADI-FS architecture is composed by three main components. First, the
+metadata server keeps the file's metadata and is replicated by three
+replicas. Second, the data server is responsible for storing the contents
+of the files. Exists more than one data server, allowing the contents of
+a given file to be replicated. And third, the client is responsible for
+making the requests.\\
+
+The following figure is meant to illustrate the architecture of the system.\\
+
+\begin{figure}[h]
+   \caption{System architecture.}
+\end{figure}
+
+These three components will be described in the sub-sections below to give
+a deep insight on the way each component works and how it's implementation
+solves the different problems that can occur.
+
+There is also a fourth component of the system, denominated Puppet Master,
+that is a centralized controller that can issue commands to all other
+components. Because this component only exists to simplify testing and
+debugging of the system, it's not described in this paper.
 
 %------------------------------------------------------------------------- 
-\subsection{Language}
+\subsection{Metadata Server}
 
 All manuscripts must be in English.
 
 %------------------------------------------------------------------------- 
-\subsection{Printing your paper}
+\subsection{Data Server}
 
 Print your properly formatted text on high-quality, $8.5 \times 11$-inch 
 white printer paper. A4 paper is also acceptable, but please leave the 
 extra 0.5 inch (1.27 cm) at the BOTTOM of the page.
 
 %------------------------------------------------------------------------- 
-\subsection{Margins and page numbering}
+\subsection{Client}
 
 All printed material, including text, illustrations, and charts, must be 
 kept within a print area 6-7/8 inches (17.5 cm) wide by 8-7/8 inches 
