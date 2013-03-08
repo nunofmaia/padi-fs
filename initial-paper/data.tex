@@ -15,31 +15,39 @@ The first action of a Data Server is to inform the Metadata Servers that
 it is available to receive requests to store files from. The Metadata
 Server should register the Data Server as available and reply to the Data
 Server that the registration took success. The Data Server waits for the
-reply and if it does not receive any, it resend the message. The secundary
+reply and if it does not receive any, it resend the message. The secondary
 Metadata Servers discard this message.
 
-The Data Server sends a regular message, heart beat, to all the Metadata
-Servers. The message is ignored by the two replicas, whether they are
-available or not. This way, the Data Server does not have to keep
-registered which Metadata Server is the primary and simplifies when
-there was a change of primary Metadata Server, the Data Server does not
-have to resend the message to the new primary.
+The Data Server receives a regular message, heart beat, from the primary
+Metadata Server. This way, the Data Server does not have to keep
+registered which Metadata Server is the primary
 This heart beat is useful to the primary Metadata Server keep track of
 which servers are available to store new files and to avoid clients
-from beeing waiting for Data Servers to come up to have a majority quorum.
-We choose to not give the responsability to the Metadata Server of ask to
-any Data Server if it is alive and wait for an answer because, in a large
-system, the workload of the Data Servers will be lower compared to the
+from being waiting for Data Servers to come up to have a majority quorum.
+
+We choose to give the responsibility to the Metadata Server of ask to
+every Data Server if it is alive and wait for an answer because, in a large
+system, the workload of the Data Servers will be higher compared to the
 workload of the Metadata Servers. The exception is when multiple clients
-are reading and writing intensively to the same few Data Servers. We
-understood that this is an exception case. With this aproach, only one
-message is sent from the Data Server to the Metadata Server trough the
-network.
+are opening and closing files intensively to the primary Metadata Server. We
+understood that this is an exception case. Other approach would be the Data
+Server send an heart beat to all Metadata Servers, which, in read/write
+intensive operations, when the broadband is critical, could clog the network,
+since the Data Servers were sending two messages that would be ignored by
+secondary Metadata Servers.
+A third approach could be Data Servers send the registry message to all
+Metadata Servers and save who was the server that answered it and save the
+address of the server as primary Metadata Server. Further communications
+would be sent only to that server without receiving answer. If the primary
+Metadata Server failed, the new primary would need to inform every Data
+Server. This approach would rise the complexity level of the Data and
+Metadata Servers.
+
 
 When the Data Server fails or freezes it stops sending heart beats to
 the Metadata Servers. If the primary Metadata Server does not receive an
 heart beat in a time window, it believes the Data Server is unavailable
-and this servers stops receiving requests from de Metadata Server to
+and this servers stops receiving requests from the Metadata Server to
 create new files.
 
 Each time the Metadata Server asks the Data Server to create a new file
@@ -57,7 +65,7 @@ any reordering. It is simpler to buffer the requests as they arrive and to
 perform them later.
 
 Every file written in Data Servers have a version composed by a version
-number that is incremented everytime the file is written and a timestamp
+number that is incremented every time the file is written and a timestamp
 from the last writing. This timestamp let the Data Server to know if it is
 receiving a version earlier than the version it stores.
 
