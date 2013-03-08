@@ -11,42 +11,43 @@ close or delete a file.
 When a client requests the metadata server to create a new file, it
 specifies the name of the file, the number of data servers used to
 store the file and the number of data servers it needs to obtain a read
-and write quorum. The size of quorums can not exceed the number of data
-servers used to store the file. 
+and write quorum. The size of quorums cannot exceed the number of data
+servers used to store the file.
 
 \subsubsection{Open}
 
 If a client wants to open a file, it sends a request to the primary
-metadata server to open it, the primary answers with the information
-about the data servers where is stored the file content, the local name
-of these file and the size of read and write quorums.
+metadata server to open it and the primary server answers with a list
+of data servers where the file is stored, the local name of the file and 
+the size of read and write quorums.
 
 \subsubsection{Read and Write}
 
-When reading or writing, the client contacts directly the data server,
-since its client already knows where is the file. During the write of
-the file in data servers, the client must block until it receives the
+When reading and writing, the client contacts directly with the data server,
+since it already knows where is the file. During the write of
+the file in the data servers, the client must block until it receives the
 confirmation from the quorum. The size of this quorum is defined in
-metadada servers, when the file is created. Like in write, in read the
-client also block until the data server sends a response with read quorum. ??
+metadata servers, when the file is created. Like in write operation, when the
+client performs a read operation it also blocks until the data servers send 
+back a response with read quorum.
 If the client requests to read or write a file and the number of data
 servers that answer is less than required to obtain quorum, due to
-communication failures or if server can't answer, the client is put on
-hold and continues to try contact the data servers until it gets a
+communication or server failures, the client is put on
+hold and continues to try to contact the data servers until it gets a
 majority quorum.
-In the event of data server freeze, the messages that client sends are
-buffered. When it unfreezes, the server sends an answer for each request
-that is in its buffer. In this case, the client just consider the first
-answer, and it ignores the other ones.
+In the event of a data server freeze, the messages that a client sends are
+buffered. When the server unfreezes, it sends an answer for each request
+that is in its buffer. In this case, the client considers just the first
+answer, ignoring the other ones.
 The client doesn't control the file version number. This number is
 controlled by data server.
 
 \begin{itemize}
-\item Default Read - The client makes a request to data server to read
-a file, wait for majority quorum, and accept that file even it is an
+\item Default Read - The client makes a request to the data server to read
+a file, waits for a majority quorum and accepts the file even it is an
 older version.
 
-\item Monotonic Read - The client makes a request to data server to read
-a file and waits for majority quorum to retrieve a version equal or
-greater than.
+\item Monotonic Read - The client makes a request to the data server to read
+a file and waits for a majority quorum to retrieve a file with a version equal or
+greater than the version of the last file read.
 \end{itemize}
