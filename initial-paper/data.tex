@@ -55,9 +55,10 @@ to the metadata servers if the operation was successful or not.
 The metadata server may request one data server to send a copy of one file
 to another data server. This request is treated as any other request.
 The data server that is going to copy the file asks the other data server
-to write his version of the file. After writing the version it confirms to
-the other data server and this confirms to the metadata server.
-The data servers involved in the copy does not keep track of each other.
+to write his version of the file. After writing the version it sends the 
+confirmation to the other data server and this one sends back a response 
+to the metadata server.
+The data servers involved in the copy do not keep track of each other.
 
 \subsubsection{Reading and Writing to Data Servers}
 
