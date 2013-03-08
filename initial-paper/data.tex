@@ -27,13 +27,13 @@ from waiting for data servers to come up to have a majority quorum.
 We choose to give the responsibility to the metadata server of asking to
 every data server if it is alive and wait for an answer because, in a large
 system, the workload of the data servers will be higher compared to the
-workload of the metadata servers. The exception is when multiple clients
-are making open and close requests very intensively to the primary metadata 
-server. Other approach would be the data server to send an heartbeat to all 
-metadata servers which, during an intensive period of read and write requests
-and when the broadband is critical, could clog the network since the data 
-servers were sending two messages that would be ignored by secondary 
-metadata servers.
+workload of the metadata servers. Data servers perform operations on larger
+files. The exception is when multiple clients are making open and close
+requests very intensively to the primary metadata server. Other approach
+would be the data server to send an heartbeat to all metadata servers which,
+during an intensive period of read and write requests and when the broadband
+is critical, could clog the network since the data servers were sending two
+messages that would be ignored by secondary metadata servers.
 A third approach could be data servers to send the registry message to all
 metadata servers and save the address of the server that answers which 
 would be the primary metadata server. Further communications would be sent 
@@ -42,8 +42,7 @@ metadata server fails, the new primary server would need to inform every data
 server. This approach would rise the complexity level of the data and
 metadata servers.
 
-
-When the data server fails or freezes it stops answering heartbeats from
+When the data server fails or freezes, it stops answering heartbeats from
 the metadata servers. If the primary metadata server does not receive an
 answer in a certain time, it believes the data server is unavailable
 and this servers stops receiving requests from the metadata server to
@@ -55,11 +54,10 @@ to the metadata servers if the operation was successful or not.
 
 The metadata server may request one data server to send a copy of one file
 to another data server. This request is treated as any other request.
-The data server that is going to receive the new copy has already been
-contacted by the metadata server to create the new file. The data server
-that is going to copy the file asks the other data Server to write his
-version of the file. The data servers involved in the copy does not keep 
-track of each other.
+The data server that is going to copy the file asks the other data server
+to write his version of the file. After writing the version it confirms to
+the other data server and this confirms to the metadata server.
+The data servers involved in the copy does not keep track of each other.
 
 \subsubsection{Reading and Writing to Data Servers}
 
@@ -76,7 +74,8 @@ receiving an earlier version than the version it has stored.
 When the data server is requested to store a new version of the file, it has 
 to check if this version is more recent than the version of the file it has 
 stored. If it's not, the server discards the new file otherwise increments 
-the version number and stores the file on disk.
+the version number and stores the file on disk. The data server always answers
+to the client that it has received the file.
 
 This solution raises the problem of destroying the previous work of other 
 clients. When a client tries to write a file on disk, it does not know if 

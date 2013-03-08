@@ -27,9 +27,9 @@ When reading and writing, the client contacts directly with the data server,
 since it already knows where is the file. During the write of
 the file in the data servers, the client must block until it receives the
 confirmation from the quorum. The size of this quorum is defined in
-metadata servers, when the file is created. Like in write operation, when the
+metadata servers when the file is created. Like in write operation, when the
 client performs a read operation it also blocks until the data servers send 
-back a response with read quorum.
+back a response and then achieve a majority quorum.
 If the client requests to read or write a file and the number of data
 servers that answer is less than required to obtain quorum, due to
 communication or server failures, the client is put on
