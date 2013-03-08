@@ -27,6 +27,14 @@ have to resend the message to the new primary.
 This heart beat is useful to the primary Metadata Server keep track of
 which servers are available to store new files and to avoid clients
 from beeing waiting for Data Servers to come up to have a majority quorum.
+We choose to not give the responsability to the Metadata Server of ask to
+any Data Server if it is alive and wait for an answer because, in a large
+system, the workload of the Data Servers will be lower compared to the
+workload of the Metadata Servers. The exception is when multiple clients
+are reading and writing intensively to the same few Data Servers. We
+understood that this is an exception case. With this aproach, only one
+message is sent from the Data Server to the Metadata Server trough the
+network.
 
 When the Data Server fails or freezes it stops sending heart beats to
 the Metadata Servers. If the primary Metadata Server does not receive an
@@ -35,21 +43,31 @@ and this servers stops receiving requests from de Metadata Server to
 create new files.
 
 Each time the Metadata Server asks the Data Server to create a new file
-with a given name, the Data Server trys to create the new file and answers
+with a given name, the Data Server tries to create the new file and answers
 to the Metadata Servers if the operation took success or not.
+
+The Metadata Server may request one Data Server to send a copy of one file
+to another Data Server. This request is treated as any other request.
 
 \subsubsection{Reading and Writing to Data Servers}
 
-Clients asks Data Servers to read or write files. This requests are
+Clients ask Data Servers to read or write files. This requests are
 processed as they arrive to the server without having any priority neither
-any reordering.
+any reordering. It is simpler to buffer the requests as they arrive and to
+perform them later.
 
 Every file written in Data Servers have a version composed by a version
 number that is incremented everytime the file is written and a timestamp
 from the last writing. This timestamp let the Data Server to know if it is
-receiving a version earlier than the version is stores.
+receiving a version earlier than the version it stores.
 
 When the Data Server is requested to store a new version of the file, it
 checks if the new version is newer than the version that it stores, it
 compares the timestamps and if it is earlier, it discards the version, else,
 increments the version number of the file and stores it to disk.
+This solution raises the problem of destroying the previous work of one
+client when other, that read a previous file and edited it, asks the server
+to write its version, overwriting the previous version, written by other
+client, without updating its version with the content from the previous. To
+avoid this, we could implement a solution similar to distributed revision
+control systems, which would rise the complexity of the project.
