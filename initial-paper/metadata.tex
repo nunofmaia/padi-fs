@@ -6,7 +6,7 @@ the files such as the file name, the number of servers used to store
 the contents of the file, the minimum number of data server that should
 be contacted during the read and write operations and a list of the
 data servers that have the file stored. The metadata server also stores
-information about the number of files each data server. The reason why
+information about the number of files each data server stores. The reason why
 we do this will be explained below on document.
 
 As it was previously mentioned, there are 3 replicas of the metadata
@@ -18,10 +18,12 @@ responsible for all the operations. The primary replica has to
 synchronize its state with the secondary ones to make sure that all
 the replicas store the same information at all time. Passive replication
 is more useful in this system than active replication in a way that we
-can tolerate two faults and have always a server to be able to reply to
+can tolerate two failures and have always a server to be able to reply to
 any request made by the client.
 
-The primary server can reply to several request from the client. This
+\subsubsection{Handling Files}
+
+The primary server can reply to several requests from the client. This
 request are create, open, close and delete operations.
 When a client send a request to create a file, the server saves a new
 registry for that file with the information sent with the request. The
@@ -63,6 +65,8 @@ of this process is that the file is no longer referenced to the
 old server but the file is still there and there's is not a proper way 
 to remove it.
 
+\subsubsection{Failure and Recovery of Metadata Servers}
+
 All the replicas need to know if the primary replica is well and good to 
 keep executing the requests that clients are making. To keep track of this, 
 the primary server sends a heartbeat along with a log of the servers that 
@@ -75,4 +79,4 @@ replica. If a replica does not receive any response from the other, it
 means that it is not available either and this replica has no choice but to 
 be the new primary server. When a replica recovers, asks the others who is 
 the primary server and updates its state accordingly. During all this process, 
-metadata servers can't respond to any request from the clients. 
+metadata servers can't respond to any request from the clients.
