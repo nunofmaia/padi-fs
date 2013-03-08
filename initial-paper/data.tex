@@ -44,9 +44,9 @@ Server. This approach would rise the complexity level of the Data and
 Metadata Servers.
 
 
-When the Data Server fails or freezes it stops sending heart beats to
+When the Data Server fails or freezes it stops answering heart beats from
 the Metadata Servers. If the primary Metadata Server does not receive an
-heart beat in a time window, it believes the Data Server is unavailable
+answer in a time, it believes the Data Server is unavailable
 and this servers stops receiving requests from the Metadata Server to
 create new files.
 
@@ -56,6 +56,12 @@ to the Metadata Servers if the operation took success or not.
 
 The Metadata Server may request one Data Server to send a copy of one file
 to another Data Server. This request is treated as any other request.
+The Data Server that is going to receive the new copy has already been
+contacted by the Metadata Server to create the new file. The Data Server
+that is going to copy the file, asks the other Data Server to write his
+version of the file. Since the version number does not matter, this copy will
+have a lower version number than the others. The Data Servers involved in the
+copy does not keep track of each other.
 
 \subsubsection{Reading and Writing to Data Servers}
 
