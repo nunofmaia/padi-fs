@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Metadata Server", "Metadata Server\Metadata Server.csproj", "{45F2EAA1-2398-4FC1-B8D9-684CECA2C16E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{E22B662B-F695-4904-84EB-CEA50FE69840}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data Server", "Data Server\Data Server.csproj", "{911C5227-CC22-4C16-AF25-98E09A56F71B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Puppet Master", "Puppet Master\Puppet Master.csproj", "{928C61C2-4962-4976-95AA-3C912DA5B3D0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{45F2EAA1-2398-4FC1-B8D9-684CECA2C16E}.Debug|x86.ActiveCfg = Debug|x86
+		{45F2EAA1-2398-4FC1-B8D9-684CECA2C16E}.Debug|x86.Build.0 = Debug|x86
+		{45F2EAA1-2398-4FC1-B8D9-684CECA2C16E}.Release|x86.ActiveCfg = Release|x86
+		{45F2EAA1-2398-4FC1-B8D9-684CECA2C16E}.Release|x86.Build.0 = Release|x86
+		{E22B662B-F695-4904-84EB-CEA50FE69840}.Debug|x86.ActiveCfg = Debug|x86
+		{E22B662B-F695-4904-84EB-CEA50FE69840}.Debug|x86.Build.0 = Debug|x86
+		{E22B662B-F695-4904-84EB-CEA50FE69840}.Release|x86.ActiveCfg = Release|x86
+		{E22B662B-F695-4904-84EB-CEA50FE69840}.Release|x86.Build.0 = Release|x86
+		{911C5227-CC22-4C16-AF25-98E09A56F71B}.Debug|x86.ActiveCfg = Debug|x86
+		{911C5227-CC22-4C16-AF25-98E09A56F71B}.Debug|x86.Build.0 = Debug|x86
+		{911C5227-CC22-4C16-AF25-98E09A56F71B}.Release|x86.ActiveCfg = Release|x86
+		{911C5227-CC22-4C16-AF25-98E09A56F71B}.Release|x86.Build.0 = Release|x86
+		{928C61C2-4962-4976-95AA-3C912DA5B3D0}.Debug|x86.ActiveCfg = Debug|x86
+		{928C61C2-4962-4976-95AA-3C912DA5B3D0}.Debug|x86.Build.0 = Debug|x86
+		{928C61C2-4962-4976-95AA-3C912DA5B3D0}.Release|x86.ActiveCfg = Release|x86
+		{928C61C2-4962-4976-95AA-3C912DA5B3D0}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
