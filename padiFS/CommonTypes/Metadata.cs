@@ -5,13 +5,21 @@ using System.Text;
 
 namespace padiFS
 {
-    class Metadata
+    public class Metadata
     {
         private string filename;
         private int serversNumber;
         private int readQuorum;
         private int writeQuorum;
-        private Dictionary<string, string> dataservers;
+        private Dictionary<string, string> dataServers;
 
+        public Metadata(string filename, int serversNumber, int readQuorum, int writeQuorum, Dictionary<string, string> dataServers)
+        {
+            this.filename = filename;
+            this.serversNumber = serversNumber;
+            this.readQuorum = readQuorum;
+            this.writeQuorum = writeQuorum;
+            this.dataServers = dataServers;
+        }
     }
 }

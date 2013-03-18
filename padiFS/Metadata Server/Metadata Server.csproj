@@ -46,6 +46,12 @@
     <Compile Include="MetadataServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CommonTypes\CommonTypes.csproj">
+      <Project>{AA0BB675-C998-4FB1-A7D7-A15AF5F55C36}</Project>
+      <Name>CommonTypes</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
