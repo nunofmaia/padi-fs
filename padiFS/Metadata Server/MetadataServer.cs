@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Channels;
+using System.Runtime.Remoting.Channels.Tcp;
 
 namespace padiFS
 {
@@ -22,6 +25,19 @@ namespace padiFS
         {
             MetadataServer ms = new MetadataServer(args[0]);
             // Ficar esperar pedidos de Iurie
+            TcpChannel channel = new TcpChannel(8081);
+            ChannelServices.RegisterChannel(channel, true);
+            RemotingConfiguration.RegisterWellKnownServiceType(typeof(MetadataServer), @"tcp://localhost:8081/" + ms.name, WellKnownObjectMode.Singleton);
+            IPuppetMaster master = (IPuppetMaster) Activator.GetObject(typeof(IPuppetMaster), @"tcp://localhost:8080/PuppetMaster");
+            if (master != null)
+            {
+                //master.test(ms.name);
+            }
+            else
+            {
+                Console.WriteLine(ms.name);
+            }
+            Console.ReadLine();
         }
     }
 }

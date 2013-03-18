@@ -6,8 +6,9 @@ using System.Diagnostics;
 
 namespace padiFS
 {
-    static class PuppetMaster
+    public class PuppetMaster : MarshalByRefObject, IPuppetMaster
     {
+        private static Form1 form;
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -16,7 +17,17 @@ namespace padiFS
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+
+            form = new Form1();
+
+            Application.Run(form);
         }
+
+        public void test(string name)
+        {
+            System.Windows.Forms.MessageBox.Show(name);
+        }
+
+
     }
 }

@@ -19,6 +19,8 @@ namespace padiFS
         {
             DataServer ds = new DataServer(args[0]);
             // Ficar esperar pedidos de Iurie
+            Console.WriteLine(ds.name);
+            Console.ReadLine();
         }
     }
 }

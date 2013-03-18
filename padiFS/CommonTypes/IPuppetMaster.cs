@@ -5,7 +5,8 @@ using System.Text;
 
 namespace padiFS
 {
-    interface IPuppetMaster
+    public interface IPuppetMaster
     {
+        void test(string name);
     }
 }

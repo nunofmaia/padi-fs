@@ -19,7 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\Executables\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -36,6 +36,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -50,6 +51,10 @@
     <ProjectReference Include="..\CommonTypes\CommonTypes.csproj">
       <Project>{AA0BB675-C998-4FB1-A7D7-A15AF5F55C36}</Project>
       <Name>CommonTypes</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Puppet Master\Puppet Master.csproj">
+      <Project>{928C61C2-4962-4976-95AA-3C912DA5B3D0}</Project>
+      <Name>Puppet Master</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
