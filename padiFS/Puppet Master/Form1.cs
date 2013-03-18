@@ -43,28 +43,28 @@ namespace padiFS
             dataServers = new Dictionary<string, string>();
             metadataServers = new Dictionary<string, string>();
 
-            channel = new TcpChannel(8080);
+            channel = new TcpChannel(8070);
             ChannelServices.RegisterChannel(channel, true);
             RemotingConfiguration.RegisterWellKnownServiceType(typeof(PuppetMaster), "PuppetMaster", WellKnownObjectMode.Singleton);
 
         }
 
-        private void launchMetadataServer(string name)
+        private void launchMetadataServer(int id)
         {
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
             info.FileName = currentDir + @"\Metadata Server.exe";
-            info.Arguments = name;
+            info.Arguments = id.ToString();
 
             Process.Start(info);
         }
 
-        private void launchDataServer(string name)
+        private void launchDataServer(int id)
         {
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
             info.FileName = currentDir + @"\Data Server.exe";
-            info.Arguments = name;
+            info.Arguments = id.ToString();
 
             Process.Start(info);
         }
@@ -75,16 +75,16 @@ namespace padiFS
             {
                 case "Metadata":
                     string ms_name = "m-" + mscounter;
-                    launchMetadataServer(ms_name);
+                    launchMetadataServer(mscounter);
+                    metadataServers.Add(ms_name, "tcp://localhost:808" + mscounter + "/" + ms_name);
                     mscounter++;
-                    metadataServers.Add(ms_name, @"tcp://localhost:8081/" + ms_name);
                     break;
 
                 case "Data":
                     string ds_name = "d-" + dscounter;
-                    launchMetadataServer(ds_name);
+                    launchDataServer(dscounter);          
+                    dataServers.Add(ds_name, "tcp://localhost:809" + dscounter + "/" + ds_name);
                     dscounter++;
-                    dataServers.Add(ds_name, @"tcp://localhost:8082/" + ds_name);
                     break;
             }
         }
