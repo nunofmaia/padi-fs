@@ -45,7 +45,7 @@ namespace padiFS
 
             channel = new TcpChannel(8080);
             ChannelServices.RegisterChannel(channel, true);
-            RemotingConfiguration.RegisterWellKnownServiceType(typeof(PuppetMaster), @"tcp://localhost:8080/PuppetMaster", WellKnownObjectMode.Singleton);
+            RemotingConfiguration.RegisterWellKnownServiceType(typeof(PuppetMaster), "PuppetMaster", WellKnownObjectMode.Singleton);
 
         }
 

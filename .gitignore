@@ -5,3 +5,4 @@
 *.gz
 bin/
 obj/
+Executables/

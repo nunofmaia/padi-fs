@@ -27,11 +27,16 @@ namespace padiFS
             // Ficar esperar pedidos de Iurie
             TcpChannel channel = new TcpChannel(8081);
             ChannelServices.RegisterChannel(channel, true);
-            RemotingConfiguration.RegisterWellKnownServiceType(typeof(MetadataServer), @"tcp://localhost:8081/" + ms.name, WellKnownObjectMode.Singleton);
-            IPuppetMaster master = (IPuppetMaster) Activator.GetObject(typeof(IPuppetMaster), @"tcp://localhost:8080/PuppetMaster");
+            RemotingConfiguration.RegisterWellKnownServiceType(typeof(MetadataServer), "tcp://localhost:8081/" + ms.name, WellKnownObjectMode.Singleton);
+            IPuppetMaster master = (IPuppetMaster) Activator.GetObject(typeof(IPuppetMaster), "tcp://localhost:8080/PuppetMaster");
             if (master != null)
             {
-                //master.test(ms.name);
+                try
+                {
+                    master.test(ms.name);
+                }
+                catch (RemotingException e)
+                { Console.WriteLine(e.StackTrace); }
             }
             else
             {
