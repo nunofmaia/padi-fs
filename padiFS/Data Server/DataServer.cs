@@ -8,7 +8,7 @@ using System.Runtime.Remoting.Channels.Tcp;
 
 namespace padiFS
 {
-    public class DataServer
+    public class DataServer : MarshalByRefObject, IDataServer
     {
         private string name;
         private int port;
@@ -20,6 +20,21 @@ namespace padiFS
             this.port = 8090 + int.Parse(id);
             files = new Dictionary<string, File>();
         }
+
+        public File Read(string localFile, string semantics)
+        {
+            return null;
+        }
+        public int Write(string localFile, byte[] bytearray)
+        {
+            return 0;
+        }
+        public void Freeze() { }
+        public void Unfreeze() { }
+        public void Fail() { }
+        public void Recover() { }
+
+
         static void Main(string[] args)
         {
             DataServer ds = new DataServer(args[0]);

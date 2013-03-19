@@ -5,7 +5,7 @@ using System.Text;
 
 namespace padiFS
 {
-    interface IDataServer
+    public interface IDataServer
     {
         File Read(string localFile, string semantics);
         int Write(string localFile, byte[] bytearray);

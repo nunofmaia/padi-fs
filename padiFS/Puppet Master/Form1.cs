@@ -69,22 +69,65 @@ namespace padiFS
             Process.Start(info);
         }
 
+        private void registerDataServer(string name, string address)
+        {
+            foreach (string key in metadataServers.Keys)
+            {
+                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
+
+                System.Windows.Forms.MessageBox.Show(metadataServers[key]);
+                if(server != null)
+                {
+                    server.RegisterDataServer(name, address);
+                }
+            }
+        }
+
+        private void registerMetadataServer(string name, string address)
+        {
+            foreach (string key in metadataServers.Keys)
+            {
+                if (!key.Equals(name))
+                {
+                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
+
+                    System.Windows.Forms.MessageBox.Show(metadataServers[key]);
+                    if (server != null)
+                    {
+                        server.RegisterMetadataServer(name, address);
+                    }
+                }
+            }
+        }
+
         private void launchButton_Click(object sender, EventArgs e)
         {
             switch (serversComboBox.Text)
             {
                 case "Metadata":
                     string ms_name = "m-" + mscounter;
+                    string ms_address = "tcp://localhost:808" + mscounter + "/" + ms_name;
                     launchMetadataServer(mscounter);
-                    metadataServers.Add(ms_name, "tcp://localhost:808" + mscounter + "/" + ms_name);
+                    metadataServers.Add(ms_name, ms_address);
                     mscounter++;
+                    registerMetadataServer(ms_name, ms_address);
                     break;
 
                 case "Data":
-                    string ds_name = "d-" + dscounter;
-                    launchDataServer(dscounter);          
-                    dataServers.Add(ds_name, "tcp://localhost:809" + dscounter + "/" + ds_name);
-                    dscounter++;
+                    if (mscounter != 0)
+                    {
+                        string ds_name = "d-" + dscounter;
+                        string ds_address = "tcp://localhost:809" + dscounter + "/" + ds_name;
+
+                        launchDataServer(dscounter);
+                        dataServers.Add(ds_name, ds_address);
+                        dscounter++;
+                        registerDataServer(ds_name, ds_address);
+                    }
+                    else
+                    {
+                        System.Windows.Forms.MessageBox.Show("A Data Server should be launched only after a Metadata Server");
+                    }
                     break;
             }
         }

@@ -8,19 +8,51 @@ using System.Runtime.Remoting.Channels.Tcp;
 
 namespace padiFS
 {
-    public class MetadataServer
+    public class MetadataServer : MarshalByRefObject, IMetadataServer
     {
         private string name;
         private int port;
         private Dictionary<string, string> metadataServers;
+        private Dictionary<string, string> dataServers;
         private Dictionary<string, Metadata> files;
+
 
         public MetadataServer(string id)
         {
             this.name = "m-" + id;
             this.port = 8080 + int.Parse(id);
-            metadataServers = new Dictionary<string, string>();
+            this.metadataServers = new Dictionary<string, string>();
+            this.dataServers = new Dictionary<string, string>();
             this.files = new Dictionary<string, Metadata>();
+        }
+
+
+        // Project API
+        public Metadata Open(string filename)
+        { 
+            return null;
+        }
+        public void Close() { }
+        public Metadata Create(string filename, int serversNumber, int readQuorum, int writeQuorum)
+        {
+            return null;
+        }
+        public void Delete() { }
+        public void Fail() { }
+        public void Recover() { }
+        
+        
+        // Auxiliar API
+        public void RegisterDataServer(string name, string address)
+        {
+            Console.WriteLine("Data Server " + name + " : " + address);
+            dataServers.Add(name, address);
+        }
+
+        void RegisterMetadataServer(string name, string address)
+        {
+            Console.WriteLine("Metadata Server " + name + " : " + address);
+            metadataServers.Add(name, address);
         }
 
         static void Main(string[] args)
@@ -29,7 +61,7 @@ namespace padiFS
             // Ficar esperar pedidos de Iurie
             TcpChannel channel = new TcpChannel(ms.port);
             ChannelServices.RegisterChannel(channel, true);
-            RemotingConfiguration.RegisterWellKnownServiceType(typeof(MetadataServer), ms.name, WellKnownObjectMode.Singleton);
+            RemotingServices.Marshal(ms, ms.name, typeof(MetadataServer));
             IPuppetMaster master = (IPuppetMaster) Activator.GetObject(typeof(IPuppetMaster), "tcp://localhost:8070/PuppetMaster");
             if (master != null)
             {
