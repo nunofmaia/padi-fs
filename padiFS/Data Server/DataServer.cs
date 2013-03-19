@@ -41,7 +41,7 @@ namespace padiFS
             // Ficar esperar pedidos de Iurie
             TcpChannel channel = new TcpChannel(ds.port);
             ChannelServices.RegisterChannel(channel, true);
-            RemotingConfiguration.RegisterWellKnownServiceType(typeof(DataServer), ds.name, WellKnownObjectMode.Singleton);
+            RemotingServices.Marshal(ds, ds.name, typeof(DataServer));
             IPuppetMaster master = (IPuppetMaster)Activator.GetObject(typeof(IPuppetMaster), "tcp://localhost:8070/PuppetMaster");
             if (master != null)
             {

@@ -25,7 +25,7 @@ namespace padiFS
 
         public void test(string name)
         {
-            System.Windows.Forms.MessageBox.Show(name);
+            //System.Windows.Forms.MessageBox.Show(name);
         }
 
 

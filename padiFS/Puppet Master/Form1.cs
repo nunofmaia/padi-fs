@@ -75,7 +75,6 @@ namespace padiFS
             {
                 IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
 
-                System.Windows.Forms.MessageBox.Show(metadataServers[key]);
                 if(server != null)
                 {
                     server.RegisterDataServer(name, address);
@@ -91,7 +90,6 @@ namespace padiFS
                 {
                     IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
 
-                    System.Windows.Forms.MessageBox.Show(metadataServers[key]);
                     if (server != null)
                     {
                         server.RegisterMetadataServer(name, address);

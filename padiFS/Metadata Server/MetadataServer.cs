@@ -49,15 +49,26 @@ namespace padiFS
             dataServers.Add(name, address);
         }
 
-        void RegisterMetadataServer(string name, string address)
+        public void RegisterMetadataServer(string name, string address)
         {
-            Console.WriteLine("Metadata Server " + name + " : " + address);
-            metadataServers.Add(name, address);
+            // If the server doesn't have the new metadata registered,
+            // registers it and introduces to it "Hi, I'm Iurie's metadata server"
+            if (!metadataServers.ContainsKey(name))
+            {
+                Console.WriteLine("Metadata Server " + name + " : " + address);
+                metadataServers.Add(name, address);
+                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
+                if (server != null)
+                {
+                    server.RegisterMetadataServer(this.name, "tcp://localhost:" + this.port + "/" + this.name);
+                }
+            }
         }
 
         static void Main(string[] args)
         {
             MetadataServer ms = new MetadataServer(args[0]);
+            Console.WriteLine(ms.name);
             // Ficar esperar pedidos de Iurie
             TcpChannel channel = new TcpChannel(ms.port);
             ChannelServices.RegisterChannel(channel, true);
