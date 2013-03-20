@@ -34,6 +34,13 @@ namespace padiFS
         public void Fail() { }
         public void Recover() { }
 
+        
+        // Auxiliar API
+        public int ping()
+        {
+            Console.WriteLine("I'm Alive");
+            return 1;
+        }
 
         static void Main(string[] args)
         {

@@ -96,7 +96,7 @@ namespace padiFS
                         {
                             server.RegisterMetadataServer(name, address);
                         }
-                        catch (System.Net.Sockets.SocketException e) { }
+                        catch (System.Net.Sockets.SocketException) { }
                         // Ignore it
                     }
                 }
