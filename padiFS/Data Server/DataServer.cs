@@ -13,7 +13,6 @@ namespace padiFS
     {
         private string name;
         private int port;
-        private Dictionary<string, File> files;
 
         private string currentDir;
 
@@ -21,7 +20,6 @@ namespace padiFS
         {
             this.name = "d-" + id;
             this.port = 8090 + int.Parse(id);
-            files = new Dictionary<string, File>();
 
             //create new directory
             this.currentDir = Environment.CurrentDirectory;
@@ -32,7 +30,6 @@ namespace padiFS
             }
         }
        
-        //cria e adiciona logo ao dicionario
         public void Create(string fileName)
         {
             File file = new File();
@@ -42,15 +39,21 @@ namespace padiFS
 
             this.currentDir = Environment.CurrentDirectory;
             string path = currentDir + @"\" + this.name + @"\" + fileName + @".txt";
-            Console.WriteLine(path);
-            Console.WriteLine(file.GetType());
-            TextWriter tw = new StreamWriter(path);
-            System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
-            x.Serialize(tw,file);
-            Console.WriteLine("object written to file");
-            tw.Close();
-            
-            files.Add(fileName, file);
+
+            if (!System.IO.File.Exists(path))
+            {
+                Console.WriteLine(path);
+                Console.WriteLine(file.GetType());
+                TextWriter tw = new StreamWriter(path);
+                System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
+                x.Serialize(tw, file);
+                Console.WriteLine("object written to file");
+                tw.Close();
+            }
+            else {
+                //isto TEM DE SER MUDADO
+                Console.WriteLine("Já existe um ficheiro com esse nome");
+            }
         }
 
         public File Read(string localFile, string semantics)
@@ -75,6 +78,30 @@ namespace padiFS
         }
         public int Write(string localFile, byte[] bytearray)
         {
+            File file = new File();
+
+            file.version = DateTime.Now;
+            file.content = bytearray;
+
+            this.currentDir = Environment.CurrentDirectory;
+            string path = currentDir + @"\" + this.name + @"\" + localFile + @".txt";
+
+            if (System.IO.File.Exists(path))
+            {
+                Console.WriteLine(path);
+                Console.WriteLine(file.GetType());
+                TextWriter tw = new StreamWriter(path);
+                System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
+                x.Serialize(tw, file);
+                Console.WriteLine("object written to file");
+                tw.Close();
+            }
+            else
+            {
+                //isto TEM DE SER MUDADO
+                Console.WriteLine("O ficheiro não existe");
+            }
+            
             return 0;
         }
         public void Freeze() { }
@@ -95,9 +122,10 @@ namespace padiFS
             DataServer ds = new DataServer(args[0]);
 
             //teste
-            //ds.Create("IurieSun");
-            //Console.WriteLine(ds.Read("IurieSun","cena").version);
-            //Console.WriteLine(ds.Read("IurieSun","cena").content);
+            //ds.Create("Iuriesun");
+            //ds.Write("Iuriesun", new byte[4]);
+            //Console.WriteLine(ds.Read("iuriesun", "cena").version);
+            //Console.WriteLine(ds.Read("iuriesun", "cena").content);
             
             // Ficar esperar pedidos de Iurie
             TcpChannel channel = new TcpChannel(ds.port);
