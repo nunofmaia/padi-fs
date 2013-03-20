@@ -11,5 +11,9 @@ namespace padiFS
         void Write(string filename);
         void Open(string filename);
         void Create(string filename, int serversNumber, int readQuorum, int writeQuorum);
+        void Close(string filename);
+        void Delete(string filename);
+
+        void UpdateServers(Dictionary<string, string> servers);
     }
 }

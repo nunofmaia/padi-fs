@@ -49,13 +49,17 @@
             this.createNameTextBox = new System.Windows.Forms.TextBox();
             this.createNameLabel = new System.Windows.Forms.Label();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.openFileLabel = new System.Windows.Forms.Label();
+            this.openFileTextBox = new System.Windows.Forms.TextBox();
+            this.openFileButton = new System.Windows.Forms.Button();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.button2 = new System.Windows.Forms.Button();
+            this.closeFileLabel = new System.Windows.Forms.Label();
+            this.closeFileTextBox = new System.Windows.Forms.TextBox();
+            this.closeFileButton = new System.Windows.Forms.Button();
+            this.openClientLabel = new System.Windows.Forms.Label();
+            this.openClientTextBox = new System.Windows.Forms.TextBox();
+            this.closeClientLabel = new System.Windows.Forms.Label();
+            this.closeClientTextBox = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -252,9 +256,11 @@
             // 
             // groupBox4
             // 
-            this.groupBox4.Controls.Add(this.button1);
-            this.groupBox4.Controls.Add(this.textBox1);
-            this.groupBox4.Controls.Add(this.label1);
+            this.groupBox4.Controls.Add(this.openClientTextBox);
+            this.groupBox4.Controls.Add(this.openClientLabel);
+            this.groupBox4.Controls.Add(this.openFileButton);
+            this.groupBox4.Controls.Add(this.openFileTextBox);
+            this.groupBox4.Controls.Add(this.openFileLabel);
             this.groupBox4.Location = new System.Drawing.Point(400, 73);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(381, 67);
@@ -262,36 +268,39 @@
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Open file";
             // 
-            // label1
+            // openFileLabel
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(9, 27);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(26, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "File:";
+            this.openFileLabel.AutoSize = true;
+            this.openFileLabel.Location = new System.Drawing.Point(158, 27);
+            this.openFileLabel.Name = "openFileLabel";
+            this.openFileLabel.Size = new System.Drawing.Size(26, 13);
+            this.openFileLabel.TabIndex = 0;
+            this.openFileLabel.Text = "File:";
             // 
-            // textBox1
+            // openFileTextBox
             // 
-            this.textBox1.Location = new System.Drawing.Point(41, 24);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(100, 20);
-            this.textBox1.TabIndex = 1;
+            this.openFileTextBox.Location = new System.Drawing.Point(190, 24);
+            this.openFileTextBox.Name = "openFileTextBox";
+            this.openFileTextBox.Size = new System.Drawing.Size(100, 20);
+            this.openFileTextBox.TabIndex = 1;
             // 
-            // button1
+            // openFileButton
             // 
-            this.button1.Location = new System.Drawing.Point(147, 22);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 2;
-            this.button1.Text = "Open";
-            this.button1.UseVisualStyleBackColor = true;
+            this.openFileButton.Location = new System.Drawing.Point(296, 22);
+            this.openFileButton.Name = "openFileButton";
+            this.openFileButton.Size = new System.Drawing.Size(75, 23);
+            this.openFileButton.TabIndex = 2;
+            this.openFileButton.Text = "Open";
+            this.openFileButton.UseVisualStyleBackColor = true;
+            this.openFileButton.Click += new System.EventHandler(this.openFileButton_Click);
             // 
             // groupBox5
             // 
-            this.groupBox5.Controls.Add(this.button2);
-            this.groupBox5.Controls.Add(this.textBox2);
-            this.groupBox5.Controls.Add(this.label2);
+            this.groupBox5.Controls.Add(this.closeClientTextBox);
+            this.groupBox5.Controls.Add(this.closeClientLabel);
+            this.groupBox5.Controls.Add(this.closeFileButton);
+            this.groupBox5.Controls.Add(this.closeFileTextBox);
+            this.groupBox5.Controls.Add(this.closeFileLabel);
             this.groupBox5.Location = new System.Drawing.Point(400, 147);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Size = new System.Drawing.Size(381, 65);
@@ -299,36 +308,69 @@
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Close file";
             // 
-            // label2
+            // closeFileLabel
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(9, 31);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(23, 13);
-            this.label2.TabIndex = 0;
-            this.label2.Text = "File";
+            this.closeFileLabel.AutoSize = true;
+            this.closeFileLabel.Location = new System.Drawing.Point(160, 31);
+            this.closeFileLabel.Name = "closeFileLabel";
+            this.closeFileLabel.Size = new System.Drawing.Size(26, 13);
+            this.closeFileLabel.TabIndex = 0;
+            this.closeFileLabel.Text = "File:";
             // 
-            // textBox2
+            // closeFileTextBox
             // 
-            this.textBox2.Location = new System.Drawing.Point(38, 28);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(100, 20);
-            this.textBox2.TabIndex = 1;
+            this.closeFileTextBox.Location = new System.Drawing.Point(189, 28);
+            this.closeFileTextBox.Name = "closeFileTextBox";
+            this.closeFileTextBox.Size = new System.Drawing.Size(100, 20);
+            this.closeFileTextBox.TabIndex = 1;
             // 
-            // button2
+            // closeFileButton
             // 
-            this.button2.Location = new System.Drawing.Point(147, 26);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 2;
-            this.button2.Text = "Close";
-            this.button2.UseVisualStyleBackColor = true;
+            this.closeFileButton.Location = new System.Drawing.Point(296, 26);
+            this.closeFileButton.Name = "closeFileButton";
+            this.closeFileButton.Size = new System.Drawing.Size(75, 23);
+            this.closeFileButton.TabIndex = 2;
+            this.closeFileButton.Text = "Close";
+            this.closeFileButton.UseVisualStyleBackColor = true;
+            this.closeFileButton.Click += new System.EventHandler(this.closeFileButton_Click);
+            // 
+            // openClientLabel
+            // 
+            this.openClientLabel.AutoSize = true;
+            this.openClientLabel.Location = new System.Drawing.Point(9, 27);
+            this.openClientLabel.Name = "openClientLabel";
+            this.openClientLabel.Size = new System.Drawing.Size(36, 13);
+            this.openClientLabel.TabIndex = 3;
+            this.openClientLabel.Text = "Client:";
+            // 
+            // openClientTextBox
+            // 
+            this.openClientTextBox.Location = new System.Drawing.Point(51, 24);
+            this.openClientTextBox.Name = "openClientTextBox";
+            this.openClientTextBox.Size = new System.Drawing.Size(100, 20);
+            this.openClientTextBox.TabIndex = 4;
+            // 
+            // closeClientLabel
+            // 
+            this.closeClientLabel.AutoSize = true;
+            this.closeClientLabel.Location = new System.Drawing.Point(9, 31);
+            this.closeClientLabel.Name = "closeClientLabel";
+            this.closeClientLabel.Size = new System.Drawing.Size(36, 13);
+            this.closeClientLabel.TabIndex = 3;
+            this.closeClientLabel.Text = "Client:";
+            // 
+            // closeClientTextBox
+            // 
+            this.closeClientTextBox.Location = new System.Drawing.Point(51, 28);
+            this.closeClientTextBox.Name = "closeClientTextBox";
+            this.closeClientTextBox.Size = new System.Drawing.Size(100, 20);
+            this.closeClientTextBox.TabIndex = 4;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(793, 223);
+            this.ClientSize = new System.Drawing.Size(793, 225);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
@@ -372,13 +414,17 @@
         private System.Windows.Forms.TextBox createClientTextBox;
         private System.Windows.Forms.Label createClientLabel;
         private System.Windows.Forms.GroupBox groupBox4;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button openFileButton;
+        private System.Windows.Forms.TextBox openFileTextBox;
+        private System.Windows.Forms.Label openFileLabel;
         private System.Windows.Forms.GroupBox groupBox5;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button closeFileButton;
+        private System.Windows.Forms.TextBox closeFileTextBox;
+        private System.Windows.Forms.Label closeFileLabel;
+        private System.Windows.Forms.TextBox openClientTextBox;
+        private System.Windows.Forms.Label openClientLabel;
+        private System.Windows.Forms.TextBox closeClientTextBox;
+        private System.Windows.Forms.Label closeClientLabel;
 
     }
 }

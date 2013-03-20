@@ -173,5 +173,31 @@ namespace padiFS
             }
 
         }
+
+        private void openFileButton_Click(object sender, EventArgs e)
+        {
+            string c_name = openClientTextBox.Text;
+            string filename = openFileTextBox.Text;
+
+            IClient client = (IClient)Activator.GetObject(typeof(IClient), (string)clients[c_name]);
+
+            if (client != null)
+            {
+                client.Open(filename);
+            }
+        }
+
+        private void closeFileButton_Click(object sender, EventArgs e)
+        {
+            string c_name = closeClientTextBox.Text;
+            string filename = closeFileTextBox.Text;
+
+            IClient client = (IClient)Activator.GetObject(typeof(IClient), (string)clients[c_name]);
+
+            if (client != null)
+            {
+                client.Close(filename);
+            }
+        }
     }
 }

@@ -12,18 +12,24 @@ namespace padiFS
     {
         private string name;
         private int port;
-        private Dictionary<string, Metadata> openFiles;
+        private Bridge bridge;
+        private Dictionary<string, Metadata> allFiles;
+        //private Dictionary<string, Metadata> openFiles;
 
         public Client(string id)
         {
             this.name = "c-" + id;
             this.port = 8099;
-
-            this.openFiles = new Dictionary<string, Metadata>();
+            this.bridge = new Bridge();
+            this.allFiles = new Dictionary<string, Metadata>();
         }
 
         public void Create(string filename, int nServers, int rQuorum, int wQuorum)
         {
+            Metadata meta = bridge.Create(filename, nServers, rQuorum, wQuorum);
+
+            allFiles.Add(filename, meta);
+
             Console.WriteLine("Create file " + filename);
         }
 
@@ -40,6 +46,21 @@ namespace padiFS
         public void Write(string filename)
         {
             Console.WriteLine("Write file " + filename);
+        }
+
+        public void Close(string filename)
+        {
+            Console.WriteLine("Close file " + filename);
+        }
+
+        public void Delete(string filename)
+        {
+            Console.WriteLine("Delete file " + filename);
+        }
+
+        public void UpdateServers(Dictionary<string, string> servers)
+        {
+            bridge.Servers = servers;
         }
 
         static void Main(string[] args)
