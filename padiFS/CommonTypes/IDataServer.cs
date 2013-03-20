@@ -9,6 +9,7 @@ namespace padiFS
     {
         File Read(string localFile, string semantics);
         int Write(string localFile, byte[] bytearray);
+        void Create(string fileName, byte[] bytearray);
         void Freeze();
         void Unfreeze();
         void Fail();
