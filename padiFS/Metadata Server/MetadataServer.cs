@@ -5,6 +5,8 @@ using System.Text;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
+using System.Threading;
+using System.Timers;
 
 namespace padiFS
 {
@@ -12,9 +14,13 @@ namespace padiFS
     {
         private string name;
         private int port;
+        private int pingInterval = 5;
+        private bool primary = false;
         private Dictionary<string, string> metadataServers;
-        private Dictionary<string, string> dataServers;
+        private Dictionary<string, string> liveDataServers;
+        private Dictionary<string, string> deadDataServers;
         private Dictionary<string, Metadata> files;
+        private System.Timers.Timer pingDataServersTimer;
 
 
         public MetadataServer(string id)
@@ -22,8 +28,12 @@ namespace padiFS
             this.name = "m-" + id;
             this.port = 8080 + int.Parse(id);
             this.metadataServers = new Dictionary<string, string>();
-            this.dataServers = new Dictionary<string, string>();
+            this.liveDataServers = new Dictionary<string, string>();
+            this.deadDataServers = new Dictionary<string, string>();
             this.files = new Dictionary<string, Metadata>();
+            this.pingDataServersTimer = new System.Timers.Timer();
+            pingDataServersTimer.Elapsed += new System.Timers.ElapsedEventHandler(pingDataServers);
+            pingDataServersTimer.Interval = 1000 * pingInterval;
         }
 
 
@@ -46,7 +56,7 @@ namespace padiFS
         public void RegisterDataServer(string name, string address)
         {
             Console.WriteLine("Data Server " + name + " : " + address);
-            dataServers.Add(name, address);
+            liveDataServers.Add(name, address);
         }
 
         public void RegisterMetadataServer(string name, string address)
@@ -64,9 +74,82 @@ namespace padiFS
                     {
                         server.RegisterMetadataServer(this.name, "tcp://localhost:" + this.port + "/" + this.name);
                     }
-                    catch (System.Net.Sockets.SocketException e) { }
+                    catch (System.Net.Sockets.SocketException) { }
                     // Ignore it
                 }
+            }
+        }
+
+
+        private void PingLiveDataServer(object threadContext)
+        {
+            string name = (string)threadContext;
+            string address = liveDataServers[name];
+            IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), address);
+
+            try
+            {
+                if (server.ping() == 1)
+                {
+                    Console.WriteLine("VIVO");
+                    if(!liveDataServers.ContainsKey(name))
+                    {
+                        liveDataServers.Add(name, address);
+                        deadDataServers.Remove(name);
+                    }
+                }
+            }
+            catch (System.SystemException)
+            {
+                Console.WriteLine("MORTO");
+                if (!deadDataServers.ContainsKey(name))
+                {
+                    deadDataServers.Add(name, address);
+                    liveDataServers.Remove(name);
+                }
+            }
+        }
+
+
+        private void PingDeadDataServer(object threadContext)
+        {
+            string name = (string)threadContext;
+            string address = deadDataServers[name];
+            IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), address);
+
+            try
+            {
+                if (server.ping() == 1)
+                {
+                    Console.WriteLine("VIVO");
+                    if (!liveDataServers.ContainsKey(name))
+                    {
+                        liveDataServers.Add(name, address);
+                        deadDataServers.Remove(name);
+                    }
+                }
+            }
+            catch (System.SystemException)
+            {
+                Console.WriteLine("MORTO");
+                if (!deadDataServers.ContainsKey(name))
+                {
+                    deadDataServers.Add(name, address);
+                    liveDataServers.Remove(name);
+                }
+            }
+        }
+
+        private void pingDataServers(object source, ElapsedEventArgs e)
+        {
+            foreach (string key in liveDataServers.Keys)
+            {
+                ThreadPool.QueueUserWorkItem(PingLiveDataServer, key);
+            }
+
+            foreach (string key in deadDataServers.Keys)
+            {
+                ThreadPool.QueueUserWorkItem(PingDeadDataServer, key);
             }
         }
 
@@ -74,6 +157,11 @@ namespace padiFS
         {
             MetadataServer ms = new MetadataServer(args[0]);
             Console.WriteLine(ms.name);
+            if (ms.name == "m-0")
+            {
+                ms.primary = true;
+                ms.pingDataServersTimer.Enabled = true;
+            }
             // Ficar esperar pedidos de Iurie
             TcpChannel channel = new TcpChannel(ms.port);
             ChannelServices.RegisterChannel(channel, true);
