@@ -60,7 +60,12 @@ namespace padiFS
                 IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
                 if (server != null)
                 {
-                    server.RegisterMetadataServer(this.name, "tcp://localhost:" + this.port + "/" + this.name);
+                    try
+                    {
+                        server.RegisterMetadataServer(this.name, "tcp://localhost:" + this.port + "/" + this.name);
+                    }
+                    catch (System.Net.Sockets.SocketException e) { }
+                    // Ignore it
                 }
             }
         }
