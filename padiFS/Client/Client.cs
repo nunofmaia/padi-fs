@@ -28,9 +28,15 @@ namespace padiFS
         {
             Metadata meta = bridge.Create(filename, nServers, rQuorum, wQuorum);
 
-            allFiles.Add(filename, meta);
-
-            Console.WriteLine("Create file " + filename);
+            if (meta != null)
+            {
+                allFiles.Add(filename, meta);
+                Console.WriteLine("Create file " + filename);
+            }
+            else
+            {
+                Console.WriteLine("Could not create the file " + filename);
+            }
         }
 
         public void Open(string filename)

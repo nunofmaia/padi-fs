@@ -12,9 +12,9 @@ namespace padiFS
         private int serversNumber;
         private int readQuorum;
         private int writeQuorum;
-        private Dictionary<string, string> dataServers;
+        private List<string> dataServers;
 
-        public Metadata(string filename, int serversNumber, int readQuorum, int writeQuorum, Dictionary<string, string> dataServers)
+        public Metadata(string filename, int serversNumber, int readQuorum, int writeQuorum, List<string> dataServers)
         {
             this.filename = filename;
             this.serversNumber = serversNumber;

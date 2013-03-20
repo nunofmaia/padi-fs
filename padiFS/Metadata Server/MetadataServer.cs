@@ -22,7 +22,6 @@ namespace padiFS
         private Dictionary<string, Metadata> files;
         private System.Timers.Timer pingDataServersTimer;
 
-
         public MetadataServer(string id)
         {
             this.name = "m-" + id;
@@ -43,20 +42,39 @@ namespace padiFS
             return null;
         }
         public void Close() { }
-        public Metadata Create(string filename, int serversNumber, int readQuorum, int writeQuorum)
-        {
-            
 
-            IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), (string)liveDataServers["d-0"]);
+        private void CreateCallback(object threadcontext)
+        {
+            List<string> args = (List<string>)threadcontext;
+            string v = args[0];
+            string filename = args[1];
+            IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), v);
 
             if (server != null)
             {
                 server.Create(filename);
-                return new Metadata(filename, serversNumber, readQuorum, writeQuorum, new Dictionary<string, string>());
+            }
+        }
+
+        public Metadata Create(string filename, int serversNumber, int readQuorum, int writeQuorum)
+        {
+            if (liveDataServers.Count >= serversNumber)
+            {
+                List<string> servers = new List<string>();
+                foreach (string v in liveDataServers.Values.Take(serversNumber))
+                {
+                    List<string> arguments = new List<string>();
+                    arguments.Add(v);
+                    arguments.Add(filename);
+                    servers.Add(v);
+                    ThreadPool.QueueUserWorkItem(CreateCallback, arguments);
+                }
+
+                return new Metadata(filename, serversNumber, readQuorum, writeQuorum, servers);
             }
             else
             {
-                Console.WriteLine("Cocó");
+                Console.WriteLine("Not enough servers.");
             }
 
             return null;
