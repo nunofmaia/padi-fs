@@ -15,6 +15,8 @@ namespace padiFS
         private int port;
         private Dictionary<string, File> files;
 
+        private string currentDir;
+
         public DataServer(string id)
         {
             this.name = "d-" + id;
@@ -22,9 +24,8 @@ namespace padiFS
             files = new Dictionary<string, File>();
 
             //create new directory
-            string folderName = this.name;
-            string currentDir = Environment.CurrentDirectory;
-            string path = currentDir + @"\" + folderName;
+            this.currentDir = Environment.CurrentDirectory;
+            string path = currentDir + @"\" + this.name;
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
@@ -32,23 +33,21 @@ namespace padiFS
         }
        
         //cria e adiciona logo ao dicionario
-        public void Create(string fileName, byte[] bytearray)
+        public void Create(string fileName)
         {
             File file = new File();
 
             file.version = DateTime.Now;
-            file.content = bytearray;
+            file.content = new byte[1];
 
-            string folderName = this.name;
-            string currentDir = Environment.CurrentDirectory;
-            string path = currentDir + @"\" + folderName + @"\" + fileName + @".txt";
+            this.currentDir = Environment.CurrentDirectory;
+            string path = currentDir + @"\" + this.name + @"\" + fileName + @".txt";
             Console.WriteLine(path);
             Console.WriteLine(file.GetType());
             TextWriter tw = new StreamWriter(path);
             System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
             x.Serialize(tw,file);
             Console.WriteLine("object written to file");
-            Console.ReadLine();
             tw.Close();
             
             files.Add(fileName, file);
@@ -56,7 +55,23 @@ namespace padiFS
 
         public File Read(string localFile, string semantics)
         {
+            File file = new File();
+            string path = currentDir + @"\" + this.name + @"\" + localFile + ".txt";
+            Console.WriteLine(path);
+            if (System.IO.File.Exists(path))
+            {
+                TextReader tr = new StreamReader(path);
+                System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
+                file = (File)x.Deserialize(tr);
+                tr.Close();
+                return file;
+            }
+            else {
+                //isto TEM DE SER MUDADO
+                Console.WriteLine("O ficheiro não existe");
+                }
             return null;
+            
         }
         public int Write(string localFile, byte[] bytearray)
         {
@@ -79,8 +94,11 @@ namespace padiFS
         {
             DataServer ds = new DataServer(args[0]);
 
-           ds.Create("IurieSun",new byte[15]);
-
+            //teste
+            ds.Create("IurieSun");
+            Console.WriteLine(ds.Read("IurieSun","cena").version);
+            Console.WriteLine(ds.Read("IurieSun","cena").content);
+            
             // Ficar esperar pedidos de Iurie
             TcpChannel channel = new TcpChannel(ds.port);
             ChannelServices.RegisterChannel(channel, true);
