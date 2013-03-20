@@ -58,9 +58,10 @@ namespace padiFS
             Console.WriteLine("Delete file " + filename);
         }
 
-        public void UpdateServers(Dictionary<string, string> servers)
+        public void UpdateServers(Dictionary<string, string> servers, string primary)
         {
             bridge.Servers = servers;
+            bridge.Primary = primary;
         }
 
         static void Main(string[] args)

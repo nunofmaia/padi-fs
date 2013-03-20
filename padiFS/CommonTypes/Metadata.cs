@@ -5,6 +5,7 @@ using System.Text;
 
 namespace padiFS
 {
+    [Serializable]
     public class Metadata
     {
         private string filename;

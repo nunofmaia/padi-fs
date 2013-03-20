@@ -169,6 +169,7 @@ namespace padiFS
 
             if (client != null)
             {
+                client.UpdateServers(metadataServers, "m-0");
                 client.Create(filename, nServers, rQuorum, wQuorum);
             }
 

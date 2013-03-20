@@ -45,6 +45,20 @@ namespace padiFS
         public void Close() { }
         public Metadata Create(string filename, int serversNumber, int readQuorum, int writeQuorum)
         {
+            
+
+            IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), (string)liveDataServers["d-0"]);
+
+            if (server != null)
+            {
+                server.Create(filename);
+                return new Metadata(filename, serversNumber, readQuorum, writeQuorum, new Dictionary<string, string>());
+            }
+            else
+            {
+                Console.WriteLine("Cocó");
+            }
+
             return null;
         }
         public void Delete() { }

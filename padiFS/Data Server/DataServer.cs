@@ -95,9 +95,9 @@ namespace padiFS
             DataServer ds = new DataServer(args[0]);
 
             //teste
-            ds.Create("IurieSun");
-            Console.WriteLine(ds.Read("IurieSun","cena").version);
-            Console.WriteLine(ds.Read("IurieSun","cena").content);
+            //ds.Create("IurieSun");
+            //Console.WriteLine(ds.Read("IurieSun","cena").version);
+            //Console.WriteLine(ds.Read("IurieSun","cena").content);
             
             // Ficar esperar pedidos de Iurie
             TcpChannel channel = new TcpChannel(ds.port);

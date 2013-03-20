@@ -40,7 +40,6 @@ namespace padiFS
                 if (server != null)
                 {
                     Metadata meta = server.Create(filename, nServers, rQuorum, wQuorum);
-
                     return meta;
                 }
             }
