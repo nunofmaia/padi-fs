@@ -19,14 +19,17 @@ namespace padiFS
         TcpChannel channel;
         private int mscounter;
         private int dscounter;
+        private int ccounter;
         private Dictionary<string, string> dataServers;
         private Dictionary<string, string> metadataServers;
+        private Dictionary<string, string> clients;
 
         public Form1()
         {
             ArrayList servers = new ArrayList();
             servers.Add("Metadata");
             servers.Add("Data");
+            servers.Add("Client");
             ArrayList methods = new ArrayList();
             methods.Add("Freeze");
             methods.Add("Unfreeze");
@@ -42,6 +45,7 @@ namespace padiFS
 
             dataServers = new Dictionary<string, string>();
             metadataServers = new Dictionary<string, string>();
+            clients = new Dictionary<string, string>();
 
             channel = new TcpChannel(8070);
             ChannelServices.RegisterChannel(channel, true);
@@ -64,6 +68,16 @@ namespace padiFS
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
             info.FileName = currentDir + @"\Data Server.exe";
+            info.Arguments = id.ToString();
+
+            Process.Start(info);
+        }
+
+        private void launchClient(int id)
+        {
+            ProcessStartInfo info = new ProcessStartInfo();
+            string currentDir = Environment.CurrentDirectory;
+            info.FileName = currentDir + @"\Client.exe";
             info.Arguments = id.ToString();
 
             Process.Start(info);
@@ -92,7 +106,12 @@ namespace padiFS
 
                     if (server != null)
                     {
-                        server.RegisterMetadataServer(name, address);
+                        try
+                        {
+                            server.RegisterMetadataServer(name, address);
+                        }
+                        catch (System.Net.Sockets.SocketException) { }
+                        // Ignore it
                     }
                 }
             }
@@ -127,7 +146,32 @@ namespace padiFS
                         System.Windows.Forms.MessageBox.Show("A Data Server should be launched only after a Metadata Server");
                     }
                     break;
+
+                case "Client":
+                    string c_name = "c-" + ccounter;
+                    string c_address = "tcp://localhost:8099/" + c_name;
+                    launchClient(ccounter);
+                    clients.Add(c_name, c_address);
+                    ccounter++;
+                    break;
             }
+        }
+
+        private void createButton_Click(object sender, EventArgs e)
+        {
+            string c_name = createClientTextBox.Text;
+            string filename = createNameTextBox.Text;
+            int nServers = int.Parse(serversNumberTextBox.Text);
+            int rQuorum = int.Parse(rQuorumTextBox.Text);
+            int wQuorum = int.Parse(wQuorumTextBox.Text);
+
+            IClient client = (IClient)Activator.GetObject(typeof(IClient), (string)clients[c_name]);
+
+            if (client != null)
+            {
+                client.Create(filename, nServers, rQuorum, wQuorum);
+            }
+
         }
     }
 }
