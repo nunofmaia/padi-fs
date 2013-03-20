@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="File.cs" />
+    <Compile Include="IClient.cs" />
     <Compile Include="IDataServer.cs" />
     <Compile Include="IMetadataServer.cs" />
     <Compile Include="IPuppetMaster.cs" />
