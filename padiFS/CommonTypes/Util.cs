@@ -46,5 +46,14 @@ namespace padiFS
             return arguments.Split(new char[] { '|' });
         }
 
+        public static byte[] ConvertStringToByteArray(string s)
+        {
+            return System.Text.Encoding.UTF8.GetBytes(s);
+        }
+
+        public static string ConvertByteArrayToString(byte[] s)
+        {
+            return System.Text.Encoding.UTF8.GetString(s);
+        }
     }
 }

@@ -72,9 +72,9 @@
             this.readFileButton = new System.Windows.Forms.Button();
             this.readFileTextBox = new System.Windows.Forms.TextBox();
             this.readFileLabel = new System.Windows.Forms.Label();
-            this.textBox6 = new System.Windows.Forms.TextBox();
+            this.readTextBox = new System.Windows.Forms.TextBox();
             this.groupBox8 = new System.Windows.Forms.GroupBox();
-            this.textBox7 = new System.Windows.Forms.TextBox();
+            this.writeTextBox = new System.Windows.Forms.TextBox();
             this.writeClientTextBox = new System.Windows.Forms.TextBox();
             this.writeClientLabel = new System.Windows.Forms.Label();
             this.writeFileButton = new System.Windows.Forms.Button();
@@ -458,7 +458,7 @@
             this.groupBox7.Controls.Add(this.semanticsFileLabel);
             this.groupBox7.Controls.Add(this.semanticsComboBox);
             this.groupBox7.Controls.Add(this.textReadFile);
-            this.groupBox7.Controls.Add(this.textBox6);
+            this.groupBox7.Controls.Add(this.readTextBox);
             this.groupBox7.Controls.Add(this.readClientTextBox);
             this.groupBox7.Controls.Add(this.readClientLabel);
             this.groupBox7.Controls.Add(this.readFileButton);
@@ -513,18 +513,18 @@
             this.readFileLabel.TabIndex = 0;
             this.readFileLabel.Text = "File:";
             // 
-            // textBox6
+            // readTextBox
             // 
-            this.textBox6.Location = new System.Drawing.Point(51, 81);
-            this.textBox6.Multiline = true;
-            this.textBox6.Name = "textBox6";
-            this.textBox6.Size = new System.Drawing.Size(324, 61);
-            this.textBox6.TabIndex = 23;
+            this.readTextBox.Location = new System.Drawing.Point(51, 81);
+            this.readTextBox.Multiline = true;
+            this.readTextBox.Name = "readTextBox";
+            this.readTextBox.Size = new System.Drawing.Size(324, 61);
+            this.readTextBox.TabIndex = 23;
             // 
             // groupBox8
             // 
             this.groupBox8.Controls.Add(this.textWriteFile);
-            this.groupBox8.Controls.Add(this.textBox7);
+            this.groupBox8.Controls.Add(this.writeTextBox);
             this.groupBox8.Controls.Add(this.writeClientTextBox);
             this.groupBox8.Controls.Add(this.writeClientLabel);
             this.groupBox8.Controls.Add(this.writeFileButton);
@@ -537,13 +537,13 @@
             this.groupBox8.TabStop = false;
             this.groupBox8.Text = "Write file";
             // 
-            // textBox7
+            // writeTextBox
             // 
-            this.textBox7.Location = new System.Drawing.Point(51, 55);
-            this.textBox7.Multiline = true;
-            this.textBox7.Name = "textBox7";
-            this.textBox7.Size = new System.Drawing.Size(324, 87);
-            this.textBox7.TabIndex = 27;
+            this.writeTextBox.Location = new System.Drawing.Point(51, 55);
+            this.writeTextBox.Multiline = true;
+            this.writeTextBox.Name = "writeTextBox";
+            this.writeTextBox.Size = new System.Drawing.Size(324, 87);
+            this.writeTextBox.TabIndex = 27;
             // 
             // writeClientTextBox
             // 
@@ -569,6 +569,7 @@
             this.writeFileButton.TabIndex = 26;
             this.writeFileButton.Text = "Write";
             this.writeFileButton.UseVisualStyleBackColor = true;
+            this.writeFileButton.Click += new System.EventHandler(this.writeFileButton_Click);
             // 
             // writeFileTextBox
             // 
@@ -719,14 +720,14 @@
         private System.Windows.Forms.TextBox deleteFileTextBox;
         private System.Windows.Forms.Label deleteFileLabel;
         private System.Windows.Forms.GroupBox groupBox7;
-        private System.Windows.Forms.TextBox textBox6;
+        private System.Windows.Forms.TextBox readTextBox;
         private System.Windows.Forms.TextBox readClientTextBox;
         private System.Windows.Forms.Label readClientLabel;
         private System.Windows.Forms.Button readFileButton;
         private System.Windows.Forms.TextBox readFileTextBox;
         private System.Windows.Forms.Label readFileLabel;
         private System.Windows.Forms.GroupBox groupBox8;
-        private System.Windows.Forms.TextBox textBox7;
+        private System.Windows.Forms.TextBox writeTextBox;
         private System.Windows.Forms.TextBox writeClientTextBox;
         private System.Windows.Forms.Label writeClientLabel;
         private System.Windows.Forms.Button writeFileButton;

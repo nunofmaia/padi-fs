@@ -260,8 +260,8 @@ namespace padiFS
             }
 
 
-            IMetadataServer ms_server;
-            IDataServer ds_server;
+            IMetadataServer ms_server = null;
+            IDataServer ds_server = null;
             if (ms_address != null)
             {
                 ms_server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), ms_address);
@@ -270,24 +270,80 @@ namespace padiFS
             {
                  ds_server = (IDataServer)Activator.GetObject(typeof(IDataServer), ds_address);
             }
+
+
             switch (stopOpComboBox.Text)
             {                   
                 case "Freeze":
+                    if (ds_server != null)
+                    {
+                        ds_server.Freeze();
+                    }
                     break;
+
                 case "Unfreeze":
+                    if (ds_server != null)
+                    {
+                        ds_server.Unfreeze();
+                    }
                     break;
+
                 case "Fail":
+                    if (ds_server != null)
+                    {
+                        ds_server.Fail();
+                    }
+                    else if (ms_server != null)
+                    {
+                        ms_server.Fail();
+                    }
                     break;
+
                 case "Recover":
+                    if (ds_server != null)
+                    {
+                        ds_server.Recover();
+                    }
+                    else if (ms_server != null)
+                    {
+                        ms_server.Recover();
+                    }
                     break;
             }
-
             stopProcessTextBox.Clear();
         }
 
         private void readFileButton_Click(object sender, EventArgs e)
         {
+            string c_name = readClientTextBox.Text;
+            string filename = readFileTextBox.Text;
+            string semantic = semanticsComboBox.Text;
 
+            IClient client = (IClient)Activator.GetObject(typeof(IClient), (string)clients[c_name]);
+
+            if (client != null)
+            {
+                client.Read(filename, semantic);
+            }
+            readFileTextBox.Clear();
+            readClientTextBox.Clear();
+        }
+
+        private void writeFileButton_Click(object sender, EventArgs e)
+        {
+            string c_name = writeClientTextBox.Text;
+            string filename = writeFileTextBox.Text;
+            byte[] bytearray = Util.ConvertStringToByteArray(writeTextBox.Text);
+
+            IClient client = (IClient)Activator.GetObject(typeof(IClient), (string)clients[c_name]);
+
+            if (client != null)
+            {
+                client.Write(filename, bytearray);
+            }
+            writeFileTextBox.Clear();
+            writeClientTextBox.Clear();
+            writeTextBox.Clear();
         }
     }
 }

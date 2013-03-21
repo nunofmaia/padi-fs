@@ -58,12 +58,12 @@ namespace padiFS
 
         }
 
-        public void Read(string filename)
+        public void Read(string filename, string semantic)
         {
             Console.WriteLine("Read file " + filename);
         }
 
-        public void Write(string filename)
+        public void Write(string filename, byte[] bytearray)
         {
             Console.WriteLine("Write file " + filename);
         }
@@ -106,6 +106,7 @@ namespace padiFS
         {
             string[] arguments = Util.SplitArguments(args[0]);
             Client c = new Client(arguments[0], arguments[1]);
+            Console.Title = "Iurie's Client: " + c.name;
             // Fazer coisas que Iuri mandar
             TcpChannel channel = new TcpChannel(c.port);
             ChannelServices.RegisterChannel(channel, true);

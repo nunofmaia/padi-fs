@@ -138,10 +138,12 @@ namespace padiFS
         public void Fail()
         {
             onFailure = true;
+            Console.WriteLine("On Failure!");
         }
         public void Recover()
         {
             onFailure = false;
+            Console.WriteLine("Uhf, recovered at last...");
 
         }
 
@@ -157,6 +159,7 @@ namespace padiFS
         {
             string[] arguments = Util.SplitArguments(args[0]);
             DataServer ds = new DataServer(arguments[0], arguments[1]);
+            Console.Title = "Iurie's Data Server: " + ds.name;
 
             //teste
             //ds.Create("Iuriesun");

@@ -7,8 +7,8 @@ namespace padiFS
 {
     public interface IClient
     {
-        void Read(string filename);
-        void Write(string filename);
+        void Read(string filename, string semantic);
+        void Write(string filename, byte[] bytearray);
         void Open(string filename);
         void Create(string filename, int serversNumber, int readQuorum, int writeQuorum);
         void Close(string filename);

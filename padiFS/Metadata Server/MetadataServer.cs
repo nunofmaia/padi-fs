@@ -151,9 +151,11 @@ namespace padiFS
         // Puppet Master Commands
         public void Fail() {
             onFailure = true;
+            Console.WriteLine("On Failure!");
         }
         public void Recover() {
             onFailure = false;
+            Console.WriteLine("Uhf, recovered at last...");
         }
         
         
@@ -240,7 +242,7 @@ namespace padiFS
         {
             string[] arguments = Util.SplitArguments(args[0]);
             MetadataServer ms = new MetadataServer(arguments[0], arguments[1]);
-            Console.WriteLine(ms.name);
+            Console.Title = "Iurie's Metadata Server: " + ms.name;
             if (ms.name == "m-0")
             {
                 ms.primary = true;
