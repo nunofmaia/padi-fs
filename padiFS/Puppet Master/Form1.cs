@@ -72,6 +72,22 @@ namespace padiFS
             info.Arguments = name + "|" + port.ToString();
 
             Process.Start(info);
+
+            foreach (string c in clients.Keys)
+            {
+                UpdateClientServer(c);
+            }
+        }
+
+        private void UpdateClientServer(string c)
+        {
+            string address = clients[c];
+            IClient client = (IClient)Activator.GetObject(typeof(IClient), address);
+
+            if (client != null)
+            {
+                client.UpdateServers(metadataServers, "m-0");
+            }
         }
 
         private void launchDataServer(string name, int port)
@@ -169,6 +185,7 @@ namespace padiFS
                     launchClient(c_name, c_port);
                     clients.Add(c_name, c_address);
                     activeClients.Add(c_name);
+                    UpdateClientServer(c_name);
                     ccounter++;
                     break;
             }
@@ -186,7 +203,6 @@ namespace padiFS
 
             if (client != null)
             {
-                client.UpdateServers(metadataServers, "m-0");
                 client.Create(filename, nServers, rQuorum, wQuorum);
             }
 

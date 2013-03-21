@@ -49,13 +49,13 @@ namespace padiFS
                     if (!openFiles.ContainsKey(filename))
                     {
                         openFiles.Add(filename, files[filename]);
-                        return files[filename];
                     }
                     else
                     {
-                        Console.WriteLine("File already open.");
-                        return null;
+                        Console.WriteLine("File already open. It's ok!");
                     }
+
+                    return files[filename];
                 }
             }
             return null;
