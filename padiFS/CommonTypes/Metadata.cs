@@ -23,6 +23,31 @@ namespace padiFS
             this.dataServers = dataServers;
         }
 
+        public string FileName
+        {
+            get { return filename; }
+        }
+
+        public int ServersNumber
+        {
+            get { return serversNumber; }
+        }
+
+        public int ReadQuorum
+        {
+            get { return readQuorum; }
+        }
+
+        public int WriteQuorum
+        {
+            get { return writeQuorum; }
+        }
+
+        public List<string> DataServers
+        {
+            get { return dataServers; }
+        }
+
         public override string ToString()
         {
             return "File: " + filename + " #Servers: " + serversNumber + " RQ: " + readQuorum + " WQ: " + writeQuorum;

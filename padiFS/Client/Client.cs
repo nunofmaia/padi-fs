@@ -65,6 +65,12 @@ namespace padiFS
 
         public void Write(string filename, byte[] bytearray)
         {
+            if(openFiles.ContainsKey(filename))
+            {
+                Metadata file = openFiles[filename];
+                List<string> servers = file.DataServers;
+                int writeQuorum = file.WriteQuorum;
+            }
             Console.WriteLine("Write file " + filename);
         }
 
