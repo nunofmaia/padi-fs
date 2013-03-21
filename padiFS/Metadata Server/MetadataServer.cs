@@ -22,6 +22,7 @@ namespace padiFS
         private Dictionary<string, Metadata> files;
         private Dictionary<string, Metadata> openFiles;
         private System.Timers.Timer pingDataServersTimer;
+        private bool onFailure = false;
 
         public MetadataServer(string id)
         {
@@ -41,33 +42,38 @@ namespace padiFS
         // Project API
         public Metadata Open(string filename)
         {
-            if (files.ContainsKey(filename))
+            if (!onFailure)
             {
-                if (!openFiles.ContainsKey(filename))
+                if (files.ContainsKey(filename))
                 {
-                    openFiles.Add(filename, files[filename]);
-                    return files[filename];
-                }
-                else
-                {
-                    Console.WriteLine("File already open.");
-                    return null;
+                    if (!openFiles.ContainsKey(filename))
+                    {
+                        openFiles.Add(filename, files[filename]);
+                        return files[filename];
+                    }
+                    else
+                    {
+                        Console.WriteLine("File already open.");
+                        return null;
+                    }
                 }
             }
-
             return null;
         }
         public void Close(string filename)
         {
-            if (files.ContainsKey(filename))
+            if (!onFailure)
             {
-                if (openFiles.ContainsKey(filename))
+                if (files.ContainsKey(filename))
                 {
-                    openFiles.Remove(filename);
-                }
-                else
-                {
-                    Console.WriteLine("File already closed.");
+                    if (openFiles.ContainsKey(filename))
+                    {
+                        openFiles.Remove(filename);
+                    }
+                    else
+                    {
+                        Console.WriteLine("File already closed.");
+                    }
                 }
             }
         }
@@ -87,39 +93,68 @@ namespace padiFS
 
         public Metadata Create(string filename, int serversNumber, int readQuorum, int writeQuorum)
         {
-            if (!files.ContainsKey(filename))
+            if (!onFailure)
             {
-                if (liveDataServers.Count >= serversNumber)
+                if (!files.ContainsKey(filename))
                 {
-                    List<string> servers = new List<string>();
-                    foreach (string v in liveDataServers.Values.Take(serversNumber))
+                    if (liveDataServers.Count >= serversNumber)
                     {
-                        List<string> arguments = new List<string>();
-                        arguments.Add(v);
-                        arguments.Add(filename);
-                        servers.Add(v);
-                        ThreadPool.QueueUserWorkItem(CreateCallback, arguments);
+                        List<string> servers = new List<string>();
+                        foreach (string v in liveDataServers.Values.Take(serversNumber))
+                        {
+                            List<string> arguments = new List<string>();
+                            arguments.Add(v);
+                            arguments.Add(filename);
+                            servers.Add(v);
+                            ThreadPool.QueueUserWorkItem(CreateCallback, arguments);
+                        }
+                        Metadata meta = new Metadata(filename, serversNumber, readQuorum, writeQuorum, servers);
+                        files.Add(filename, meta);
+                        openFiles.Add(filename, meta);
+                        return meta;
                     }
-                    Metadata meta = new Metadata(filename, serversNumber, readQuorum, writeQuorum, servers);
-                    files.Add(filename, meta);
-                    openFiles.Add(filename, meta);
-                    return meta;
+                    else
+                    {
+                        Console.WriteLine("Not enough servers.");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("Not enough servers.");
+                    Console.WriteLine("File already exists.");
                 }
             }
-            else
-            {
-                Console.WriteLine("File already exists");
-            }
-
             return null;
         }
-        public void Delete() { }
-        public void Fail() { }
-        public void Recover() { }
+
+        public void Delete(string filename) {
+            if (!onFailure)
+            {
+                if (files.ContainsKey(filename))
+                {
+                    if (!openFiles.ContainsKey(filename))
+                    {
+                        files.Remove(filename);
+                        Console.WriteLine("File " + filename + " deleted");
+                    }
+                    else
+                    {
+                        Console.WriteLine("File is opened.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("File does not exists.");
+                }
+            }
+        }
+
+        // Puppet Master Commands
+        public void Fail() {
+            onFailure = true;
+        }
+        public void Recover() {
+            onFailure = false;
+        }
         
         
         // Auxiliar API
@@ -151,17 +186,18 @@ namespace padiFS
         }
 
 
-        private void PingLiveDataServer(object threadContext)
+        private void PingDataServer(object threadContext)
         {
-            string name = (string)threadContext;
-            string address = liveDataServers[name];
+            List<string> dataservers = (List<string>)threadContext;
+            string name = dataservers[0];
+            string address = dataservers[1];
             IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), address);
 
             try
             {
                 if (server.ping() == 1)
                 {
-                    Console.WriteLine("VIVO");
+                    Console.WriteLine(name + ": VIVO");
                     if(!liveDataServers.ContainsKey(name))
                     {
                         liveDataServers.Add(name, address);
@@ -171,7 +207,7 @@ namespace padiFS
             }
             catch (System.SystemException)
             {
-                Console.WriteLine("MORTO");
+                Console.WriteLine(name + ": MORTO");
                 if (!deadDataServers.ContainsKey(name))
                 {
                     deadDataServers.Add(name, address);
@@ -180,46 +216,23 @@ namespace padiFS
             }
         }
 
-
-        private void PingDeadDataServer(object threadContext)
-        {
-            string name = (string)threadContext;
-            string address = deadDataServers[name];
-            IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), address);
-
-            try
-            {
-                if (server.ping() == 1)
-                {
-                    Console.WriteLine("VIVO");
-                    if (!liveDataServers.ContainsKey(name))
-                    {
-                        liveDataServers.Add(name, address);
-                        deadDataServers.Remove(name);
-                    }
-                }
-            }
-            catch (System.SystemException)
-            {
-                Console.WriteLine("MORTO");
-                if (!deadDataServers.ContainsKey(name))
-                {
-                    deadDataServers.Add(name, address);
-                    liveDataServers.Remove(name);
-                }
-            }
-        }
 
         private void pingDataServers(object source, ElapsedEventArgs e)
         {
             foreach (string key in liveDataServers.Keys)
             {
-                ThreadPool.QueueUserWorkItem(PingLiveDataServer, key);
+                List<string> dataservers = new List<string>();
+                dataservers.Add(key);
+                dataservers.Add(liveDataServers[key]);
+                ThreadPool.QueueUserWorkItem(PingDataServer, dataservers);
             }
 
             foreach (string key in deadDataServers.Keys)
             {
-                ThreadPool.QueueUserWorkItem(PingDeadDataServer, key);
+                List<string> dataservers = new List<string>();
+                dataservers.Add(key);
+                dataservers.Add(deadDataServers[key]);
+                ThreadPool.QueueUserWorkItem(PingDataServer, dataservers);
             }
         }
 

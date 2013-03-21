@@ -71,5 +71,14 @@ namespace padiFS
             }
         }
 
+        public void Delete(string filename)
+        {
+            IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
+
+            if (server != null)
+            {
+                server.Delete(filename);
+            }
+        }
     }
 }

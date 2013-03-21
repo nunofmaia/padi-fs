@@ -6,6 +6,7 @@ using System.Text;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
+using System.Threading;
 
 namespace padiFS
 {
@@ -15,6 +16,9 @@ namespace padiFS
         private int port;
 
         private string currentDir;
+
+        private bool onFreeze = false;
+        private bool onFailure = false;
 
         public DataServer(string id)
         {
@@ -29,19 +33,20 @@ namespace padiFS
                 Directory.CreateDirectory(path);
             }
         }
-       
+
         public void Create(string fileName)
         {
-            File file = new File();
-
-            file.version = DateTime.Now;
-            file.content = new byte[1];
-
-            this.currentDir = Environment.CurrentDirectory;
-            string path = currentDir + @"\" + this.name + @"\" + fileName + @".txt";
-
-            if (!System.IO.File.Exists(path))
+            if (!onFailure)
             {
+                File file = new File();
+
+                file.version = DateTime.Now;
+                file.content = new byte[1];
+
+                this.currentDir = Environment.CurrentDirectory;
+                string path = currentDir + @"\" + this.name + @"\" + fileName + @".txt";
+
+
                 Console.WriteLine(path);
                 Console.WriteLine(file.GetType());
                 TextWriter tw = new StreamWriter(path);
@@ -50,15 +55,14 @@ namespace padiFS
                 Console.WriteLine("object written to file");
                 tw.Close();
             }
-            else {
-                //isto TEM DE SER MUDADO
-                Console.WriteLine("Já existe um ficheiro com esse nome");
-            }
         }
 
-        public File Read(string localFile, string semantics)
+        private void ReadCallback(object threadcontext)
         {
-            File file = new File();
+            List<object> args = (List<object>)threadcontext;
+            string localFile = (string)args[0];
+            string semantics = (string)args[1];
+            File file = (File)args[2];
             string path = currentDir + @"\" + this.name + @"\" + localFile + ".txt";
             Console.WriteLine(path);
             if (System.IO.File.Exists(path))
@@ -67,47 +71,79 @@ namespace padiFS
                 System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
                 file = (File)x.Deserialize(tr);
                 tr.Close();
-                return file;
-            }
-            else {
-                //isto TEM DE SER MUDADO
-                Console.WriteLine("O ficheiro não existe");
-                }
-            return null;
-            
-        }
-        public int Write(string localFile, byte[] bytearray)
-        {
-            File file = new File();
-
-            file.version = DateTime.Now;
-            file.content = bytearray;
-
-            this.currentDir = Environment.CurrentDirectory;
-            string path = currentDir + @"\" + this.name + @"\" + localFile + @".txt";
-
-            if (System.IO.File.Exists(path))
-            {
-                Console.WriteLine(path);
-                Console.WriteLine(file.GetType());
-                TextWriter tw = new StreamWriter(path);
-                System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
-                x.Serialize(tw, file);
-                Console.WriteLine("object written to file");
-                tw.Close();
             }
             else
             {
                 //isto TEM DE SER MUDADO
                 Console.WriteLine("O ficheiro não existe");
             }
-            
+
+        }
+        public File Read(string localFile, string semantics)
+        {
+            if (!onFailure)
+            {
+
+                File file = new File();
+                List<object> arguments = new List<object>();
+                arguments.Add(localFile);
+                arguments.Add(semantics);
+                arguments.Add(file);
+                ThreadPool.QueueUserWorkItem(ReadCallback, arguments);
+                return file;
+            }
+            return null;
+        }
+        public int Write(string localFile, byte[] bytearray)
+        {
+            if (!onFailure)
+            {
+                File file = new File();
+
+                file.version = DateTime.Now;
+                file.content = bytearray;
+
+                this.currentDir = Environment.CurrentDirectory;
+                string path = currentDir + @"\" + this.name + @"\" + localFile + @".txt";
+
+                if (System.IO.File.Exists(path))
+                {
+                    Console.WriteLine(path);
+                    Console.WriteLine(file.GetType());
+                    TextWriter tw = new StreamWriter(path);
+                    System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
+                    x.Serialize(tw, file);
+                    Console.WriteLine("object written to file");
+                    tw.Close();
+                }
+                else
+                {
+                    //isto TEM DE SER MUDADO
+                    Console.WriteLine("O ficheiro não existe");
+                }
+            }
             return 0;
         }
-        public void Freeze() { }
-        public void Unfreeze() { }
-        public void Fail() { }
-        public void Recover() { }
+
+        // Puppet Master Commands
+        public void Freeze()
+        {
+            onFreeze = true;
+        }
+        public void Unfreeze()
+        {
+            onFreeze = false;
+            // Lançar threads para responder a pedidos
+        }
+        public void Fail()
+        {
+            onFailure = true;
+        }
+        public void Recover()
+        {
+            onFailure = false;
+
+        }
 
         
         // Auxiliar API

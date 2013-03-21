@@ -23,6 +23,10 @@ namespace padiFS
         private Dictionary<string, string> dataServers;
         private Dictionary<string, string> metadataServers;
         private Dictionary<string, string> clients;
+        private ArrayList activeClients;
+        private ArrayList activeDataServers;
+        private ArrayList activeMetadataServers;
+
 
         public Form1()
         {
@@ -35,6 +39,9 @@ namespace padiFS
             methods.Add("Unfreeze");
             methods.Add("Fail");
             methods.Add("Recover");
+            ArrayList semantics = new ArrayList();
+            semantics.Add("Default");
+            semantics.Add("Monotonic");
 
             mscounter = 0;
             dscounter = 0;
@@ -42,10 +49,14 @@ namespace padiFS
             InitializeComponent();
             serversComboBox.DataSource = servers;
             stopOpComboBox.DataSource = methods;
+            semanticsComboBox.DataSource = semantics;
 
             dataServers = new Dictionary<string, string>();
             metadataServers = new Dictionary<string, string>();
             clients = new Dictionary<string, string>();
+            activeClients = new ArrayList();
+            activeDataServers = new ArrayList();
+            activeMetadataServers = new ArrayList();
 
             channel = new TcpChannel(8070);
             ChannelServices.RegisterChannel(channel, true);
@@ -126,6 +137,7 @@ namespace padiFS
                     string ms_address = "tcp://localhost:808" + mscounter + "/" + ms_name;
                     launchMetadataServer(mscounter);
                     metadataServers.Add(ms_name, ms_address);
+                    activeMetadataServers.Add(ms_name);
                     mscounter++;
                     registerMetadataServer(ms_name, ms_address);
                     break;
@@ -138,6 +150,7 @@ namespace padiFS
 
                         launchDataServer(dscounter);
                         dataServers.Add(ds_name, ds_address);
+                        activeDataServers.Add(ds_name);
                         dscounter++;
                         registerDataServer(ds_name, ds_address);
                     }
@@ -152,6 +165,7 @@ namespace padiFS
                     string c_address = "tcp://localhost:8099/" + c_name;
                     launchClient(ccounter);
                     clients.Add(c_name, c_address);
+                    activeClients.Add(c_name);
                     ccounter++;
                     break;
             }
@@ -211,6 +225,66 @@ namespace padiFS
 
             closeClientTextBox.Clear();
             closeFileTextBox.Clear();
+        }
+
+        private void deleteFileButton_Click(object sender, EventArgs e)
+        {
+            string c_name = deleteClientTextBox.Text;
+            string filename = deleteFileTextBox.Text;
+
+            IClient client = (IClient)Activator.GetObject(typeof(IClient), (string)clients[c_name]);
+
+            if (client != null)
+            {
+                client.Delete(filename);
+            }
+            deleteClientTextBox.Clear();
+            deleteFileTextBox.Clear();
+        }
+
+        private void executeButton_Click(object sender, EventArgs e)
+        {
+            string process = stopProcessTextBox.Text;
+            string ms_address = null;
+            string ds_address = null;
+            if (metadataServers.ContainsKey(process))
+            {
+                ms_address = metadataServers[process];
+            }
+            else if(dataServers.ContainsKey(process))
+            {
+                ds_address = dataServers[process];
+            }
+
+
+            IMetadataServer ms_server;
+            IDataServer ds_server;
+            if (ms_address != null)
+            {
+                ms_server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), ms_address);
+            }
+            else
+            {
+                 ds_server = (IDataServer)Activator.GetObject(typeof(IDataServer), ds_address);
+            }
+            switch (stopOpComboBox.Text)
+            {                   
+                case "Freeze":
+                    break;
+                case "Unfreeze":
+                    break;
+                case "Fail":
+                    break;
+                case "Recover":
+                    break;
+            }
+
+            stopProcessTextBox.Clear();
+        }
+
+        private void readFileButton_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

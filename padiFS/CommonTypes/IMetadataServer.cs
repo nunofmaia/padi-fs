@@ -12,7 +12,7 @@ namespace padiFS
         Metadata Open(string filename);
         void Close(string filename);
         Metadata Create(string filename, int serversNumber, int readQuorum, int writeQuorum);
-        void Delete();
+        void Delete(string filename);
         void Fail();
         void Recover();
 

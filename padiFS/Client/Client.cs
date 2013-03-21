@@ -85,7 +85,15 @@ namespace padiFS
 
         public void Delete(string filename)
         {
-            Console.WriteLine("Delete file " + filename);
+            if (!openFiles.ContainsKey(filename))
+            {
+                bridge.Delete(filename);
+                Console.WriteLine("Delete file " + filename);
+            }
+            else
+            {
+                Console.WriteLine("File is opened.");
+            }
         }
 
         public void UpdateServers(Dictionary<string, string> servers, string primary)
