@@ -48,12 +48,15 @@ namespace padiFS
 
             if (meta != null)
             {
-                openFiles.Add(filename, meta);
+                if (!openFiles.ContainsKey(filename))
+                {
+                    openFiles.Add(filename, meta);
+                }
                 Console.WriteLine("Open file " + filename);
             }
             else
             {
-                Console.WriteLine("File already opened.");
+                Console.WriteLine("Something wrong happened.");
             }
 
         }

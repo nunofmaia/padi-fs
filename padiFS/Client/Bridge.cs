@@ -54,7 +54,10 @@ namespace padiFS
             if (server != null)
             {
                 Metadata meta = server.Open(filename);
-                Console.WriteLine(meta);
+                if (meta != null)
+                {
+                    Console.WriteLine(meta);
+                }
                 return meta;
             }
 
