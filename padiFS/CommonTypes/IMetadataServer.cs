@@ -10,7 +10,7 @@ namespace padiFS
     {
         // Project API
         Metadata Open(string filename);
-        void Close();
+        void Close(string filename);
         Metadata Create(string filename, int serversNumber, int readQuorum, int writeQuorum);
         void Delete();
         void Fail();

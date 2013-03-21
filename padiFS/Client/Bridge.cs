@@ -47,5 +47,29 @@ namespace padiFS
             return null;
         }
 
+        public Metadata Open(string filename)
+        {
+            IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
+
+            if (server != null)
+            {
+                Metadata meta = server.Open(filename);
+                Console.WriteLine(meta);
+                return meta;
+            }
+
+            return null;
+        }
+
+        public void Close(string filename)
+        {
+            IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
+
+            if (server != null)
+            {
+                server.Close(filename);
+            }
+        }
+
     }
 }

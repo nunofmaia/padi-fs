@@ -14,7 +14,7 @@ namespace padiFS
         private int port;
         private Bridge bridge;
         private Dictionary<string, Metadata> allFiles;
-        //private Dictionary<string, Metadata> openFiles;
+        private Dictionary<string, Metadata> openFiles;
 
         public Client(string id)
         {
@@ -22,6 +22,7 @@ namespace padiFS
             this.port = 8099;
             this.bridge = new Bridge();
             this.allFiles = new Dictionary<string, Metadata>();
+            this.openFiles = new Dictionary<string, Metadata>();
         }
 
         public void Create(string filename, int nServers, int rQuorum, int wQuorum)
@@ -30,7 +31,9 @@ namespace padiFS
 
             if (meta != null)
             {
+                Console.WriteLine("vou adicionar isto");
                 allFiles.Add(filename, meta);
+                openFiles.Add(filename, meta);
                 Console.WriteLine("Create file " + filename);
             }
             else
@@ -41,7 +44,18 @@ namespace padiFS
 
         public void Open(string filename)
         {
-            Console.WriteLine("Open file " + filename);
+            Metadata meta = bridge.Open(filename);
+
+            if (meta != null)
+            {
+                openFiles.Add(filename, meta);
+                Console.WriteLine("Open file " + filename);
+            }
+            else
+            {
+                Console.WriteLine("File already opened.");
+            }
+
         }
 
         public void Read(string filename)
@@ -56,7 +70,17 @@ namespace padiFS
 
         public void Close(string filename)
         {
-            Console.WriteLine("Close file " + filename);
+            bridge.Close(filename);
+
+            if (openFiles.ContainsKey(filename))
+            {
+                openFiles.Remove(filename);
+                Console.WriteLine("Close file " + filename);
+            }
+            else
+            {
+                Console.WriteLine("File already closed.");
+            }
         }
 
         public void Delete(string filename)

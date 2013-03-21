@@ -20,6 +20,7 @@ namespace padiFS
         private Dictionary<string, string> liveDataServers;
         private Dictionary<string, string> deadDataServers;
         private Dictionary<string, Metadata> files;
+        private Dictionary<string, Metadata> openFiles;
         private System.Timers.Timer pingDataServersTimer;
 
         public MetadataServer(string id)
@@ -30,6 +31,7 @@ namespace padiFS
             this.liveDataServers = new Dictionary<string, string>();
             this.deadDataServers = new Dictionary<string, string>();
             this.files = new Dictionary<string, Metadata>();
+            this.openFiles = new Dictionary<string, Metadata>();
             this.pingDataServersTimer = new System.Timers.Timer();
             pingDataServersTimer.Elapsed += new System.Timers.ElapsedEventHandler(pingDataServers);
             pingDataServersTimer.Interval = 1000 * pingInterval;
@@ -38,10 +40,37 @@ namespace padiFS
 
         // Project API
         public Metadata Open(string filename)
-        { 
+        {
+            if (files.ContainsKey(filename))
+            {
+                if (!openFiles.ContainsKey(filename))
+                {
+                    openFiles.Add(filename, files[filename]);
+                    return files[filename];
+                }
+                else
+                {
+                    Console.WriteLine("File already open.");
+                    return null;
+                }
+            }
+
             return null;
         }
-        public void Close() { }
+        public void Close(string filename)
+        {
+            if (files.ContainsKey(filename))
+            {
+                if (openFiles.ContainsKey(filename))
+                {
+                    openFiles.Remove(filename);
+                }
+                else
+                {
+                    Console.WriteLine("File already closed.");
+                }
+            }
+        }
 
         private void CreateCallback(object threadcontext)
         {
@@ -58,23 +87,32 @@ namespace padiFS
 
         public Metadata Create(string filename, int serversNumber, int readQuorum, int writeQuorum)
         {
-            if (liveDataServers.Count >= serversNumber)
+            if (!files.ContainsKey(filename))
             {
-                List<string> servers = new List<string>();
-                foreach (string v in liveDataServers.Values.Take(serversNumber))
+                if (liveDataServers.Count >= serversNumber)
                 {
-                    List<string> arguments = new List<string>();
-                    arguments.Add(v);
-                    arguments.Add(filename);
-                    servers.Add(v);
-                    ThreadPool.QueueUserWorkItem(CreateCallback, arguments);
+                    List<string> servers = new List<string>();
+                    foreach (string v in liveDataServers.Values.Take(serversNumber))
+                    {
+                        List<string> arguments = new List<string>();
+                        arguments.Add(v);
+                        arguments.Add(filename);
+                        servers.Add(v);
+                        ThreadPool.QueueUserWorkItem(CreateCallback, arguments);
+                    }
+                    Metadata meta = new Metadata(filename, serversNumber, readQuorum, writeQuorum, servers);
+                    files.Add(filename, meta);
+                    openFiles.Add(filename, meta);
+                    return meta;
                 }
-
-                return new Metadata(filename, serversNumber, readQuorum, writeQuorum, servers);
+                else
+                {
+                    Console.WriteLine("Not enough servers.");
+                }
             }
             else
             {
-                Console.WriteLine("Not enough servers.");
+                Console.WriteLine("File already exists");
             }
 
             return null;

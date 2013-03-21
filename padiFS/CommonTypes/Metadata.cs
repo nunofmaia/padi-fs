@@ -22,5 +22,10 @@ namespace padiFS
             this.writeQuorum = writeQuorum;
             this.dataServers = dataServers;
         }
+
+        public override string ToString()
+        {
+            return "File: " + filename + " #Servers: " + serversNumber + " RQ: " + readQuorum + " WQ: " + writeQuorum;
+        }
     }
 }

@@ -173,6 +173,12 @@ namespace padiFS
                 client.Create(filename, nServers, rQuorum, wQuorum);
             }
 
+            createClientTextBox.Clear();
+            createNameTextBox.Clear();
+            serversNumberTextBox.Clear();
+            rQuorumTextBox.Clear();
+            wQuorumTextBox.Clear();
+
         }
 
         private void openFileButton_Click(object sender, EventArgs e)
@@ -186,6 +192,9 @@ namespace padiFS
             {
                 client.Open(filename);
             }
+
+            openClientTextBox.Clear();
+            openFileTextBox.Clear();
         }
 
         private void closeFileButton_Click(object sender, EventArgs e)
@@ -199,6 +208,9 @@ namespace padiFS
             {
                 client.Close(filename);
             }
+
+            closeClientTextBox.Clear();
+            closeFileTextBox.Clear();
         }
     }
 }
