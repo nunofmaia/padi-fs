@@ -20,10 +20,10 @@ namespace padiFS
         private bool onFreeze = false;
         private bool onFailure = false;
 
-        public DataServer(string id)
+        public DataServer(string name, string port)
         {
-            this.name = "d-" + id;
-            this.port = 8090 + int.Parse(id);
+            this.name = name;
+            this.port = int.Parse(port);
 
             //create new directory
             this.currentDir = Environment.CurrentDirectory;
@@ -155,7 +155,8 @@ namespace padiFS
 
         static void Main(string[] args)
         {
-            DataServer ds = new DataServer(args[0]);
+            string[] arguments = Util.SplitArguments(args[0]);
+            DataServer ds = new DataServer(arguments[0], arguments[1]);
 
             //teste
             //ds.Create("Iuriesun");

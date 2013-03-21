@@ -64,32 +64,32 @@ namespace padiFS
 
         }
 
-        private void launchMetadataServer(int id)
+        private void launchMetadataServer(string name, int port)
         {
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
             info.FileName = currentDir + @"\Metadata Server.exe";
-            info.Arguments = id.ToString();
+            info.Arguments = name + "|" + port.ToString();
 
             Process.Start(info);
         }
 
-        private void launchDataServer(int id)
+        private void launchDataServer(string name, int port)
         {
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
             info.FileName = currentDir + @"\Data Server.exe";
-            info.Arguments = id.ToString();
+            info.Arguments = name + "|" + port.ToString();
 
             Process.Start(info);
         }
 
-        private void launchClient(int id)
+        private void launchClient(string name, int port)
         {
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
             info.FileName = currentDir + @"\Client.exe";
-            info.Arguments = id.ToString();
+            info.Arguments = name + "|" + port.ToString();
 
             Process.Start(info);
         }
@@ -134,8 +134,9 @@ namespace padiFS
             {
                 case "Metadata":
                     string ms_name = "m-" + mscounter;
-                    string ms_address = "tcp://localhost:808" + mscounter + "/" + ms_name;
-                    launchMetadataServer(mscounter);
+                    int ms_port = Util.FreeTcpPort();
+                    string ms_address = "tcp://localhost:" + ms_port + "/" + ms_name;
+                    launchMetadataServer(ms_name, ms_port);
                     metadataServers.Add(ms_name, ms_address);
                     activeMetadataServers.Add(ms_name);
                     mscounter++;
@@ -146,9 +147,10 @@ namespace padiFS
                     if (mscounter != 0)
                     {
                         string ds_name = "d-" + dscounter;
-                        string ds_address = "tcp://localhost:809" + dscounter + "/" + ds_name;
+                        int ds_port = Util.FreeTcpPort();
+                        string ds_address = "tcp://localhost:" + ds_port + "/" + ds_name;
 
-                        launchDataServer(dscounter);
+                        launchDataServer(ds_name, ds_port);
                         dataServers.Add(ds_name, ds_address);
                         activeDataServers.Add(ds_name);
                         dscounter++;
@@ -162,8 +164,9 @@ namespace padiFS
 
                 case "Client":
                     string c_name = "c-" + ccounter;
-                    string c_address = "tcp://localhost:8099/" + c_name;
-                    launchClient(ccounter);
+                    int c_port = Util.FreeTcpPort();
+                    string c_address = "tcp://localhost:" + c_port + "/" + c_name;
+                    launchClient(c_name, c_port);
                     clients.Add(c_name, c_address);
                     activeClients.Add(c_name);
                     ccounter++;

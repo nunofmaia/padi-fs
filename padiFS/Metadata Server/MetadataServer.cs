@@ -24,10 +24,10 @@ namespace padiFS
         private System.Timers.Timer pingDataServersTimer;
         private bool onFailure = false;
 
-        public MetadataServer(string id)
+        public MetadataServer(string name, string port)
         {
-            this.name = "m-" + id;
-            this.port = 8080 + int.Parse(id);
+            this.name = name;
+            this.port = int.Parse(port);
             this.metadataServers = new Dictionary<string, string>();
             this.liveDataServers = new Dictionary<string, string>();
             this.deadDataServers = new Dictionary<string, string>();
@@ -238,7 +238,8 @@ namespace padiFS
 
         static void Main(string[] args)
         {
-            MetadataServer ms = new MetadataServer(args[0]);
+            string[] arguments = Util.SplitArguments(args[0]);
+            MetadataServer ms = new MetadataServer(arguments[0], arguments[1]);
             Console.WriteLine(ms.name);
             if (ms.name == "m-0")
             {

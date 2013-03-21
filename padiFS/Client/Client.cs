@@ -16,10 +16,10 @@ namespace padiFS
         private Dictionary<string, Metadata> allFiles;
         private Dictionary<string, Metadata> openFiles;
 
-        public Client(string id)
+        public Client(string name, string port)
         {
-            this.name = "c-" + id;
-            this.port = 8099;
+            this.name = name;
+            this.port = int.Parse(port);
             this.bridge = new Bridge();
             this.allFiles = new Dictionary<string, Metadata>();
             this.openFiles = new Dictionary<string, Metadata>();
@@ -104,7 +104,8 @@ namespace padiFS
 
         static void Main(string[] args)
         {
-            Client c = new Client(args[0]);
+            string[] arguments = Util.SplitArguments(args[0]);
+            Client c = new Client(arguments[0], arguments[1]);
             // Fazer coisas que Iuri mandar
             TcpChannel channel = new TcpChannel(c.port);
             ChannelServices.RegisterChannel(channel, true);
