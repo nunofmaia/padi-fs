@@ -15,7 +15,7 @@ namespace padiFS
         private string name;
         private int port;
         private int pingInterval = 5;
-        private bool primary = false;
+        private string primary;
         private Dictionary<string, string> metadataServers;
         private Dictionary<string, string> liveDataServers;
         private Dictionary<string, string> deadDataServers;
@@ -25,10 +25,11 @@ namespace padiFS
         private System.Timers.Timer pingDataServersTimer;
         private bool onFailure = false;
 
-        public MetadataServer(string name, string port)
+        public MetadataServer(string name, string port, string primary)
         {
             this.name = name;
             this.port = int.Parse(port);
+            this.primary = primary;
             this.metadataServers = new Dictionary<string, string>();
             this.liveDataServers = new Dictionary<string, string>();
             this.deadDataServers = new Dictionary<string, string>();
@@ -272,11 +273,10 @@ namespace padiFS
         static void Main(string[] args)
         {
             string[] arguments = Util.SplitArguments(args[0]);
-            MetadataServer ms = new MetadataServer(arguments[0], arguments[1]);
+            MetadataServer ms = new MetadataServer(arguments[0], arguments[1], arguments[2]);
             Console.Title = "Iurie's Metadata Server: " + ms.name;
-            if (ms.name == "m-0")
+            if (ms.name == ms.primary)
             {
-                ms.primary = true;
                 ms.pingDataServersTimer.Enabled = true;
             }
             // Ficar esperar pedidos de Iurie
