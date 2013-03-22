@@ -40,8 +40,8 @@ namespace padiFS
             {
                 File file = new File();
 
-                file.version = DateTime.Now;
-                file.content = new byte[1];
+                file.Version = DateTime.Now;
+                file.Content = new byte[1];
 
                 this.currentDir = Environment.CurrentDirectory;
                 string path = currentDir + @"\" + this.name + @"\" + fileName + @".txt";
@@ -57,51 +57,39 @@ namespace padiFS
             }
         }
 
-        private void ReadCallback(object threadcontext)
-        {
-            List<object> args = (List<object>)threadcontext;
-            string localFile = (string)args[0];
-            string semantics = (string)args[1];
-            File file = (File)args[2];
-            string path = currentDir + @"\" + this.name + @"\" + localFile + ".txt";
-            Console.WriteLine(path);
-            if (System.IO.File.Exists(path))
-            {
-                TextReader tr = new StreamReader(path);
-                System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
-                file = (File)x.Deserialize(tr);
-                tr.Close();
-            }
-            else
-            {
-                //isto TEM DE SER MUDADO
-                Console.WriteLine("O ficheiro não existe");
-            }
-
-        }
         public File Read(string localFile, string semantics)
         {
             if (!onFailure)
             {
-
                 File file = new File();
-                List<object> arguments = new List<object>();
-                arguments.Add(localFile);
-                arguments.Add(semantics);
-                arguments.Add(file);
-                ThreadPool.QueueUserWorkItem(ReadCallback, arguments);
+                string path = currentDir + @"\" + this.name + @"\" + localFile + ".txt";
+                Console.WriteLine(path);
+                if (System.IO.File.Exists(path))
+                {
+                    TextReader tr = new StreamReader(path);
+                    System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
+                    file = (File)x.Deserialize(tr);
+                    tr.Close();
+                }
+                else
+                {
+                    //isto TEM DE SER MUDADO
+                    Console.WriteLine("O ficheiro não existe");
+                }
                 return file;
             }
             return null;
         }
+
+
         public int Write(string localFile, byte[] bytearray)
         {
             if (!onFailure)
             {
                 File file = new File();
 
-                file.version = DateTime.Now;
-                file.content = bytearray;
+                file.Version = DateTime.Now;
+                file.Content = bytearray;
 
                 this.currentDir = Environment.CurrentDirectory;
                 string path = currentDir + @"\" + this.name + @"\" + localFile + @".txt";

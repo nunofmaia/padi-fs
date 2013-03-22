@@ -5,6 +5,7 @@ using System.Text;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting;
+using System.Threading;
 
 namespace padiFS
 {
@@ -63,18 +64,65 @@ namespace padiFS
 
         public void Read(string filename, string semantic)
         {
-            Console.WriteLine("Read file " + filename);
+            if (openFiles.ContainsKey(filename))
+            {
+                Metadata file = openFiles[filename];
+                List<string> servers = file.DataServers;
+                int readQuorum = file.ReadQuorum;
+
+                // Call all the data servers that have the file and wayt for a majority
+                // Launch threads and wait for it. Compare the answers and return it.
+                //foreach (string s in servers)
+                //{
+
+                //}
+                IDataServer dataServer = (IDataServer)Activator.GetObject(typeof(IDataServer), (string)servers[0]);
+                File read = null;
+                if (dataServer != null)
+                {
+                    read = dataServer.Read(filename, semantic);
+                }
+
+                if (read != null)
+                {
+                    Console.WriteLine("Read file " + filename + ": " + Util.ConvertByteArrayToString(read.Content));
+                }
+            }
+        }
+
+        private void WriteCallback(object threadcontext)
+        {
+            List<object> args = (List<object>)threadcontext;
+            string server = (string)args[0];
+            string filename = (string)args[1];
+            byte[] bytearray = (byte[])args[2];
+
+            IDataServer dataServer = (IDataServer)Activator.GetObject(typeof(IDataServer), server);
+
+            if (dataServer != null)
+            {
+                dataServer.Write(filename, bytearray);
+            }
         }
 
         public void Write(string filename, byte[] bytearray)
         {
-            if(openFiles.ContainsKey(filename))
+            if (openFiles.ContainsKey(filename))
             {
                 Metadata file = openFiles[filename];
                 List<string> servers = file.DataServers;
                 int writeQuorum = file.WriteQuorum;
+
+                foreach (string s in servers)
+                {
+                    List<object> arguments = new List<object>();
+                    arguments.Add(s);
+                    arguments.Add(filename);
+                    arguments.Add(bytearray);
+                    ThreadPool.QueueUserWorkItem(WriteCallback, arguments);
+                }
+                Console.WriteLine("Write file " + filename);
             }
-            Console.WriteLine("Write file " + filename);
         }
 
         public void Close(string filename)
@@ -120,7 +168,6 @@ namespace padiFS
             TcpChannel channel = new TcpChannel(c.port);
             ChannelServices.RegisterChannel(channel, true);
             RemotingServices.Marshal(c, c.name, typeof(Client));
-            Console.WriteLine(c.name);
             Console.ReadLine();
         }
     }

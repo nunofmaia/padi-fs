@@ -6,10 +6,23 @@ using System.Text;
 
 namespace padiFS
 {
+    [Serializable]
     public class File
     {
-        public DateTime version;
-        public byte[] content;
+        private DateTime version;
+        private byte[] content;
+
+        public byte[] Content
+        {
+            get { return content; }
+            set { content = value; }
+        }
+
+        public DateTime Version
+        {
+            get { return version; }
+            set { version = value; }
+        }
 
         public File() { }
         public File(DateTime version, byte[] content)
