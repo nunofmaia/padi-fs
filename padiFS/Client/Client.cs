@@ -79,7 +79,10 @@ namespace padiFS
                 try
                 {
                     file = dataServer.Read(filename, semantic);
-                    readFiles.Add(file);
+                    if (file != null)
+                    {
+                        readFiles.Add(file);
+                    }
                 }
                 catch (SystemException)
                 {
@@ -141,6 +144,7 @@ namespace padiFS
                     // Sort votes and show the most voted
                     votes = Util.SortVotes(votes);
                     winner = votes.Values.Last();
+                    Console.WriteLine(winner);
                 }
                 File selected = received[votes.Keys.Last()];
                 Console.WriteLine("Read file " + filename + ": " + Util.ConvertByteArrayToString(selected.Content));
