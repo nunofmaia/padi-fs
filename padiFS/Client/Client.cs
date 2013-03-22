@@ -6,6 +6,7 @@ using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting;
 using System.Threading;
+using System.Collections.Concurrent;
 
 namespace padiFS
 {
@@ -16,6 +17,8 @@ namespace padiFS
         private Bridge bridge;
         private Dictionary<string, Metadata> allFiles;
         private Dictionary<string, Metadata> openFiles;
+        private ConcurrentBag<File> readFiles;
+        private ConcurrentBag<int> writeFiles;
 
         public Client(string name, string port)
         {
@@ -62,6 +65,22 @@ namespace padiFS
 
         }
 
+        private void ReadCallback(object threadcontext)
+        {
+            List<object> args = (List<object>)threadcontext;
+            string server = (string)args[0];
+            string filename = (string)args[1];
+            string semantic = (string)args[2];
+            File file;
+
+            IDataServer dataServer = (IDataServer)Activator.GetObject(typeof(IDataServer), server);
+            if (dataServer != null)
+            {
+                file = dataServer.Read(filename, semantic);
+                readFiles.Add(file);
+            }
+        }
+
         public void Read(string filename, string semantic)
         {
             if (openFiles.ContainsKey(filename))
@@ -69,24 +88,27 @@ namespace padiFS
                 Metadata file = openFiles[filename];
                 List<string> servers = file.DataServers;
                 int readQuorum = file.ReadQuorum;
+                readFiles = new ConcurrentBag<File>();
 
-                // Call all the data servers that have the file and wayt for a majority
+                // Call all the data servers that have the file and wait for a majority
                 // Launch threads and wait for it. Compare the answers and return it.
-                //foreach (string s in servers)
-                //{
-
-                //}
-                IDataServer dataServer = (IDataServer)Activator.GetObject(typeof(IDataServer), (string)servers[0]);
-                File read = null;
-                if (dataServer != null)
+                int i = 0;
+                int files = servers.Count;
+                foreach (string s in servers)
                 {
-                    read = dataServer.Read(filename, semantic);
+                    List<object> arguments = new List<object>();
+                    arguments.Add(servers[i]);
+                    arguments.Add(filename);
+                    arguments.Add(semantic);
+                    ThreadPool.QueueUserWorkItem(ReadCallback, arguments);
+                    i++;
                 }
 
-                if (read != null)
+                Console.WriteLine(readFiles.Count);
+                while (readFiles.Count < readQuorum)
                 {
-                    Console.WriteLine("Read file " + filename + ": " + Util.ConvertByteArrayToString(read.Content));
                 }
+                Console.WriteLine(readFiles.Count);
             }
         }
 
@@ -101,7 +123,7 @@ namespace padiFS
 
             if (dataServer != null)
             {
-                dataServer.Write(filename, bytearray);
+                writeFiles.Add(dataServer.Write(filename, bytearray));
             }
         }
 
@@ -112,6 +134,7 @@ namespace padiFS
                 Metadata file = openFiles[filename];
                 List<string> servers = file.DataServers;
                 int writeQuorum = file.WriteQuorum;
+                writeFiles = new ConcurrentBag<int>();
 
                 foreach (string s in servers)
                 {
@@ -121,7 +144,11 @@ namespace padiFS
                     arguments.Add(bytearray);
                     ThreadPool.QueueUserWorkItem(WriteCallback, arguments);
                 }
-                Console.WriteLine("Write file " + filename);
+                Console.WriteLine(writeFiles.Count);
+                while (writeFiles.Count < writeQuorum)
+                {
+                }
+                Console.WriteLine(writeFiles.Count);
             }
         }
 
