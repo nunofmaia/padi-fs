@@ -20,6 +20,7 @@ namespace padiFS
         private int mscounter;
         private int dscounter;
         private int ccounter;
+        private string ms_primary;
         private Dictionary<string, string> dataServers;
         private Dictionary<string, string> metadataServers;
         private Dictionary<string, string> clients;
@@ -64,12 +65,12 @@ namespace padiFS
 
         }
 
-        private void launchMetadataServer(string name, int port)
+        private void launchMetadataServer(string name, int port, string primary)
         {
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
             info.FileName = currentDir + @"\Metadata Server.exe";
-            info.Arguments = name + "|" + port.ToString();
+            info.Arguments = name + "|" + port.ToString() + "|" + primary;
 
             Process.Start(info);
 
@@ -152,7 +153,11 @@ namespace padiFS
                     string ms_name = "m-" + mscounter;
                     int ms_port = Util.FreeTcpPort();
                     string ms_address = "tcp://localhost:" + ms_port + "/" + ms_name;
-                    launchMetadataServer(ms_name, ms_port);
+                    if (mscounter == 0)
+                    {
+                        ms_primary = ms_name;
+                    }
+                    launchMetadataServer(ms_name, ms_port, ms_primary);
                     metadataServers.Add(ms_name, ms_address);
                     activeMetadataServers.Add(ms_name);
                     mscounter++;

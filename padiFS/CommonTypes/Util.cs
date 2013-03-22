@@ -55,5 +55,18 @@ namespace padiFS
         {
             return System.Text.Encoding.UTF8.GetString(s);
         }
+
+        public static Dictionary<string, int> SortServerLoad(Dictionary<string, int> dic)
+        {
+            Dictionary<string, int> res = new Dictionary<string,int>();
+
+            foreach (var item in dic.OrderBy(i => i.Value))
+            {
+                res.Add(item.Key, item.Value);
+                Console.WriteLine(item);
+            }
+
+            return res;
+        }
     }
 }

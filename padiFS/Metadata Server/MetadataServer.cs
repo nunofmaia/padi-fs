@@ -15,22 +15,25 @@ namespace padiFS
         private string name;
         private int port;
         private int pingInterval = 5;
-        private bool primary = false;
+        private string primary;
         private Dictionary<string, string> metadataServers;
         private Dictionary<string, string> liveDataServers;
         private Dictionary<string, string> deadDataServers;
+        private Dictionary<string, int> serversLoad;
         private Dictionary<string, Metadata> files;
         private Dictionary<string, Metadata> openFiles;
         private System.Timers.Timer pingDataServersTimer;
         private bool onFailure = false;
 
-        public MetadataServer(string name, string port)
+        public MetadataServer(string name, string port, string primary)
         {
             this.name = name;
             this.port = int.Parse(port);
+            this.primary = primary;
             this.metadataServers = new Dictionary<string, string>();
             this.liveDataServers = new Dictionary<string, string>();
             this.deadDataServers = new Dictionary<string, string>();
+            this.serversLoad = new Dictionary<string, int>();
             this.files = new Dictionary<string, Metadata>();
             this.openFiles = new Dictionary<string, Metadata>();
             this.pingDataServersTimer = new System.Timers.Timer();
@@ -91,6 +94,11 @@ namespace padiFS
             }
         }
 
+        private void LoadBalanceServers(object threadcontext)
+        {
+            serversLoad = Util.SortServerLoad(serversLoad);
+        }
+
         public Metadata Create(string filename, int serversNumber, int readQuorum, int writeQuorum)
         {
             if (!onFailure)
@@ -100,14 +108,17 @@ namespace padiFS
                     if (liveDataServers.Count >= serversNumber)
                     {
                         List<string> servers = new List<string>();
-                        foreach (string v in liveDataServers.Values.Take(serversNumber))
+                        List<string> chosen = ChooseBestServers(serversNumber);
+                        foreach (string v in chosen)
                         {
                             List<string> arguments = new List<string>();
-                            arguments.Add(v);
+                            arguments.Add(liveDataServers[v]);
                             arguments.Add(filename);
-                            servers.Add(v);
+                            servers.Add(liveDataServers[v]);
                             ThreadPool.QueueUserWorkItem(CreateCallback, arguments);
+                            serversLoad[v]++;
                         }
+                        ThreadPool.QueueUserWorkItem(LoadBalanceServers, null);
                         Metadata meta = new Metadata(filename, serversNumber, readQuorum, writeQuorum, servers);
                         files.Add(filename, meta);
                         openFiles.Add(filename, meta);
@@ -124,6 +135,26 @@ namespace padiFS
                 }
             }
             return null;
+        }
+
+        private List<string> ChooseBestServers(int serversNumber)
+        {
+            List<string> chosen = new List<string>();
+            int chosen_counter = 0;
+            foreach (string s in serversLoad.Keys)
+            {
+                if (liveDataServers.ContainsKey(s))
+                {
+                    chosen.Add(s);
+                    chosen_counter++;
+                }
+
+                if (chosen_counter == serversNumber)
+                {
+                    break;
+                }
+            }
+            return chosen;
         }
 
         public void Delete(string filename) {
@@ -164,6 +195,7 @@ namespace padiFS
         {
             Console.WriteLine("Data Server " + name + " : " + address);
             liveDataServers.Add(name, address);
+            serversLoad.Add(name, 0);
         }
 
         public void RegisterMetadataServer(string name, string address)
@@ -241,11 +273,10 @@ namespace padiFS
         static void Main(string[] args)
         {
             string[] arguments = Util.SplitArguments(args[0]);
-            MetadataServer ms = new MetadataServer(arguments[0], arguments[1]);
+            MetadataServer ms = new MetadataServer(arguments[0], arguments[1], arguments[2]);
             Console.Title = "Iurie's Metadata Server: " + ms.name;
-            if (ms.name == "m-0")
+            if (ms.name == ms.primary)
             {
-                ms.primary = true;
                 ms.pingDataServersTimer.Enabled = true;
             }
             // Ficar esperar pedidos de Iurie
