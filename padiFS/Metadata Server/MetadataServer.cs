@@ -19,6 +19,7 @@ namespace padiFS
         private Dictionary<string, string> metadataServers;
         private Dictionary<string, string> liveDataServers;
         private Dictionary<string, string> deadDataServers;
+        private Dictionary<string, int> serversLoad;
         private Dictionary<string, Metadata> files;
         private Dictionary<string, Metadata> openFiles;
         private System.Timers.Timer pingDataServersTimer;
@@ -31,6 +32,7 @@ namespace padiFS
             this.metadataServers = new Dictionary<string, string>();
             this.liveDataServers = new Dictionary<string, string>();
             this.deadDataServers = new Dictionary<string, string>();
+            this.serversLoad = new Dictionary<string, int>();
             this.files = new Dictionary<string, Metadata>();
             this.openFiles = new Dictionary<string, Metadata>();
             this.pingDataServersTimer = new System.Timers.Timer();
@@ -91,6 +93,11 @@ namespace padiFS
             }
         }
 
+        private void LoadBalanceServers(object threadcontext)
+        {
+            serversLoad = Util.SortServerLoad(serversLoad);
+        }
+
         public Metadata Create(string filename, int serversNumber, int readQuorum, int writeQuorum)
         {
             if (!onFailure)
@@ -100,14 +107,17 @@ namespace padiFS
                     if (liveDataServers.Count >= serversNumber)
                     {
                         List<string> servers = new List<string>();
-                        foreach (string v in liveDataServers.Values.Take(serversNumber))
+                        List<string> chosen = ChooseBestServers(serversNumber);
+                        foreach (string v in chosen)
                         {
                             List<string> arguments = new List<string>();
-                            arguments.Add(v);
+                            arguments.Add(liveDataServers[v]);
                             arguments.Add(filename);
-                            servers.Add(v);
+                            servers.Add(liveDataServers[v]);
                             ThreadPool.QueueUserWorkItem(CreateCallback, arguments);
+                            serversLoad[v]++;
                         }
+                        ThreadPool.QueueUserWorkItem(LoadBalanceServers, null);
                         Metadata meta = new Metadata(filename, serversNumber, readQuorum, writeQuorum, servers);
                         files.Add(filename, meta);
                         openFiles.Add(filename, meta);
@@ -124,6 +134,26 @@ namespace padiFS
                 }
             }
             return null;
+        }
+
+        private List<string> ChooseBestServers(int serversNumber)
+        {
+            List<string> chosen = new List<string>();
+            int chosen_counter = 0;
+            foreach (string s in serversLoad.Keys)
+            {
+                if (liveDataServers.ContainsKey(s))
+                {
+                    chosen.Add(s);
+                    chosen_counter++;
+                }
+
+                if (chosen_counter == serversNumber)
+                {
+                    break;
+                }
+            }
+            return chosen;
         }
 
         public void Delete(string filename) {
@@ -164,6 +194,7 @@ namespace padiFS
         {
             Console.WriteLine("Data Server " + name + " : " + address);
             liveDataServers.Add(name, address);
+            serversLoad.Add(name, 0);
         }
 
         public void RegisterMetadataServer(string name, string address)
