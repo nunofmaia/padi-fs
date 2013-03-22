@@ -16,7 +16,7 @@ namespace padiFS
         private int port;
         private int pingInterval = 5;
         private string primary;
-        private Dictionary<string, string> metadataServers;
+        private Dictionary<string, string> replicas;
         private Dictionary<string, string> liveDataServers;
         private Dictionary<string, string> deadDataServers;
         private Dictionary<string, int> serversLoad;
@@ -30,7 +30,7 @@ namespace padiFS
             this.name = name;
             this.port = int.Parse(port);
             this.primary = primary;
-            this.metadataServers = new Dictionary<string, string>();
+            this.replicas = new Dictionary<string, string>();
             this.liveDataServers = new Dictionary<string, string>();
             this.deadDataServers = new Dictionary<string, string>();
             this.serversLoad = new Dictionary<string, int>();
@@ -52,6 +52,8 @@ namespace padiFS
                     if (!openFiles.ContainsKey(filename))
                     {
                         openFiles.Add(filename, files[filename]);
+                        // Update other replicas. CHANGE THIS IN THE FUTURE
+                        ThreadPool.QueueUserWorkItem(UpdateReplicas, null);
                     }
                     else
                     {
@@ -72,6 +74,8 @@ namespace padiFS
                     if (openFiles.ContainsKey(filename))
                     {
                         openFiles.Remove(filename);
+                        // Update other replicas. CHANGE THIS IN THE FUTURE
+                        ThreadPool.QueueUserWorkItem(UpdateReplicas, null);
                     }
                     else
                     {
@@ -122,6 +126,8 @@ namespace padiFS
                         Metadata meta = new Metadata(filename, serversNumber, readQuorum, writeQuorum, servers);
                         files.Add(filename, meta);
                         openFiles.Add(filename, meta);
+                        // Update other replicas. CHANGE THIS IN THE FUTURE
+                        ThreadPool.QueueUserWorkItem(UpdateReplicas, null);
                         return meta;
                     }
                     else
@@ -157,6 +163,19 @@ namespace padiFS
             return chosen;
         }
 
+        private void UpdateReplicas(object threadcontext)
+        {
+            foreach (string r in replicas.Keys)
+            {
+                IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[r]);
+                if (replica != null)
+                {
+                    MetadataInfo info = new MetadataInfo(liveDataServers, deadDataServers, serversLoad, files, openFiles);
+                    replica.UpdateReplica(info);
+                }
+            }
+        }
+
         public void Delete(string filename) {
             if (!onFailure)
             {
@@ -165,6 +184,8 @@ namespace padiFS
                     if (!openFiles.ContainsKey(filename))
                     {
                         files.Remove(filename);
+                        // Update other replicas. CHANGE THIS IN THE FUTURE
+                        ThreadPool.QueueUserWorkItem(UpdateReplicas, null);
                         Console.WriteLine("File " + filename + " deleted");
                     }
                     else
@@ -202,10 +223,10 @@ namespace padiFS
         {
             // If the server doesn't have the new metadata registered,
             // registers it and introduces to it "Hi, I'm Iurie's metadata server"
-            if (!metadataServers.ContainsKey(name))
+            if (!replicas.ContainsKey(name))
             {
                 Console.WriteLine("Metadata Server " + name + " : " + address);
-                metadataServers.Add(name, address);
+                replicas.Add(name, address);
                 IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
                 if (server != null)
                 {
@@ -217,6 +238,22 @@ namespace padiFS
                     // Ignore it
                 }
             }
+        }
+
+        public void UpdateReplica(MetadataInfo info)
+        {
+            this.liveDataServers = info.LiveDataServers;
+            this.deadDataServers = info.DeadDataServers;
+            this.serversLoad = info.ServersLoad;
+            this.files = info.Files;
+            this.openFiles = info.OpenFiles;
+
+            Console.WriteLine("Updated metadata info.");
+        }
+
+        public MetadataInfo GetMetadataInfo()
+        {
+            return new MetadataInfo(liveDataServers, deadDataServers, serversLoad, files, openFiles);
         }
 
 

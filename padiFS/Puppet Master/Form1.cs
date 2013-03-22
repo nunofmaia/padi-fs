@@ -87,7 +87,7 @@ namespace padiFS
 
             if (client != null)
             {
-                client.UpdateServers(metadataServers, "m-0");
+                client.UpdateServers(metadataServers, ms_primary);
             }
         }
 
@@ -128,10 +128,9 @@ namespace padiFS
         {
             foreach (string key in metadataServers.Keys)
             {
+                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
                 if (!key.Equals(name))
                 {
-                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
-
                     if (server != null)
                     {
                         try
@@ -140,6 +139,20 @@ namespace padiFS
                         }
                         catch (System.Net.Sockets.SocketException) { }
                         // Ignore it
+                    }
+                }
+
+                if (ms_primary != null && ms_primary != key && key == name)
+                {
+                    IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[ms_primary]);
+                    if (primary != null)
+                    {
+                        MetadataInfo info = primary.GetMetadataInfo();
+
+                        if (server != null)
+                        {
+                            server.UpdateReplica(info);
+                        }
                     }
                 }
             }
@@ -191,9 +204,19 @@ namespace padiFS
                     clients.Add(c_name, c_address);
                     activeClients.Add(c_name);
                     UpdateClientServer(c_name);
+                    EnableButtons();
                     ccounter++;
                     break;
             }
+        }
+
+        private void EnableButtons()
+        {
+            createButton.Enabled = true;
+            openFileButton.Enabled = true;
+            closeFileButton.Enabled = true;
+            readFileButton.Enabled = true;
+            writeFileButton.Enabled = true;
         }
 
         private void createButton_Click(object sender, EventArgs e)

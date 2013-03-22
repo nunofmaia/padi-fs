@@ -19,5 +19,7 @@ namespace padiFS
         // Auxiliar API
         void RegisterMetadataServer(string name, string address);
         void RegisterDataServer(string name, string address);
+        MetadataInfo GetMetadataInfo();
+        void UpdateReplica(MetadataInfo info);
     }
 }

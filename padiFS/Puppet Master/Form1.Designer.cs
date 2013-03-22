@@ -67,13 +67,17 @@
             this.deleteFileTextBox = new System.Windows.Forms.TextBox();
             this.deleteFileLabel = new System.Windows.Forms.Label();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.semanticsFileLabel = new System.Windows.Forms.Label();
+            this.semanticsComboBox = new System.Windows.Forms.ComboBox();
+            this.textReadFile = new System.Windows.Forms.Label();
+            this.readTextBox = new System.Windows.Forms.TextBox();
             this.readClientTextBox = new System.Windows.Forms.TextBox();
             this.readClientLabel = new System.Windows.Forms.Label();
             this.readFileButton = new System.Windows.Forms.Button();
             this.readFileTextBox = new System.Windows.Forms.TextBox();
             this.readFileLabel = new System.Windows.Forms.Label();
-            this.readTextBox = new System.Windows.Forms.TextBox();
             this.groupBox8 = new System.Windows.Forms.GroupBox();
+            this.textWriteFile = new System.Windows.Forms.Label();
             this.writeTextBox = new System.Windows.Forms.TextBox();
             this.writeClientTextBox = new System.Windows.Forms.TextBox();
             this.writeClientLabel = new System.Windows.Forms.Label();
@@ -82,10 +86,6 @@
             this.writeFileLabel = new System.Windows.Forms.Label();
             this.groupBox9 = new System.Windows.Forms.GroupBox();
             this.statusTextBox = new System.Windows.Forms.TextBox();
-            this.textReadFile = new System.Windows.Forms.Label();
-            this.textWriteFile = new System.Windows.Forms.Label();
-            this.semanticsComboBox = new System.Windows.Forms.ComboBox();
-            this.semanticsFileLabel = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -213,6 +213,7 @@
             // 
             // createButton
             // 
+            this.createButton.Enabled = false;
             this.createButton.Location = new System.Drawing.Point(295, 106);
             this.createButton.Name = "createButton";
             this.createButton.Size = new System.Drawing.Size(75, 23);
@@ -317,6 +318,7 @@
             // 
             // openFileButton
             // 
+            this.openFileButton.Enabled = false;
             this.openFileButton.Location = new System.Drawing.Point(296, 22);
             this.openFileButton.Name = "openFileButton";
             this.openFileButton.Size = new System.Drawing.Size(75, 23);
@@ -373,6 +375,7 @@
             // 
             // closeFileButton
             // 
+            this.closeFileButton.Enabled = false;
             this.closeFileButton.Location = new System.Drawing.Point(296, 26);
             this.closeFileButton.Name = "closeFileButton";
             this.closeFileButton.Size = new System.Drawing.Size(75, 23);
@@ -429,6 +432,7 @@
             // 
             // deleteFileButton
             // 
+            this.deleteFileButton.Enabled = false;
             this.deleteFileButton.Location = new System.Drawing.Point(296, 26);
             this.deleteFileButton.Name = "deleteFileButton";
             this.deleteFileButton.Size = new System.Drawing.Size(75, 23);
@@ -471,6 +475,41 @@
             this.groupBox7.TabStop = false;
             this.groupBox7.Text = "Read file";
             // 
+            // semanticsFileLabel
+            // 
+            this.semanticsFileLabel.AutoSize = true;
+            this.semanticsFileLabel.Location = new System.Drawing.Point(160, 57);
+            this.semanticsFileLabel.Name = "semanticsFileLabel";
+            this.semanticsFileLabel.Size = new System.Drawing.Size(59, 13);
+            this.semanticsFileLabel.TabIndex = 8;
+            this.semanticsFileLabel.Text = "Semantics:";
+            // 
+            // semanticsComboBox
+            // 
+            this.semanticsComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.semanticsComboBox.FormattingEnabled = true;
+            this.semanticsComboBox.Location = new System.Drawing.Point(223, 54);
+            this.semanticsComboBox.Name = "semanticsComboBox";
+            this.semanticsComboBox.Size = new System.Drawing.Size(148, 21);
+            this.semanticsComboBox.TabIndex = 21;
+            // 
+            // textReadFile
+            // 
+            this.textReadFile.AutoSize = true;
+            this.textReadFile.Location = new System.Drawing.Point(14, 84);
+            this.textReadFile.Name = "textReadFile";
+            this.textReadFile.Size = new System.Drawing.Size(31, 13);
+            this.textReadFile.TabIndex = 6;
+            this.textReadFile.Text = "Text:";
+            // 
+            // readTextBox
+            // 
+            this.readTextBox.Location = new System.Drawing.Point(51, 81);
+            this.readTextBox.Multiline = true;
+            this.readTextBox.Name = "readTextBox";
+            this.readTextBox.Size = new System.Drawing.Size(324, 61);
+            this.readTextBox.TabIndex = 22;
+            // 
             // readClientTextBox
             // 
             this.readClientTextBox.Location = new System.Drawing.Point(51, 28);
@@ -489,10 +528,11 @@
             // 
             // readFileButton
             // 
+            this.readFileButton.Enabled = false;
             this.readFileButton.Location = new System.Drawing.Point(296, 26);
             this.readFileButton.Name = "readFileButton";
             this.readFileButton.Size = new System.Drawing.Size(75, 23);
-            this.readFileButton.TabIndex = 21;
+            this.readFileButton.TabIndex = 23;
             this.readFileButton.Text = "Read";
             this.readFileButton.UseVisualStyleBackColor = true;
             this.readFileButton.Click += new System.EventHandler(this.readFileButton_Click);
@@ -513,14 +553,6 @@
             this.readFileLabel.TabIndex = 0;
             this.readFileLabel.Text = "File:";
             // 
-            // readTextBox
-            // 
-            this.readTextBox.Location = new System.Drawing.Point(51, 81);
-            this.readTextBox.Multiline = true;
-            this.readTextBox.Name = "readTextBox";
-            this.readTextBox.Size = new System.Drawing.Size(324, 61);
-            this.readTextBox.TabIndex = 23;
-            // 
             // groupBox8
             // 
             this.groupBox8.Controls.Add(this.textWriteFile);
@@ -537,13 +569,22 @@
             this.groupBox8.TabStop = false;
             this.groupBox8.Text = "Write file";
             // 
+            // textWriteFile
+            // 
+            this.textWriteFile.AutoSize = true;
+            this.textWriteFile.Location = new System.Drawing.Point(14, 55);
+            this.textWriteFile.Name = "textWriteFile";
+            this.textWriteFile.Size = new System.Drawing.Size(31, 13);
+            this.textWriteFile.TabIndex = 7;
+            this.textWriteFile.Text = "Text:";
+            // 
             // writeTextBox
             // 
             this.writeTextBox.Location = new System.Drawing.Point(51, 55);
             this.writeTextBox.Multiline = true;
             this.writeTextBox.Name = "writeTextBox";
             this.writeTextBox.Size = new System.Drawing.Size(324, 87);
-            this.writeTextBox.TabIndex = 27;
+            this.writeTextBox.TabIndex = 26;
             // 
             // writeClientTextBox
             // 
@@ -563,10 +604,11 @@
             // 
             // writeFileButton
             // 
+            this.writeFileButton.Enabled = false;
             this.writeFileButton.Location = new System.Drawing.Point(296, 26);
             this.writeFileButton.Name = "writeFileButton";
             this.writeFileButton.Size = new System.Drawing.Size(75, 23);
-            this.writeFileButton.TabIndex = 26;
+            this.writeFileButton.TabIndex = 27;
             this.writeFileButton.Text = "Write";
             this.writeFileButton.UseVisualStyleBackColor = true;
             this.writeFileButton.Click += new System.EventHandler(this.writeFileButton_Click);
@@ -605,42 +647,6 @@
             this.statusTextBox.Name = "statusTextBox";
             this.statusTextBox.Size = new System.Drawing.Size(369, 347);
             this.statusTextBox.TabIndex = 6;
-            // 
-            // textReadFile
-            // 
-            this.textReadFile.AutoSize = true;
-            this.textReadFile.Location = new System.Drawing.Point(14, 84);
-            this.textReadFile.Name = "textReadFile";
-            this.textReadFile.Size = new System.Drawing.Size(31, 13);
-            this.textReadFile.TabIndex = 6;
-            this.textReadFile.Text = "Text:";
-            // 
-            // textWriteFile
-            // 
-            this.textWriteFile.AutoSize = true;
-            this.textWriteFile.Location = new System.Drawing.Point(14, 55);
-            this.textWriteFile.Name = "textWriteFile";
-            this.textWriteFile.Size = new System.Drawing.Size(31, 13);
-            this.textWriteFile.TabIndex = 7;
-            this.textWriteFile.Text = "Text:";
-            // 
-            // semanticsComboBox
-            // 
-            this.semanticsComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.semanticsComboBox.FormattingEnabled = true;
-            this.semanticsComboBox.Location = new System.Drawing.Point(223, 54);
-            this.semanticsComboBox.Name = "semanticsComboBox";
-            this.semanticsComboBox.Size = new System.Drawing.Size(148, 21);
-            this.semanticsComboBox.TabIndex = 22;
-            // 
-            // semanticsFileLabel
-            // 
-            this.semanticsFileLabel.AutoSize = true;
-            this.semanticsFileLabel.Location = new System.Drawing.Point(160, 57);
-            this.semanticsFileLabel.Name = "semanticsFileLabel";
-            this.semanticsFileLabel.Size = new System.Drawing.Size(59, 13);
-            this.semanticsFileLabel.TabIndex = 8;
-            this.semanticsFileLabel.Text = "Semantics:";
             // 
             // Form1
             // 
