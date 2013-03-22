@@ -70,7 +70,7 @@ namespace padiFS
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
             info.FileName = currentDir + @"\Metadata Server.exe";
-            info.Arguments = name + "|" + port.ToString() + "|" + primary;
+            info.Arguments = name + (char)0x7f + port.ToString() + (char)0x7f + primary;
 
             Process.Start(info);
 
@@ -96,7 +96,7 @@ namespace padiFS
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
             info.FileName = currentDir + @"\Data Server.exe";
-            info.Arguments = name + "|" + port.ToString();
+            info.Arguments = name + (char)0x7f + port.ToString();
 
             Process.Start(info);
         }
@@ -106,7 +106,7 @@ namespace padiFS
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
             info.FileName = currentDir + @"\Client.exe";
-            info.Arguments = name + "|" + port.ToString();
+            info.Arguments = name + (char)0x7f + port.ToString();
 
             Process.Start(info);
         }

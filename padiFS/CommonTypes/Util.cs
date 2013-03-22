@@ -43,7 +43,7 @@ namespace padiFS
 
         public static string[] SplitArguments(string arguments)
         {
-            return arguments.Split(new char[] { '|' });
+            return arguments.Split(new char[] {(char)0x7f});
         }
 
         public static byte[] ConvertStringToByteArray(string s)
@@ -59,6 +59,19 @@ namespace padiFS
         public static Dictionary<string, int> SortServerLoad(Dictionary<string, int> dic)
         {
             Dictionary<string, int> res = new Dictionary<string,int>();
+
+            foreach (var item in dic.OrderBy(i => i.Value))
+            {
+                res.Add(item.Key, item.Value);
+                Console.WriteLine(item);
+            }
+
+            return res;
+        }
+
+        public static Dictionary<DateTime, int> SortVotes(Dictionary<DateTime, int> dic)
+        {
+            Dictionary<DateTime, int> res = new Dictionary<DateTime, int>();
 
             foreach (var item in dic.OrderBy(i => i.Value))
             {

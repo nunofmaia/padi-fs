@@ -86,10 +86,15 @@ namespace padiFS
         {
             if (!onFailure)
             {
+                string[] content = Util.SplitArguments(Util.ConvertByteArrayToString(bytearray));
+                string date = content[0];
+                byte[] bytes = Util.ConvertStringToByteArray(content[1]);
+
                 File file = new File();
 
-                file.Version = DateTime.Now;
-                file.Content = bytearray;
+
+                file.Version = Convert.ToDateTime(date);
+                file.Content = bytes;
 
                 this.currentDir = Environment.CurrentDirectory;
                 string path = currentDir + @"\" + this.name + @"\" + localFile + @".txt";

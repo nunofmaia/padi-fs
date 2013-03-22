@@ -76,8 +76,14 @@ namespace padiFS
             IDataServer dataServer = (IDataServer)Activator.GetObject(typeof(IDataServer), server);
             if (dataServer != null)
             {
-                file = dataServer.Read(filename, semantic);
-                readFiles.Add(file);
+                try
+                {
+                    file = dataServer.Read(filename, semantic);
+                    readFiles.Add(file);
+                }
+                catch (SystemException)
+                {
+                }
             }
         }
 
@@ -103,12 +109,41 @@ namespace padiFS
                     ThreadPool.QueueUserWorkItem(ReadCallback, arguments);
                     i++;
                 }
+                Dictionary<DateTime, File> received = null;
+                Dictionary<DateTime, int> votes = null;
+                int winner = -1;
 
-                Console.WriteLine(readFiles.Count);
-                while (readFiles.Count < readQuorum)
-                {
+                while(winner < readQuorum) {
+
+                    // In the best case, all replies are right
+                    // In the worst case, this cycle is useless
+                    while (readFiles.Count < readQuorum)
+                    {
+                    }
+             
+                    votes = new Dictionary<DateTime, int>();
+                    received = new Dictionary<DateTime, File>();
+
+                    // Count votes
+                    foreach (File f in readFiles)
+                    {
+                        if (!votes.ContainsKey(f.Version))
+                        {
+                            votes.Add(f.Version, 1);
+                            received.Add(f.Version, f);
+                        }
+                        else
+                        {
+                            votes[f.Version]++;
+                        }
+                    }
+
+                    // Sort votes and show the most voted
+                    votes = Util.SortVotes(votes);
+                    winner = votes.Values.Last();
                 }
-                Console.WriteLine(readFiles.Count);
+                File selected = received[votes.Keys.Last()];
+                Console.WriteLine("Read file " + filename + ": " + Util.ConvertByteArrayToString(selected.Content));
             }
         }
 
@@ -123,7 +158,13 @@ namespace padiFS
 
             if (dataServer != null)
             {
-                writeFiles.Add(dataServer.Write(filename, bytearray));
+                try
+                {
+                    writeFiles.Add(dataServer.Write(filename, bytearray));
+                }
+                catch (SystemException)
+                {
+                }
             }
         }
 
@@ -135,20 +176,20 @@ namespace padiFS
                 List<string> servers = file.DataServers;
                 int writeQuorum = file.WriteQuorum;
                 writeFiles = new ConcurrentBag<int>();
+                string bytes = Util.ConvertByteArrayToString(bytearray);
+                byte[] content = Util.ConvertStringToByteArray(DateTime.Now.ToString("o") + (char)0x7f + bytes);
 
                 foreach (string s in servers)
                 {
                     List<object> arguments = new List<object>();
                     arguments.Add(s);
                     arguments.Add(filename);
-                    arguments.Add(bytearray);
+                    arguments.Add(content);
                     ThreadPool.QueueUserWorkItem(WriteCallback, arguments);
                 }
-                Console.WriteLine(writeFiles.Count);
                 while (writeFiles.Count < writeQuorum)
                 {
                 }
-                Console.WriteLine(writeFiles.Count);
             }
         }
 
