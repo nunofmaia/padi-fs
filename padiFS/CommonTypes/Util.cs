@@ -81,5 +81,10 @@ namespace padiFS
 
             return res;
         }
+
+        public static int MetadataServerId(string name)
+        {
+            return int.Parse(name.Substring(2, name.Length - 2));
+        }
     }
 }

@@ -8,20 +8,30 @@ namespace padiFS
     [Serializable]
     public class MetadataInfo
     {
+        private string primary;
         private Dictionary<string, string> liveDataServers;
         private Dictionary<string, string> deadDataServers;
         private Dictionary<string, int> serversLoad;
         private Dictionary<string, Metadata> files;
         private Dictionary<string, Metadata> openFiles;
 
-        public MetadataInfo(Dictionary<string, string> liveDataServers, Dictionary<string, string> deadDataServers,
+        public MetadataInfo(string primary, Dictionary<string, string> liveDataServers, Dictionary<string, string> deadDataServers,
             Dictionary<string, int> serversLoad, Dictionary<string, Metadata> files, Dictionary<string, Metadata> openFiles)
         {
+            this.primary = primary;
             this.liveDataServers = liveDataServers;
             this.deadDataServers = deadDataServers;
             this.serversLoad = serversLoad;
             this.files = files;
             this.openFiles = openFiles;
+        }
+
+        public string Primary
+        {
+            get
+            {
+                return primary;
+            }
         }
 
         public Dictionary<string, string> LiveDataServers

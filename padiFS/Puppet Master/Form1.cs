@@ -139,16 +139,23 @@ namespace padiFS
                             {
                                 server.RegisterMetadataServer(name, address);
                             }
-                            catch (System.Net.Sockets.SocketException) { }
+                            catch (System.Net.Sockets.SocketException)
+                            {
+                            }
+                            catch (System.IO.IOException)
+                            {
+                            }
                             // Ignore it
                         }
 
                         ms_primary = server.GetPrimary();
+                        System.Windows.Forms.MessageBox.Show("Primary replica: " + ms_primary);
                     }
 
 
                     if (ms_primary != null && ms_primary != key && key == name)
                     {
+                        System.Windows.Forms.MessageBox.Show("Vou mandar a info");
                         IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[ms_primary]);
                         if (primary != null)
                         {
@@ -184,9 +191,9 @@ namespace padiFS
                     }
                     launchMetadataServer(ms_name, ms_port, ms_primary);
                     metadataServers.Add(ms_name, ms_address);
-                    activeMetadataServers.Add(ms_name);
                     mscounter++;
                     registerMetadataServer(ms_name, ms_address);
+                    activeMetadataServers.Add(ms_name);
                     break;
 
                 case "Data":
@@ -216,7 +223,10 @@ namespace padiFS
                     clients.Add(c_name, c_address);
                     activeClients.Add(c_name);
                     UpdateClientServer(c_name);
-                    EnableButtons();
+                    if (metadataServers.Count > 0 && dataServers.Count > 0)
+                    {
+                        EnableButtons();
+                    }
                     ccounter++;
                     break;
             }
@@ -352,6 +362,7 @@ namespace padiFS
                     else if (ms_server != null)
                     {
                         ms_server.Fail();
+                        activeMetadataServers.Remove(process);
                     }
                     break;
 
@@ -363,6 +374,7 @@ namespace padiFS
                     else if (ms_server != null)
                     {
                         ms_server.Recover();
+                        activeMetadataServers.Add(process);
                     }
                     break;
             }

@@ -43,8 +43,9 @@ namespace padiFS
             this.pingPrimaryReplica = new System.Timers.Timer();
             pingPrimaryReplica.Elapsed += new System.Timers.ElapsedEventHandler(PingPrimaryReplica);
             pingPrimaryReplica.Interval = 1000 * pingInterval;
-        }
 
+            Console.WriteLine("ID: {0}", Util.MetadataServerId(name));
+        }
 
         // Project API
         public Metadata Open(string filename)
@@ -174,7 +175,7 @@ namespace padiFS
                 IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[r]);
                 if (replica != null)
                 {
-                    MetadataInfo info = new MetadataInfo(liveDataServers, deadDataServers, serversLoad, files, openFiles);
+                    MetadataInfo info = new MetadataInfo(primary, liveDataServers, deadDataServers, serversLoad, files, openFiles);
                     replica.UpdateReplica(info);
                 }
             }
@@ -246,6 +247,7 @@ namespace padiFS
 
         public void UpdateReplica(MetadataInfo info)
         {
+            this.primary = info.Primary;
             this.liveDataServers = info.LiveDataServers;
             this.deadDataServers = info.DeadDataServers;
             this.serversLoad = info.ServersLoad;
@@ -257,7 +259,7 @@ namespace padiFS
 
         public MetadataInfo GetMetadataInfo()
         {
-            return new MetadataInfo(liveDataServers, deadDataServers, serversLoad, files, openFiles);
+            return new MetadataInfo(primary, liveDataServers, deadDataServers, serversLoad, files, openFiles);
         }
 
 
@@ -329,6 +331,11 @@ namespace padiFS
                     //    deadDataServers.Remove(name);
                     //}
                 }
+                else
+                {
+                    Console.WriteLine(name + ": MORTO");
+                    NextPrimaryReplica();
+                }
             }
             catch (System.SystemException)
             {
@@ -338,7 +345,7 @@ namespace padiFS
                 //    deadDataServers.Add(name, address);
                 //    liveDataServers.Remove(name);
                 //}
-                SetPrimary(this.name);
+                NextPrimaryReplica();
             }
         }
 
@@ -356,8 +363,13 @@ namespace padiFS
 
         public int Ping()
         {
-            Console.WriteLine("I'm Alive");
-            return 1;
+            if (!onFailure)
+            {
+                Console.WriteLine("I'm Alive");
+                return 1;
+            }
+
+            return 0;
         }
 
         public string GetPrimary()
@@ -368,18 +380,41 @@ namespace padiFS
         public void SetPrimary(string name)
         {
             Console.WriteLine("VOU ALTERAR O PRIMARY");
+
+            //foreach (string r in replicas.Keys)
+            //{
+            //    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[r]);
+
+            //    if (replica != null)
+            //    {
+            //        replica.SetPrimary(name);
+            //    }
+            //}
+
             this.primary = name;
+        }
+
+        private void NextPrimaryReplica()
+        {
+            int id = Util.MetadataServerId(this.name);
+            string replica = this.name;
 
             foreach (string r in replicas.Keys)
             {
-                IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[r]);
-
-                if (replica != null)
+                if (r != primary)
                 {
-                    replica.SetPrimary(name);
+                    int r_id = Util.MetadataServerId(r);
+                    if (r_id < id)
+                    {
+                        id = r_id;
+                        replica = r;
+                    }
                 }
             }
+
+            this.primary = replica;
         }
+
         static void Main(string[] args)
         {
             string[] arguments = Util.SplitArguments(args[0]);
