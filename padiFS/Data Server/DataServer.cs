@@ -17,13 +17,16 @@ namespace padiFS
 
         private string currentDir;
 
-        private bool onFreeze = false;
-        private bool onFailure = false;
+        private bool onFailure;
+        private ManualResetEvent freeze;
 
         public DataServer(string name, string port)
         {
             this.name = name;
             this.port = int.Parse(port);
+            this.onFailure = false;
+            this.freeze = new ManualResetEvent(false);
+            freeze.Set();
 
             //create new directory
             this.currentDir = Environment.CurrentDirectory;
@@ -61,9 +64,7 @@ namespace padiFS
         {
             if (!onFailure)
             {
-                // So Dirty
-                while (onFreeze)
-                { }
+                freeze.WaitOne();
 
                 File file = new File();
                 string path = currentDir + @"\" + this.name + @"\" + localFile + ".txt";
@@ -90,13 +91,10 @@ namespace padiFS
         {
             if (!onFailure)
             {
-                // So Dirty
-                while (onFreeze)
-                { }
+                freeze.WaitOne();
 
                 string[] content = Util.SplitArguments(Util.ConvertByteArrayToString(bytearray));
                 string date = content[0];
-                Console.WriteLine(content[1]);
                 byte[] bytes = Util.ConvertStringToByteArray(content[1]);
 
                 File file = new File();
@@ -133,12 +131,12 @@ namespace padiFS
         // Puppet Master Commands
         public void Freeze()
         {
-            onFreeze = true;
+            freeze.Reset();
             Console.WriteLine("Freezed!");
         }
         public void Unfreeze()
         {
-            onFreeze = false;
+            freeze.Set();
             Console.WriteLine("Defrosting!");
         }
         public void Fail()
