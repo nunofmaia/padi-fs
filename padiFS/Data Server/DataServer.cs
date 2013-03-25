@@ -117,6 +117,8 @@ namespace padiFS
                     x.Serialize(tw, file);
                     Console.WriteLine("object written to file");
                     tw.Close();
+                    //success
+                    return 0;
                 }
                 else
                 {
@@ -124,7 +126,8 @@ namespace padiFS
                     Console.WriteLine("O ficheiro não existe");
                 }
             }
-            return 0;
+            //failure
+            return -1;
         }
 
         // Puppet Master Commands
