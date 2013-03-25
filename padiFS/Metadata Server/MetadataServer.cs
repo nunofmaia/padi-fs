@@ -17,6 +17,7 @@ namespace padiFS
         private int pingInterval = 5;
         private string primary;
         private Dictionary<string, string> replicas;
+        private List<string> deadReplicas;
         private Dictionary<string, string> liveDataServers;
         private Dictionary<string, string> deadDataServers;
         private Dictionary<string, int> serversLoad;
@@ -26,12 +27,13 @@ namespace padiFS
         private System.Timers.Timer pingPrimaryReplica;
         private bool onFailure = false;
 
-        public MetadataServer(string name, string port, string primary)
+        public MetadataServer(string name, string port)
         {
             this.name = name;
             this.port = int.Parse(port);
-            this.primary = primary;
+            this.primary = null;
             this.replicas = new Dictionary<string, string>();
+            this.deadReplicas = new List<string>();
             this.liveDataServers = new Dictionary<string, string>();
             this.deadDataServers = new Dictionary<string, string>();
             this.serversLoad = new Dictionary<string, int>();
@@ -228,19 +230,23 @@ namespace padiFS
         {
             // If the server doesn't have the new metadata registered,
             // registers it and introduces to it "Hi, I'm Iurie's metadata server"
-            if (!replicas.ContainsKey(name))
+            if (!onFailure)
             {
-                Console.WriteLine("Metadata Server " + name + " : " + address);
-                replicas.Add(name, address);
-                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
-                if (server != null)
+                if (!replicas.ContainsKey(name))
                 {
-                    try
+                    Console.WriteLine("Metadata Server " + name + " : " + address);
+                    replicas.Add(name, address);
+
+                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
+                    if (server != null)
                     {
-                        server.RegisterMetadataServer(this.name, "tcp://localhost:" + this.port + "/" + this.name);
+                        try
+                        {
+                            server.RegisterMetadataServer(this.name, "tcp://localhost:" + this.port + "/" + this.name);
+                        }
+                        catch (System.Net.Sockets.SocketException) { }
+                        // Ignore it
                     }
-                    catch (System.Net.Sockets.SocketException) { }
-                    // Ignore it
                 }
             }
         }
@@ -324,36 +330,28 @@ namespace padiFS
 
         private void PingReplica(object threadContext)
         {
-            List<string> args = (List<string>)threadContext;
-            string name = args[0];
-            string address = args[1];
-            IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
+            string replica = (string)threadContext;
+            IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[replica]);
 
             try
             {
                 if (server.Ping() == 1)
                 {
-                    Console.WriteLine(name + ": VIVO");
-                    //if (!liveDataServers.ContainsKey(name))
-                    //{
-                    //    liveDataServers.Add(name, address);
-                    //    deadDataServers.Remove(name);
-                    //}
+                    Console.WriteLine(replica + ": VIVO");
                 }
                 else
                 {
-                    Console.WriteLine(name + ": MORTO");
+                    deadReplicas.Add(replica);
+                    Console.WriteLine("ELSE: esta é a primary: {0}", replica);
+                    Console.WriteLine(replica + ": MORTO");
                     NextPrimaryReplica();
                 }
             }
             catch (System.SystemException)
             {
-                Console.WriteLine(name + ": MORTO");
-                //if (!deadDataServers.ContainsKey(name))
-                //{
-                //    deadDataServers.Add(name, address);
-                //    liveDataServers.Remove(name);
-                //}
+                deadReplicas.Add(replica);
+                Console.WriteLine("EXCEP: esta é a primary: {0}", replica);
+                Console.WriteLine(replica + ": MORTO");
                 NextPrimaryReplica();
             }
         }
@@ -361,12 +359,12 @@ namespace padiFS
 
         private void PingPrimaryReplica(object source, ElapsedEventArgs e)
         {
-            if (name != primary)
+            if (primary != null && !onFailure)
             {
-                List<string> args = new List<string>();
-                args.Add(primary);
-                args.Add(replicas[primary]);
-                ThreadPool.QueueUserWorkItem(PingReplica, args);
+                if (name != primary)
+                {
+                    ThreadPool.QueueUserWorkItem(PingReplica, primary);
+                }
             }
         }
 
@@ -388,19 +386,8 @@ namespace padiFS
 
         public void SetPrimary(string name)
         {
-            Console.WriteLine("VOU ALTERAR O PRIMARY");
-
-            //foreach (string r in replicas.Keys)
-            //{
-            //    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[r]);
-
-            //    if (replica != null)
-            //    {
-            //        replica.SetPrimary(name);
-            //    }
-            //}
-
             this.primary = name;
+            
         }
 
         private void NextPrimaryReplica()
@@ -410,7 +397,7 @@ namespace padiFS
 
             foreach (string r in replicas.Keys)
             {
-                if (r != primary)
+                if (r != primary && !deadReplicas.Contains(r))
                 {
                     int r_id = Util.MetadataServerId(r);
                     if (r_id < id)
@@ -421,13 +408,13 @@ namespace padiFS
                 }
             }
 
-            this.primary = replica;
+            SetPrimary(replica);
         }
 
         static void Main(string[] args)
         {
             string[] arguments = Util.SplitArguments(args[0]);
-            MetadataServer ms = new MetadataServer(arguments[0], arguments[1], arguments[2]);
+            MetadataServer ms = new MetadataServer(arguments[0], arguments[1]);
             Console.Title = "Iurie's Metadata Server: " + ms.name;
             if (ms.name == ms.primary)
             {
@@ -441,20 +428,7 @@ namespace padiFS
             TcpChannel channel = new TcpChannel(ms.port);
             ChannelServices.RegisterChannel(channel, true);
             RemotingServices.Marshal(ms, ms.name, typeof(MetadataServer));
-            IPuppetMaster master = (IPuppetMaster) Activator.GetObject(typeof(IPuppetMaster), "tcp://localhost:8070/PuppetMaster");
-            if (master != null)
-            {
-                try
-                {
-                    master.test(ms.name);
-                }
-                catch (RemotingException e)
-                { Console.WriteLine(e.StackTrace); }
-            }
-            else
-            {
-                Console.WriteLine(ms.name);
-            }
+            
             Console.ReadLine();
         }
     }
