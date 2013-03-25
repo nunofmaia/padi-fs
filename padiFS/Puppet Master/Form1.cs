@@ -67,7 +67,7 @@ namespace padiFS
         }
 
         // LAUNCHING SITE
-        private void ExecuteLaunchMetadataServer(string name, int port)
+        private void LaunchMetadataServer(string name, int port)
         {
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
@@ -80,12 +80,6 @@ namespace padiFS
             {
                 UpdateClientServer(c);
             }
-        }
-
-        private void LaunchMetadataServer(string name, int port)
-        {
-            Thread t = new Thread(() => ExecuteLaunchMetadataServer(name, port));
-            t.Start();
         }
             
 
@@ -100,7 +94,7 @@ namespace padiFS
             }
         }
 
-        private void ExecuteLaunchDataServer(string name, int port)
+        private void LaunchDataServer(string name, int port)
         {
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
@@ -110,13 +104,7 @@ namespace padiFS
             Process.Start(info);
         }
 
-        private void LaunchDataServer(string name, int port)
-        {
-            Thread t = new Thread(() => ExecuteLaunchDataServer(name, port));
-            t.Start();
-        }
-
-        private void ExecuteLaunchClient(string name, int port)
+        private void LaunchClient(string name, int port)
         {
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
@@ -124,12 +112,6 @@ namespace padiFS
             info.Arguments = name + (char)0x7f + port.ToString();
 
             Process.Start(info);
-        }
-
-        private void LaunchClient(string name, int port)
-        {
-            Thread t = new Thread(() => ExecuteLaunchClient(name, port));
-            t.Start();
         }
 
 
