@@ -14,6 +14,7 @@ namespace padiFS
     {
         private string name;
         private int port;
+        private int requestInterval = 5;
         private Bridge bridge;
         private Dictionary<string, Metadata> allFiles;
         private Dictionary<string, Metadata> openFiles;
@@ -72,18 +73,23 @@ namespace padiFS
             string server = (string)args[0];
             string filename = (string)args[1];
             string semantic = (string)args[2];
-            File file;
+            File file = null;
 
             IDataServer dataServer = (IDataServer)Activator.GetObject(typeof(IDataServer), server);
             if (dataServer != null)
             {
                 try
                 {
-                    file = dataServer.Read(filename, semantic);
-                    if (file != null)
-                    {
-                        readFiles.Add(file);
-                    }
+                    while (file == null) {
+                        file = dataServer.Read(filename, semantic);
+                    
+                        if (file != null)
+                        {
+                            readFiles.Add(file);
+                            break;
+                        }
+                        Thread.Sleep(1000* requestInterval);
+                    }                 
                 }
                 catch (SystemException)
                 {
@@ -195,7 +201,18 @@ namespace padiFS
             {
                 try
                 {
-                    writeFiles.Add(dataServer.Write(filename, bytearray));
+                    int intTest = -1;
+                    while (intTest == -1)
+                    {
+                        intTest = dataServer.Write(filename, bytearray);
+
+                        if (intTest == 0)
+                        {
+                            writeFiles.Add(intTest);
+                            break;
+                        }
+                        Thread.Sleep(1000 * requestInterval);
+                    }
                 }
                 catch (SystemException)
                 {
