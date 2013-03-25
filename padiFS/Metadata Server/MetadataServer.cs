@@ -24,7 +24,7 @@ namespace padiFS
         private Dictionary<string, Metadata> files;
         private Dictionary<string, Metadata> openFiles;
         private System.Timers.Timer pingDataServersTimer;
-        private System.Timers.Timer pingPrimaryReplica;
+        private System.Timers.Timer pingPrimaryReplicaTimer;
         private bool onFailure = false;
 
         public MetadataServer(string name, string port)
@@ -42,9 +42,9 @@ namespace padiFS
             this.pingDataServersTimer = new System.Timers.Timer();
             pingDataServersTimer.Elapsed += new System.Timers.ElapsedEventHandler(pingDataServers);
             pingDataServersTimer.Interval = 1000 * pingInterval;
-            this.pingPrimaryReplica = new System.Timers.Timer();
-            pingPrimaryReplica.Elapsed += new System.Timers.ElapsedEventHandler(PingPrimaryReplica);
-            pingPrimaryReplica.Interval = 1000 * pingInterval;
+            this.pingPrimaryReplicaTimer = new System.Timers.Timer();
+            pingPrimaryReplicaTimer.Elapsed += new System.Timers.ElapsedEventHandler(PingPrimaryReplica);
+            pingPrimaryReplicaTimer.Interval = 1000 * pingInterval;
 
             Console.WriteLine("ID: {0}", Util.MetadataServerId(name));
         }
@@ -253,7 +253,7 @@ namespace padiFS
 
         public void UpdateReplica(MetadataInfo info)
         {
-            this.primary = info.Primary;
+            SetPrimary(info.Primary);
             this.liveDataServers = info.LiveDataServers;
             this.deadDataServers = info.DeadDataServers;
             this.serversLoad = info.ServersLoad;
@@ -311,20 +311,23 @@ namespace padiFS
 
         private void pingDataServers(object source, ElapsedEventArgs e)
         {
-            foreach (string key in liveDataServers.Keys)
+            if (!onFailure)
             {
-                List<string> dataservers = new List<string>();
-                dataservers.Add(key);
-                dataservers.Add(liveDataServers[key]);
-                ThreadPool.QueueUserWorkItem(PingDataServer, dataservers);
-            }
+                foreach (string key in liveDataServers.Keys)
+                {
+                    List<string> dataservers = new List<string>();
+                    dataservers.Add(key);
+                    dataservers.Add(liveDataServers[key]);
+                    ThreadPool.QueueUserWorkItem(PingDataServer, dataservers);
+                }
 
-            foreach (string key in deadDataServers.Keys)
-            {
-                List<string> dataservers = new List<string>();
-                dataservers.Add(key);
-                dataservers.Add(deadDataServers[key]);
-                ThreadPool.QueueUserWorkItem(PingDataServer, dataservers);
+                foreach (string key in deadDataServers.Keys)
+                {
+                    List<string> dataservers = new List<string>();
+                    dataservers.Add(key);
+                    dataservers.Add(deadDataServers[key]);
+                    ThreadPool.QueueUserWorkItem(PingDataServer, dataservers);
+                }
             }
         }
 
@@ -387,6 +390,16 @@ namespace padiFS
         public void SetPrimary(string name)
         {
             this.primary = name;
+            if (this.primary == this.name)
+            {
+                pingDataServersTimer.Enabled = true;
+                pingPrimaryReplicaTimer.Enabled = false;
+            }
+            else
+            {
+                pingPrimaryReplicaTimer.Enabled = true;
+                pingDataServersTimer.Enabled = false;
+            }
             
         }
 
@@ -416,14 +429,15 @@ namespace padiFS
             string[] arguments = Util.SplitArguments(args[0]);
             MetadataServer ms = new MetadataServer(arguments[0], arguments[1]);
             Console.Title = "Iurie's Metadata Server: " + ms.name;
-            if (ms.name == ms.primary)
-            {
-                ms.pingDataServersTimer.Enabled = true;
-            }
-            else
-            {
-                ms.pingPrimaryReplica.Enabled = true;
-            }
+            //if (ms.name == ms.primary)
+            //{
+            //    ms.pingDataServersTimer.Enabled = true;
+            //}
+            //else
+            //{
+            //    ms.pingPrimaryReplicaTimer.Enabled = true;
+            //}
+            //ms.pingPrimaryReplicaTimer.Enabled = true;
             // Ficar esperar pedidos de Iurie
             TcpChannel channel = new TcpChannel(ms.port);
             ChannelServices.RegisterChannel(channel, true);

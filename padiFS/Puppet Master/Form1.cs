@@ -21,7 +21,7 @@ namespace padiFS
         private int mscounter;
         private int dscounter;
         private int ccounter;
-        private string ms_primary;
+        //private string ms_primary;
         private Dictionary<string, string> dataServers;
         private Dictionary<string, string> metadataServers;
         private Dictionary<string, string> clients;
@@ -90,7 +90,7 @@ namespace padiFS
 
             if (client != null)
             {
-                client.UpdateServers(metadataServers, ms_primary);
+                client.UpdateServers(metadataServers);
             }
         }
 
@@ -118,7 +118,7 @@ namespace padiFS
         // REGISTERING SITE
         private void registerDataServer(string name, string address)
         {
-            foreach (string key in metadataServers.Keys)
+            foreach (string key in activeMetadataServers)
             {
                 IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
 
@@ -159,7 +159,6 @@ namespace padiFS
                 if (primary != null)
                 {
                     MetadataInfo info = primary.GetMetadataInfo();
-
                     if (replica != null)
                     {
                         replica.UpdateReplica(info);
@@ -236,6 +235,7 @@ namespace padiFS
             closeFileButton.Enabled = true;
             readFileButton.Enabled = true;
             writeFileButton.Enabled = true;
+            deleteFileButton.Enabled = true;
         }
 
         private void createButton_Click(object sender, EventArgs e)

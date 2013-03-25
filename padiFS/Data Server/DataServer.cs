@@ -16,7 +16,7 @@ namespace padiFS
         private int port;
 
         private string currentDir;
-
+        private bool onFreeze;
         private bool onFailure;
         private ManualResetEvent freeze;
 
@@ -25,6 +25,7 @@ namespace padiFS
             this.name = name;
             this.port = int.Parse(port);
             this.onFailure = false;
+            this.onFreeze = false;
             this.freeze = new ManualResetEvent(false);
             freeze.Set();
 
@@ -160,6 +161,7 @@ namespace padiFS
             if (!onFailure)
             {
                 // So Dirty
+                // NM: This did not exist, had to declare and initialize it
                 while (onFreeze)
                 { }
 

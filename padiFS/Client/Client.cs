@@ -284,10 +284,9 @@ namespace padiFS
             }
         }
 
-        public void UpdateServers(Dictionary<string, string> servers, string primary)
+        public void UpdateServers(Dictionary<string, string> servers)
         {
             bridge.Servers = servers;
-            bridge.Primary = primary;
         }
 
         static void Main(string[] args)

@@ -8,21 +8,13 @@ namespace padiFS
     public class Bridge
     {
         private Dictionary<string, string> metadataServers;
-        private string primary;
+        //private string primary;
 
         public Dictionary<string, string> Servers
         {
             set
             {
                 this.metadataServers = value;
-            }
-        }
-
-        public string Primary
-        {
-            set
-            {
-                this.primary = value;
             }
         }
 
@@ -33,6 +25,7 @@ namespace padiFS
 
         public Metadata Create(string filename, int nServers, int rQuorum, int wQuorum)
         {
+            string primary = AskForPrimary();
             if (primary != null)
             {
                 IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
@@ -49,16 +42,20 @@ namespace padiFS
 
         public Metadata Open(string filename)
         {
-            IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
-
-            if (server != null)
+            string primary = AskForPrimary();
+            if (primary != null)
             {
-                Metadata meta = server.Open(filename);
-                if (meta != null)
+                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
+
+                if (server != null)
                 {
-                    Console.WriteLine(meta);
+                    Metadata meta = server.Open(filename);
+                    if (meta != null)
+                    {
+                        Console.WriteLine(meta);
+                    }
+                    return meta;
                 }
-                return meta;
             }
 
             return null;
@@ -66,22 +63,47 @@ namespace padiFS
 
         public void Close(string filename)
         {
-            IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
-
-            if (server != null)
+            string primary = AskForPrimary();
+            if (primary != null)
             {
-                server.Close(filename);
+                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
+
+                if (server != null)
+                {
+                    server.Close(filename);
+                }
             }
         }
 
         public void Delete(string filename)
         {
-            IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
-
-            if (server != null)
+            string primary = AskForPrimary();
+            if (primary != null)
             {
-                server.Delete(filename);
+                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
+
+                if (server != null)
+                {
+                    server.Delete(filename);
+                }
             }
+        }
+
+        private string AskForPrimary()
+        {
+            foreach (string address in metadataServers.Values)
+            {
+                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
+                if (server != null)
+                {
+                    if (server.Ping() == 1)
+                    {
+                        return server.GetPrimary();
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }
