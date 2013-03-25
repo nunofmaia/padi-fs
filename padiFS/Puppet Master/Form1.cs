@@ -117,7 +117,7 @@ namespace padiFS
             {
                 IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
 
-                if(server != null)
+                if (server != null)
                 {
                     server.RegisterDataServer(name, address);
                 }
@@ -126,35 +126,47 @@ namespace padiFS
 
         private void registerMetadataServer(string name, string address)
         {
-            foreach (string key in metadataServers.Keys)
+            if (activeMetadataServers.Count > 0)
             {
-                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
-                if (!key.Equals(name))
+                foreach (string key in activeMetadataServers)
                 {
+                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
                     if (server != null)
                     {
-                        try
+                        if (!key.Equals(name))
                         {
-                            server.RegisterMetadataServer(name, address);
+                            try
+                            {
+                                server.RegisterMetadataServer(name, address);
+                            }
+                            catch (System.Net.Sockets.SocketException) { }
+                            // Ignore it
                         }
-                        catch (System.Net.Sockets.SocketException) { }
-                        // Ignore it
-                    }
-                }
 
-                if (ms_primary != null && ms_primary != key && key == name)
-                {
-                    IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[ms_primary]);
-                    if (primary != null)
+                        ms_primary = server.GetPrimary();
+                    }
+
+
+                    if (ms_primary != null && ms_primary != key && key == name)
                     {
-                        MetadataInfo info = primary.GetMetadataInfo();
-
-                        if (server != null)
+                        IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[ms_primary]);
+                        if (primary != null)
                         {
-                            server.UpdateReplica(info);
+                            MetadataInfo info = primary.GetMetadataInfo();
+
+                            if (server != null)
+                            {
+                                server.UpdateReplica(info);
+                            }
                         }
                     }
                 }
+            }
+            else
+            {
+                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
+                ms_primary = name;
+                server.SetPrimary(name);
             }
         }
 
@@ -298,7 +310,7 @@ namespace padiFS
             {
                 ms_address = metadataServers[process];
             }
-            else if(dataServers.ContainsKey(process))
+            else if (dataServers.ContainsKey(process))
             {
                 ds_address = dataServers[process];
             }
@@ -312,12 +324,12 @@ namespace padiFS
             }
             else
             {
-                 ds_server = (IDataServer)Activator.GetObject(typeof(IDataServer), ds_address);
+                ds_server = (IDataServer)Activator.GetObject(typeof(IDataServer), ds_address);
             }
 
 
             switch (stopOpComboBox.Text)
-            {                   
+            {
                 case "Freeze":
                     if (ds_server != null)
                     {

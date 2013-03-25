@@ -21,5 +21,8 @@ namespace padiFS
         void RegisterDataServer(string name, string address);
         MetadataInfo GetMetadataInfo();
         void UpdateReplica(MetadataInfo info);
+        int Ping();
+        void SetPrimary(string name);
+        string GetPrimary();
     }
 }
