@@ -145,7 +145,11 @@ namespace padiFS
 
                     // Sort votes and show the most voted
                     votes = Util.SortVotes(votes);
+                    
+                    
                     winner = votes.Values.Last();
+                    Console.WriteLine("Winner " + winner);
+                    Thread.Sleep(1000);
                 }
                 File selected = received[votes.Keys.Last()];
 
@@ -205,7 +209,6 @@ namespace padiFS
 
         private void ExecuteWrite(string filename, byte[] bytearray)
         {
-
             if (openFiles.ContainsKey(filename))
             {
                 Metadata file = openFiles[filename];
@@ -226,6 +229,7 @@ namespace padiFS
                 while (writeFiles.Count < writeQuorum)
                 {
                 }
+                Console.WriteLine("Write file: " + filename);
             }
         }
 

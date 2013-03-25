@@ -61,6 +61,10 @@ namespace padiFS
         {
             if (!onFailure)
             {
+                // So Dirty
+                while (onFreeze)
+                { }
+
                 File file = new File();
                 string path = currentDir + @"\" + this.name + @"\" + localFile + ".txt";
                 Console.WriteLine(path);
@@ -86,6 +90,10 @@ namespace padiFS
         {
             if (!onFailure)
             {
+                // So Dirty
+                while (onFreeze)
+                { }
+
                 string[] content = Util.SplitArguments(Util.ConvertByteArrayToString(bytearray));
                 string date = content[0];
                 Console.WriteLine(content[1]);
@@ -123,11 +131,12 @@ namespace padiFS
         public void Freeze()
         {
             onFreeze = true;
+            Console.WriteLine("Freezed!");
         }
         public void Unfreeze()
         {
             onFreeze = false;
-            // Lançar threads para responder a pedidos
+            Console.WriteLine("Defrosting!");
         }
         public void Fail()
         {
@@ -147,6 +156,10 @@ namespace padiFS
         {
             if (!onFailure)
             {
+                // So Dirty
+                while (onFreeze)
+                { }
+
                 Console.WriteLine("I'm Alive");
                 return 1;
             }
