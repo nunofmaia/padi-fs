@@ -88,6 +88,7 @@ namespace padiFS
             {
                 string[] content = Util.SplitArguments(Util.ConvertByteArrayToString(bytearray));
                 string date = content[0];
+                Console.WriteLine(content[1]);
                 byte[] bytes = Util.ConvertStringToByteArray(content[1]);
 
                 File file = new File();
@@ -144,8 +145,12 @@ namespace padiFS
         // Auxiliar API
         public int ping()
         {
-            Console.WriteLine("I'm Alive");
-            return 1;
+            if (!onFailure)
+            {
+                Console.WriteLine("I'm Alive");
+                return 1;
+            }
+            else { return 0; }
         }
 
         static void Main(string[] args)

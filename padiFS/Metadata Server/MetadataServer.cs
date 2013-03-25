@@ -273,10 +273,19 @@ namespace padiFS
                 if (server.ping() == 1)
                 {
                     Console.WriteLine(name + ": VIVO");
-                    if(!liveDataServers.ContainsKey(name))
+                    if (!liveDataServers.ContainsKey(name))
                     {
                         liveDataServers.Add(name, address);
                         deadDataServers.Remove(name);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine(name + ": MORTO");
+                    if (!deadDataServers.ContainsKey(name))
+                    {
+                        deadDataServers.Add(name, address);
+                        liveDataServers.Remove(name);
                     }
                 }
             }
