@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting;
+using System.Threading;
 
 namespace padiFS
 {
@@ -65,7 +66,8 @@ namespace padiFS
 
         }
 
-        private void launchMetadataServer(string name, int port)
+        // LAUNCHING SITE
+        private void ExecuteLaunchMetadataServer(string name, int port)
         {
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
@@ -80,6 +82,13 @@ namespace padiFS
             }
         }
 
+        private void LaunchMetadataServer(string name, int port)
+        {
+            Thread t = new Thread(() => ExecuteLaunchMetadataServer(name, port));
+            t.Start();
+        }
+            
+
         private void UpdateClientServer(string c)
         {
             string address = clients[c];
@@ -91,7 +100,7 @@ namespace padiFS
             }
         }
 
-        private void launchDataServer(string name, int port)
+        private void ExecuteLaunchDataServer(string name, int port)
         {
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
@@ -101,7 +110,13 @@ namespace padiFS
             Process.Start(info);
         }
 
-        private void launchClient(string name, int port)
+        private void LaunchDataServer(string name, int port)
+        {
+            Thread t = new Thread(() => ExecuteLaunchDataServer(name, port));
+            t.Start();
+        }
+
+        private void ExecuteLaunchClient(string name, int port)
         {
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
@@ -111,6 +126,14 @@ namespace padiFS
             Process.Start(info);
         }
 
+        private void LaunchClient(string name, int port)
+        {
+            Thread t = new Thread(() => ExecuteLaunchClient(name, port));
+            t.Start();
+        }
+
+
+        // REGISTERING SITE
         private void registerDataServer(string name, string address)
         {
             foreach (string key in metadataServers.Keys)
@@ -148,8 +171,6 @@ namespace padiFS
 
                 }
 
-
-
                 string random_server = activeMetadataServers[0];
                 IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[name]);
                 IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[random_server]);
@@ -183,7 +204,7 @@ namespace padiFS
                     //{
                     //    ms_primary = ms_name;
                     //}
-                    launchMetadataServer(ms_name, ms_port);
+                    LaunchMetadataServer(ms_name, ms_port);
                     metadataServers.Add(ms_name, ms_address);
                     mscounter++;
                     registerMetadataServer(ms_name, ms_address);
@@ -197,7 +218,7 @@ namespace padiFS
                         int ds_port = Util.FreeTcpPort();
                         string ds_address = "tcp://localhost:" + ds_port + "/" + ds_name;
 
-                        launchDataServer(ds_name, ds_port);
+                        LaunchDataServer(ds_name, ds_port);
                         dataServers.Add(ds_name, ds_address);
                         activeDataServers.Add(ds_name);
                         dscounter++;
@@ -213,7 +234,7 @@ namespace padiFS
                     string c_name = "c-" + ccounter;
                     int c_port = Util.FreeTcpPort();
                     string c_address = "tcp://localhost:" + c_port + "/" + c_name;
-                    launchClient(c_name, c_port);
+                    LaunchClient(c_name, c_port);
                     clients.Add(c_name, c_address);
                     activeClients.Add(c_name);
                     UpdateClientServer(c_name);
