@@ -24,9 +24,9 @@ namespace padiFS
         private Dictionary<string, string> dataServers;
         private Dictionary<string, string> metadataServers;
         private Dictionary<string, string> clients;
-        private ArrayList activeClients;
-        private ArrayList activeDataServers;
-        private ArrayList activeMetadataServers;
+        private List<string> activeClients;
+        private List<string> activeDataServers;
+        private List<string> activeMetadataServers;
 
 
         public Form1()
@@ -55,9 +55,9 @@ namespace padiFS
             dataServers = new Dictionary<string, string>();
             metadataServers = new Dictionary<string, string>();
             clients = new Dictionary<string, string>();
-            activeClients = new ArrayList();
-            activeDataServers = new ArrayList();
-            activeMetadataServers = new ArrayList();
+            activeClients = new List<string>();
+            activeDataServers = new List<string>();
+            activeMetadataServers = new List<string>();
 
             channel = new TcpChannel(8070);
             ChannelServices.RegisterChannel(channel, true);
@@ -65,12 +65,12 @@ namespace padiFS
 
         }
 
-        private void launchMetadataServer(string name, int port, string primary)
+        private void launchMetadataServer(string name, int port)
         {
             ProcessStartInfo info = new ProcessStartInfo();
             string currentDir = Environment.CurrentDirectory;
             info.FileName = currentDir + @"\Metadata Server.exe";
-            info.Arguments = name + (char)0x7f + port.ToString() + (char)0x7f + primary;
+            info.Arguments = name + (char)0x7f + port.ToString();
 
             Process.Start(info);
 
@@ -133,46 +133,40 @@ namespace padiFS
                     IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
                     if (server != null)
                     {
-                        if (!key.Equals(name))
+                        try
                         {
-                            try
-                            {
-                                server.RegisterMetadataServer(name, address);
-                            }
-                            catch (System.Net.Sockets.SocketException)
-                            {
-                            }
-                            catch (System.IO.IOException)
-                            {
-                            }
-                            // Ignore it
+                            server.RegisterMetadataServer(name, address);
+                        }
+                        catch (System.Net.Sockets.SocketException)
+                        {
+                        }
+                        catch (System.IO.IOException)
+                        {
                         }
 
-                        ms_primary = server.GetPrimary();
-                        System.Windows.Forms.MessageBox.Show("Primary replica: " + ms_primary);
                     }
 
+                }
 
-                    if (ms_primary != null && ms_primary != key && key == name)
+
+
+                string random_server = activeMetadataServers[0];
+                IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[name]);
+                IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[random_server]);
+                if (primary != null)
+                {
+                    MetadataInfo info = primary.GetMetadataInfo();
+
+                    if (replica != null)
                     {
-                        System.Windows.Forms.MessageBox.Show("Vou mandar a info");
-                        IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[ms_primary]);
-                        if (primary != null)
-                        {
-                            MetadataInfo info = primary.GetMetadataInfo();
-
-                            if (server != null)
-                            {
-                                server.UpdateReplica(info);
-                            }
-                        }
+                        replica.UpdateReplica(info);
                     }
                 }
+
             }
             else
             {
                 IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
-                ms_primary = name;
                 server.SetPrimary(name);
             }
         }
@@ -185,11 +179,11 @@ namespace padiFS
                     string ms_name = "m-" + mscounter;
                     int ms_port = Util.FreeTcpPort();
                     string ms_address = "tcp://localhost:" + ms_port + "/" + ms_name;
-                    if (mscounter == 0)
-                    {
-                        ms_primary = ms_name;
-                    }
-                    launchMetadataServer(ms_name, ms_port, ms_primary);
+                    //if (mscounter == 0)
+                    //{
+                    //    ms_primary = ms_name;
+                    //}
+                    launchMetadataServer(ms_name, ms_port);
                     metadataServers.Add(ms_name, ms_address);
                     mscounter++;
                     registerMetadataServer(ms_name, ms_address);
