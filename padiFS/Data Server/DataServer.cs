@@ -41,6 +41,8 @@ namespace padiFS
         {
             if (!onFailure)
             {
+                freeze.WaitOne();
+
                 File file = new File();
 
                 file.Version = DateTime.Now;
