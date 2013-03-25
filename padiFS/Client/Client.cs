@@ -17,6 +17,7 @@ namespace padiFS
         private Bridge bridge;
         private Dictionary<string, Metadata> allFiles;
         private Dictionary<string, Metadata> openFiles;
+        private Dictionary<string, File> historic;
         private ConcurrentBag<File> readFiles;
         private ConcurrentBag<int> writeFiles;
 
@@ -27,6 +28,7 @@ namespace padiFS
             this.bridge = new Bridge();
             this.allFiles = new Dictionary<string, Metadata>();
             this.openFiles = new Dictionary<string, Metadata>();
+            this.historic = new Dictionary<string, File>();
         }
 
         public void Create(string filename, int nServers, int rQuorum, int wQuorum)
@@ -35,7 +37,6 @@ namespace padiFS
 
             if (meta != null)
             {
-                Console.WriteLine("vou adicionar isto");
                 allFiles.Add(filename, meta);
                 openFiles.Add(filename, meta);
                 Console.WriteLine("Create file " + filename);
@@ -90,7 +91,7 @@ namespace padiFS
             }
         }
 
-        public void Read(string filename, string semantic)
+        private void ExecuteRead(string filename, string semantic)
         {
             if (openFiles.ContainsKey(filename))
             {
@@ -116,14 +117,15 @@ namespace padiFS
                 Dictionary<DateTime, int> votes = null;
                 int winner = -1;
 
-                while(winner < readQuorum) {
+                while (winner < readQuorum)
+                {
 
                     // In the best case, all replies are right
                     // In the worst case, this cycle is useless
                     while (readFiles.Count < readQuorum)
                     {
                     }
-             
+
                     votes = new Dictionary<DateTime, int>();
                     received = new Dictionary<DateTime, File>();
 
@@ -144,11 +146,40 @@ namespace padiFS
                     // Sort votes and show the most voted
                     votes = Util.SortVotes(votes);
                     winner = votes.Values.Last();
-                    Console.WriteLine(winner);
                 }
                 File selected = received[votes.Keys.Last()];
-                Console.WriteLine("Read file " + filename + ": " + Util.ConvertByteArrayToString(selected.Content));
+
+                if (semantic.Equals("default"))
+                {
+                    historic.Add(filename, selected);
+                    Console.WriteLine("Read file " + filename + ": " + Util.ConvertByteArrayToString(selected.Content));
+                }
+                else
+                {
+                    if (historic.ContainsKey(filename))
+                    {
+                        File h = historic[filename];
+                        if (selected.Version > h.Version)
+                        {
+                            Console.WriteLine("Read file " + filename + ": " + Util.ConvertByteArrayToString(selected.Content));
+                        }
+                        else
+                        {
+                            Console.WriteLine("Read file " + filename + ": " + Util.ConvertByteArrayToString(h.Content));
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Read file " + filename + ": " + Util.ConvertByteArrayToString(selected.Content));
+                    }
+                }
             }
+        }
+
+        public void Read(string filename, string semantic)
+        {
+            Thread t = new Thread(() => ExecuteRead(filename, semantic));
+            t.Start();
         }
 
         private void WriteCallback(object threadcontext)
@@ -172,8 +203,9 @@ namespace padiFS
             }
         }
 
-        public void Write(string filename, byte[] bytearray)
+        private void ExecuteWrite(string filename, byte[] bytearray)
         {
+
             if (openFiles.ContainsKey(filename))
             {
                 Metadata file = openFiles[filename];
@@ -195,6 +227,12 @@ namespace padiFS
                 {
                 }
             }
+        }
+
+        public void Write(string filename, byte[] bytearray)
+        {
+            Thread t = new Thread(() => ExecuteWrite(filename, bytearray));
+            t.Start();
         }
 
         public void Close(string filename)
