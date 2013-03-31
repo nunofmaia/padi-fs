@@ -210,11 +210,63 @@ namespace padiFS
         // Puppet Master Commands
         public void Fail() {
             onFailure = true;
+            // Should we deactivate the timers!? Maybe we can get rid of if's checking if it's on
+            // failure or not. Pretty code! :)
+            pingPrimaryReplicaTimer.Enabled = false;
+            pingDataServersTimer.Enabled = false;
             Console.WriteLine("On Failure!");
         }
         public void Recover() {
+            foreach (string replica in replicas.Keys)
+            {
+                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[replica]);
+                if (server != null)
+                {
+                    if (server.Ping() == 1)
+                    {
+                        this.primary = server.GetPrimary();
+                        if (this.primary == replica)
+                        {
+                            MetadataInfo info = server.GetMetadataInfo();
+                            UpdateReplica(info);
+                        }
+                        else
+                        {
+                            IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[this.primary]);
+                            if (primary != null)
+                            {
+                                MetadataInfo info = primary.GetMetadataInfo();
+                                UpdateReplica(info);
+                            }
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            foreach (string replica in replicas.Keys)
+            {
+                if (!deadReplicas.Contains(replica))
+                {
+                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[replica]);
+                    if (server != null)
+                    {
+                        server.Recovered(this.name);
+                    }
+                }
+            }
+
             onFailure = false;
             Console.WriteLine("Uhf, recovered at last...");
+        }
+
+        public void Recovered(string name)
+        {
+            if (deadReplicas.Contains(name))
+            {
+                deadReplicas.Remove(name);
+            }
         }
         
         

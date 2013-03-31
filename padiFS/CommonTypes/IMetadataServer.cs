@@ -24,5 +24,6 @@ namespace padiFS
         int Ping();
         void SetPrimary(string name);
         string GetPrimary();
+        void Recovered(string name);
     }
 }
