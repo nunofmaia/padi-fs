@@ -12,6 +12,7 @@ using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting;
 using System.Threading;
+using System.IO;
 
 namespace padiFS
 {
@@ -409,6 +410,32 @@ namespace padiFS
             writeFileTextBox.Clear();
             writeClientTextBox.Clear();
             writeTextBox.Clear();
+        }
+
+        private void loadScriptButton_Click(object sender, EventArgs e)
+        {
+            DialogResult result = openScriptDialog.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                string file = openScriptDialog.FileName;
+
+                try
+                {
+                    scriptTextBox.Text = file;
+                }
+                catch (IOException)
+                {
+                }
+            }
+        }
+
+        private void runScriptButton_Click(object sender, EventArgs e)
+        {
+            string filePath = scriptTextBox.Text;
+            scriptTextBox.Clear();
+
+            string text = System.IO.File.ReadAllText(filePath);
+            statusTextBox.Text = text;
         }
     }
 }

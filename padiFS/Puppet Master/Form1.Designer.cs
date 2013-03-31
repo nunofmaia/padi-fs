@@ -86,6 +86,11 @@
             this.writeFileLabel = new System.Windows.Forms.Label();
             this.groupBox9 = new System.Windows.Forms.GroupBox();
             this.statusTextBox = new System.Windows.Forms.TextBox();
+            this.groupBox10 = new System.Windows.Forms.GroupBox();
+            this.runScriptButton = new System.Windows.Forms.Button();
+            this.loadScriptButton = new System.Windows.Forms.Button();
+            this.scriptTextBox = new System.Windows.Forms.TextBox();
+            this.openScriptDialog = new System.Windows.Forms.OpenFileDialog();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -95,6 +100,7 @@
             this.groupBox7.SuspendLayout();
             this.groupBox8.SuspendLayout();
             this.groupBox9.SuspendLayout();
+            this.groupBox10.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -634,7 +640,7 @@
             this.groupBox9.Controls.Add(this.statusTextBox);
             this.groupBox9.Location = new System.Drawing.Point(12, 219);
             this.groupBox9.Name = "groupBox9";
-            this.groupBox9.Size = new System.Drawing.Size(381, 372);
+            this.groupBox9.Size = new System.Drawing.Size(381, 308);
             this.groupBox9.TabIndex = 9;
             this.groupBox9.TabStop = false;
             this.groupBox9.Text = "Status";
@@ -645,14 +651,59 @@
             this.statusTextBox.Location = new System.Drawing.Point(6, 19);
             this.statusTextBox.Multiline = true;
             this.statusTextBox.Name = "statusTextBox";
-            this.statusTextBox.Size = new System.Drawing.Size(369, 347);
+            this.statusTextBox.Size = new System.Drawing.Size(369, 283);
             this.statusTextBox.TabIndex = 6;
+            // 
+            // groupBox10
+            // 
+            this.groupBox10.Controls.Add(this.scriptTextBox);
+            this.groupBox10.Controls.Add(this.loadScriptButton);
+            this.groupBox10.Controls.Add(this.runScriptButton);
+            this.groupBox10.Location = new System.Drawing.Point(13, 534);
+            this.groupBox10.Name = "groupBox10";
+            this.groupBox10.Size = new System.Drawing.Size(380, 57);
+            this.groupBox10.TabIndex = 10;
+            this.groupBox10.TabStop = false;
+            this.groupBox10.Text = "Load script";
+            // 
+            // runScriptButton
+            // 
+            this.runScriptButton.Location = new System.Drawing.Point(299, 19);
+            this.runScriptButton.Name = "runScriptButton";
+            this.runScriptButton.Size = new System.Drawing.Size(75, 23);
+            this.runScriptButton.TabIndex = 0;
+            this.runScriptButton.Text = "Run";
+            this.runScriptButton.UseVisualStyleBackColor = true;
+            this.runScriptButton.Click += new System.EventHandler(this.runScriptButton_Click);
+            // 
+            // loadScriptButton
+            // 
+            this.loadScriptButton.Location = new System.Drawing.Point(218, 19);
+            this.loadScriptButton.Name = "loadScriptButton";
+            this.loadScriptButton.Size = new System.Drawing.Size(75, 23);
+            this.loadScriptButton.TabIndex = 1;
+            this.loadScriptButton.Text = "Load";
+            this.loadScriptButton.UseVisualStyleBackColor = true;
+            this.loadScriptButton.Click += new System.EventHandler(this.loadScriptButton_Click);
+            // 
+            // scriptTextBox
+            // 
+            this.scriptTextBox.Enabled = false;
+            this.scriptTextBox.Location = new System.Drawing.Point(6, 21);
+            this.scriptTextBox.Name = "scriptTextBox";
+            this.scriptTextBox.Size = new System.Drawing.Size(206, 20);
+            this.scriptTextBox.TabIndex = 2;
+            // 
+            // openScriptDialog
+            // 
+            this.openScriptDialog.Filter = "Text Files|*.txt";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(793, 597);
+            this.ClientSize = new System.Drawing.Size(793, 604);
+            this.Controls.Add(this.groupBox10);
             this.Controls.Add(this.groupBox9);
             this.Controls.Add(this.groupBox8);
             this.Controls.Add(this.groupBox7);
@@ -681,6 +732,8 @@
             this.groupBox8.PerformLayout();
             this.groupBox9.ResumeLayout(false);
             this.groupBox9.PerformLayout();
+            this.groupBox10.ResumeLayout(false);
+            this.groupBox10.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -745,6 +798,11 @@
         private System.Windows.Forms.Label textWriteFile;
         private System.Windows.Forms.Label semanticsFileLabel;
         private System.Windows.Forms.ComboBox semanticsComboBox;
+        private System.Windows.Forms.GroupBox groupBox10;
+        private System.Windows.Forms.TextBox scriptTextBox;
+        private System.Windows.Forms.Button loadScriptButton;
+        private System.Windows.Forms.Button runScriptButton;
+        private System.Windows.Forms.OpenFileDialog openScriptDialog;
 
     }
 }
