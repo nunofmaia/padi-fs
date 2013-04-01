@@ -16,20 +16,22 @@ namespace padiFS
         private int port;
         private int requestInterval = 5;
         private Bridge bridge;
-        private Dictionary<string, Metadata> allFiles;
+        private Dictionary<string, Metadata> myFiles;
         private Dictionary<string, Metadata> openFiles;
         private Dictionary<string, File> historic;
         private ConcurrentBag<File> readFiles;
         private ConcurrentBag<int> writeFiles;
+        private byte[][] stringRegister;
 
         public Client(string name, string port)
         {
             this.name = name;
             this.port = int.Parse(port);
             this.bridge = new Bridge();
-            this.allFiles = new Dictionary<string, Metadata>();
+            this.myFiles = new Dictionary<string, Metadata>();
             this.openFiles = new Dictionary<string, Metadata>(10);
             this.historic = new Dictionary<string, File>();
+            this.stringRegister = new byte[10][];
         }
 
         public void Create(string filename, int nServers, int rQuorum, int wQuorum)
@@ -38,7 +40,7 @@ namespace padiFS
 
             if (meta != null)
             {
-                allFiles.Add(filename, meta);
+                myFiles.Add(filename, meta);
                 openFiles.Add(filename, meta);
                 Console.WriteLine("Create file " + filename);
             }
@@ -291,7 +293,26 @@ namespace padiFS
 
         public string Dump()
         {
-            return "Client " + name + " dump:";
+            string s = "Client " + name + " dump:\r\nOpen Files:\r\n";
+
+            // Files opened by client
+            foreach (string m in openFiles.Keys)
+            {
+                s += openFiles[m].ToString() + "\r\n";
+                foreach (string d in openFiles[m].DataServers)
+                {
+                    s += "\t" + d + "\r\n";
+                }
+            }
+            s += "String Register:\r\n";
+            for(int i = 0; i< 10; i++)
+            {
+                if (stringRegister[i] != null)
+                {
+                    s += Util.ConvertByteArrayToString(stringRegister[i]) + "\r\n";
+                }
+            }
+            return s;
         }
 
         static void Main(string[] args)

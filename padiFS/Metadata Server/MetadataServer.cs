@@ -478,7 +478,26 @@ namespace padiFS
 
         public string Dump()
         {
-            return "Metadata Server " + name + " dump:";
+            string s = "Metadata Server " + name + " dump:\r\nFiles:\r\n";
+
+            // files keepped by metadata server
+            foreach (string m in files.Keys)
+            {
+                s += files[m].ToString() + "\r\n";
+                foreach(string d in files[m].DataServers)
+                {
+                    s += "\t" + d + "\r\n";
+                }
+            }
+
+            // files open in metadata server
+            s += "Open Files:\r\n";
+            foreach (string m in openFiles.Keys)
+            {
+                s += openFiles[m].ToString() + "\r\n";
+            }
+
+            return s;
         }
 
         static void Main(string[] args)
