@@ -22,12 +22,5 @@ namespace padiFS
 
             Application.Run(form);
         }
-
-        public void test(string name)
-        {
-            //System.Windows.Forms.MessageBox.Show(name);
-        }
-
-
     }
 }

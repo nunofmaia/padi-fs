@@ -16,7 +16,6 @@ namespace padiFS
         private int port;
 
         private string currentDir;
-        private bool onFreeze;
         private bool onFailure;
         private ManualResetEvent freeze;
 
@@ -25,7 +24,6 @@ namespace padiFS
             this.name = name;
             this.port = int.Parse(port);
             this.onFailure = false;
-            this.onFreeze = false;
             this.freeze = new ManualResetEvent(false);
             freeze.Set();
 
@@ -160,15 +158,17 @@ namespace padiFS
         {
             if (!onFailure)
             {
-                // So Dirty
-                // NM: This did not exist, had to declare and initialize it
-                while (onFreeze)
-                { }
+                freeze.WaitOne();
 
                 Console.WriteLine("I'm Alive");
                 return 1;
             }
             else { return 0; }
+        }
+
+        public string Dump()
+        {
+            return "Data Server " + name + " dump:";
         }
 
         static void Main(string[] args)
@@ -187,20 +187,20 @@ namespace padiFS
             TcpChannel channel = new TcpChannel(ds.port);
             ChannelServices.RegisterChannel(channel, true);
             RemotingServices.Marshal(ds, ds.name, typeof(DataServer));
-            IPuppetMaster master = (IPuppetMaster)Activator.GetObject(typeof(IPuppetMaster), "tcp://localhost:8070/PuppetMaster");
-            if (master != null)
-            {
-                try
-                {
-                    master.test(ds.name);
-                }
-                catch (RemotingException e)
-                { Console.WriteLine(e.StackTrace); }
-            }
-            else
-            {
-                Console.WriteLine(ds.name);
-            }
+            //IPuppetMaster master = (IPuppetMaster)Activator.GetObject(typeof(IPuppetMaster), "tcp://localhost:8070/PuppetMaster");
+            //if (master != null)
+            //{
+            //    try
+            //    {
+            //        master.test(ds.name);
+            //    }
+            //    catch (RemotingException e)
+            //    { Console.WriteLine(e.StackTrace); }
+            //}
+            //else
+            //{
+            //    Console.WriteLine(ds.name);
+            //}
             Console.ReadLine();
         }
     }

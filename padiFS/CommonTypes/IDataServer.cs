@@ -14,6 +14,7 @@ namespace padiFS
         void Unfreeze();
         void Fail();
         void Recover();
+        string Dump();
 
         // Auxiliar API
         int ping();

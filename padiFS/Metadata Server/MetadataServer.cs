@@ -476,6 +476,11 @@ namespace padiFS
             SetPrimary(replica);
         }
 
+        public string Dump()
+        {
+            return "Metadata Server " + name + " dump:";
+        }
+
         static void Main(string[] args)
         {
             string[] arguments = Util.SplitArguments(args[0]);

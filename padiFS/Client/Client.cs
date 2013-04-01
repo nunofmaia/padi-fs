@@ -28,7 +28,7 @@ namespace padiFS
             this.port = int.Parse(port);
             this.bridge = new Bridge();
             this.allFiles = new Dictionary<string, Metadata>();
-            this.openFiles = new Dictionary<string, Metadata>();
+            this.openFiles = new Dictionary<string, Metadata>(10);
             this.historic = new Dictionary<string, File>();
         }
 
@@ -287,6 +287,11 @@ namespace padiFS
         public void UpdateServers(Dictionary<string, string> servers)
         {
             bridge.Servers = servers;
+        }
+
+        public string Dump()
+        {
+            return "Client " + name + " dump:";
         }
 
         static void Main(string[] args)

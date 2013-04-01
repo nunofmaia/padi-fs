@@ -16,6 +16,7 @@ using System.IO;
 
 namespace padiFS
 {
+
     public partial class Form1 : Form
     {
         TcpChannel channel;
@@ -290,13 +291,13 @@ namespace padiFS
                     clients.Add(c_name, c_address);
                     activeClients.Add(c_name);
                     UpdateClientServer(c_name);
-                    if (metadataServers.Count > 0 && dataServers.Count > 0)
-                    {
-                        EnableButtons();
-                    }
                     ccounter++;
                     processes.Add(c_name, c_address);
                     break;
+            }
+            if (metadataServers.Count > 0 && dataServers.Count > 0 && clients.Count > 0)
+            {
+                EnableButtons();
             }
         }
 
@@ -308,6 +309,7 @@ namespace padiFS
             readFileButton.Enabled = true;
             writeFileButton.Enabled = true;
             deleteFileButton.Enabled = true;
+            dumpButton.Enabled = true;
         }
 
         private void createButton_Click(object sender, EventArgs e)
@@ -543,6 +545,64 @@ namespace padiFS
             loadScriptButton.Enabled = true;
             nextStepScriptButton.Enabled = false;
             stopScriptButton.Enabled = false;
+        }
+
+
+        private void dumpButton_Click(object sender, EventArgs e)
+        {
+            string process = dumpTextBox.Text;
+            string ms_address = null;
+            string ds_address = null;
+            string c_address = null;
+
+            //Oh noooooo, the horror!!
+            if (metadataServers.ContainsKey(process))
+            {
+                ms_address = metadataServers[process];
+            }
+            else if (dataServers.ContainsKey(process))
+            {
+                ds_address = dataServers[process];
+            }
+            else if (clients.ContainsKey(process))
+            {
+                c_address = clients[process];
+            }
+
+            
+            IMetadataServer ms_server = null;
+            IDataServer ds_server = null;
+            IClient client = null;
+
+            if (ms_address != null)
+            {
+                ms_server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), ms_address);
+            }
+            else if (ds_address != null)
+            {
+                ds_server = (IDataServer)Activator.GetObject(typeof(IDataServer), ds_address);
+            }
+            else if (c_address != null)
+            {
+                client = (IClient)Activator.GetObject(typeof(IClient), c_address);
+            }
+
+            string dump = "";
+
+            if (ms_server != null)
+            {
+                dump = ms_server.Dump();
+            }
+            else if (ds_server != null)
+            {
+                dump = ds_server.Dump();
+            }
+            else if (client != null)
+            {
+                dump = client.Dump();
+            }
+            statusTextBox.Text += dump + "\r\n";
+            dumpTextBox.Clear();
         }
 
         // TODO: Ask the professor if the commands are always well-formed so we can ditch the if conditions

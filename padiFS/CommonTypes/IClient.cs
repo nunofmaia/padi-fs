@@ -13,6 +13,7 @@ namespace padiFS
         void Create(string filename, int serversNumber, int readQuorum, int writeQuorum);
         void Close(string filename);
         void Delete(string filename);
+        string Dump();
 
         void UpdateServers(Dictionary<string, string> servers);
     }

@@ -69,8 +69,6 @@
             this.groupBox7 = new System.Windows.Forms.GroupBox();
             this.semanticsFileLabel = new System.Windows.Forms.Label();
             this.semanticsComboBox = new System.Windows.Forms.ComboBox();
-            this.textReadFile = new System.Windows.Forms.Label();
-            this.readTextBox = new System.Windows.Forms.TextBox();
             this.readClientTextBox = new System.Windows.Forms.TextBox();
             this.readClientLabel = new System.Windows.Forms.Label();
             this.readFileButton = new System.Windows.Forms.Button();
@@ -87,12 +85,16 @@
             this.groupBox9 = new System.Windows.Forms.GroupBox();
             this.statusTextBox = new System.Windows.Forms.TextBox();
             this.groupBox10 = new System.Windows.Forms.GroupBox();
+            this.stopScriptButton = new System.Windows.Forms.Button();
+            this.nextStepScriptButton = new System.Windows.Forms.Button();
             this.scriptTextBox = new System.Windows.Forms.TextBox();
             this.loadScriptButton = new System.Windows.Forms.Button();
             this.runScriptButton = new System.Windows.Forms.Button();
             this.openScriptDialog = new System.Windows.Forms.OpenFileDialog();
-            this.nextStepScriptButton = new System.Windows.Forms.Button();
-            this.stopScriptButton = new System.Windows.Forms.Button();
+            this.groupBox11 = new System.Windows.Forms.GroupBox();
+            this.dumpButton = new System.Windows.Forms.Button();
+            this.dumpProcessLabel = new System.Windows.Forms.Label();
+            this.dumpTextBox = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -103,6 +105,7 @@
             this.groupBox8.SuspendLayout();
             this.groupBox9.SuspendLayout();
             this.groupBox10.SuspendLayout();
+            this.groupBox11.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -169,7 +172,7 @@
             // 
             // stopProcessTextBox
             // 
-            this.stopProcessTextBox.Location = new System.Drawing.Point(62, 20);
+            this.stopProcessTextBox.Location = new System.Drawing.Point(62, 22);
             this.stopProcessTextBox.Name = "stopProcessTextBox";
             this.stopProcessTextBox.Size = new System.Drawing.Size(100, 20);
             this.stopProcessTextBox.TabIndex = 8;
@@ -177,7 +180,7 @@
             // stopProcessLabel
             // 
             this.stopProcessLabel.AutoSize = true;
-            this.stopProcessLabel.Location = new System.Drawing.Point(7, 20);
+            this.stopProcessLabel.Location = new System.Drawing.Point(8, 25);
             this.stopProcessLabel.Name = "stopProcessLabel";
             this.stopProcessLabel.Size = new System.Drawing.Size(48, 13);
             this.stopProcessLabel.TabIndex = 0;
@@ -301,10 +304,10 @@
             this.groupBox4.Controls.Add(this.openFileButton);
             this.groupBox4.Controls.Add(this.openFileTextBox);
             this.groupBox4.Controls.Add(this.openFileLabel);
-            this.groupBox4.Location = new System.Drawing.Point(400, 73);
+            this.groupBox4.Location = new System.Drawing.Point(400, 132);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(381, 67);
-            this.groupBox4.TabIndex = 3;
+            this.groupBox4.TabIndex = 4;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Open file";
             // 
@@ -358,10 +361,10 @@
             this.groupBox5.Controls.Add(this.closeFileButton);
             this.groupBox5.Controls.Add(this.closeFileTextBox);
             this.groupBox5.Controls.Add(this.closeFileLabel);
-            this.groupBox5.Location = new System.Drawing.Point(400, 147);
+            this.groupBox5.Location = new System.Drawing.Point(400, 205);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Size = new System.Drawing.Size(381, 65);
-            this.groupBox5.TabIndex = 4;
+            this.groupBox5.TabIndex = 5;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Close file";
             // 
@@ -415,10 +418,10 @@
             this.groupBox6.Controls.Add(this.deleteFileButton);
             this.groupBox6.Controls.Add(this.deleteFileTextBox);
             this.groupBox6.Controls.Add(this.deleteFileLabel);
-            this.groupBox6.Location = new System.Drawing.Point(400, 218);
+            this.groupBox6.Location = new System.Drawing.Point(400, 276);
             this.groupBox6.Name = "groupBox6";
             this.groupBox6.Size = new System.Drawing.Size(381, 65);
-            this.groupBox6.TabIndex = 5;
+            this.groupBox6.TabIndex = 6;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Delete file";
             // 
@@ -469,17 +472,15 @@
             // 
             this.groupBox7.Controls.Add(this.semanticsFileLabel);
             this.groupBox7.Controls.Add(this.semanticsComboBox);
-            this.groupBox7.Controls.Add(this.textReadFile);
-            this.groupBox7.Controls.Add(this.readTextBox);
             this.groupBox7.Controls.Add(this.readClientTextBox);
             this.groupBox7.Controls.Add(this.readClientLabel);
             this.groupBox7.Controls.Add(this.readFileButton);
             this.groupBox7.Controls.Add(this.readFileTextBox);
             this.groupBox7.Controls.Add(this.readFileLabel);
-            this.groupBox7.Location = new System.Drawing.Point(400, 289);
+            this.groupBox7.Location = new System.Drawing.Point(400, 347);
             this.groupBox7.Name = "groupBox7";
-            this.groupBox7.Size = new System.Drawing.Size(381, 148);
-            this.groupBox7.TabIndex = 6;
+            this.groupBox7.Size = new System.Drawing.Size(381, 79);
+            this.groupBox7.TabIndex = 7;
             this.groupBox7.TabStop = false;
             this.groupBox7.Text = "Read file";
             // 
@@ -500,23 +501,6 @@
             this.semanticsComboBox.Name = "semanticsComboBox";
             this.semanticsComboBox.Size = new System.Drawing.Size(148, 21);
             this.semanticsComboBox.TabIndex = 21;
-            // 
-            // textReadFile
-            // 
-            this.textReadFile.AutoSize = true;
-            this.textReadFile.Location = new System.Drawing.Point(14, 84);
-            this.textReadFile.Name = "textReadFile";
-            this.textReadFile.Size = new System.Drawing.Size(31, 13);
-            this.textReadFile.TabIndex = 6;
-            this.textReadFile.Text = "Text:";
-            // 
-            // readTextBox
-            // 
-            this.readTextBox.Location = new System.Drawing.Point(51, 81);
-            this.readTextBox.Multiline = true;
-            this.readTextBox.Name = "readTextBox";
-            this.readTextBox.Size = new System.Drawing.Size(324, 61);
-            this.readTextBox.TabIndex = 22;
             // 
             // readClientTextBox
             // 
@@ -570,10 +554,10 @@
             this.groupBox8.Controls.Add(this.writeFileButton);
             this.groupBox8.Controls.Add(this.writeFileTextBox);
             this.groupBox8.Controls.Add(this.writeFileLabel);
-            this.groupBox8.Location = new System.Drawing.Point(400, 443);
+            this.groupBox8.Location = new System.Drawing.Point(400, 432);
             this.groupBox8.Name = "groupBox8";
             this.groupBox8.Size = new System.Drawing.Size(381, 148);
-            this.groupBox8.TabIndex = 7;
+            this.groupBox8.TabIndex = 8;
             this.groupBox8.TabStop = false;
             this.groupBox8.Text = "Write file";
             // 
@@ -670,6 +654,28 @@
             this.groupBox10.TabStop = false;
             this.groupBox10.Text = "Load script";
             // 
+            // stopScriptButton
+            // 
+            this.stopScriptButton.Enabled = false;
+            this.stopScriptButton.Location = new System.Drawing.Point(234, 58);
+            this.stopScriptButton.Name = "stopScriptButton";
+            this.stopScriptButton.Size = new System.Drawing.Size(75, 23);
+            this.stopScriptButton.TabIndex = 4;
+            this.stopScriptButton.Text = "Stop";
+            this.stopScriptButton.UseVisualStyleBackColor = true;
+            this.stopScriptButton.Click += new System.EventHandler(this.stopScriptButton_Click);
+            // 
+            // nextStepScriptButton
+            // 
+            this.nextStepScriptButton.Enabled = false;
+            this.nextStepScriptButton.Location = new System.Drawing.Point(153, 58);
+            this.nextStepScriptButton.Name = "nextStepScriptButton";
+            this.nextStepScriptButton.Size = new System.Drawing.Size(75, 23);
+            this.nextStepScriptButton.TabIndex = 3;
+            this.nextStepScriptButton.Text = "Next step";
+            this.nextStepScriptButton.UseVisualStyleBackColor = true;
+            this.nextStepScriptButton.Click += new System.EventHandler(this.nextStepScriptButton_Click);
+            // 
             // scriptTextBox
             // 
             this.scriptTextBox.Enabled = false;
@@ -703,33 +709,50 @@
             // 
             this.openScriptDialog.Filter = "Text Files|*.txt";
             // 
-            // nextStepScriptButton
+            // groupBox11
             // 
-            this.nextStepScriptButton.Enabled = false;
-            this.nextStepScriptButton.Location = new System.Drawing.Point(153, 58);
-            this.nextStepScriptButton.Name = "nextStepScriptButton";
-            this.nextStepScriptButton.Size = new System.Drawing.Size(75, 23);
-            this.nextStepScriptButton.TabIndex = 3;
-            this.nextStepScriptButton.Text = "Next step";
-            this.nextStepScriptButton.UseVisualStyleBackColor = true;
-            this.nextStepScriptButton.Click += new System.EventHandler(this.nextStepScriptButton_Click);
+            this.groupBox11.Controls.Add(this.dumpTextBox);
+            this.groupBox11.Controls.Add(this.dumpProcessLabel);
+            this.groupBox11.Controls.Add(this.dumpButton);
+            this.groupBox11.Location = new System.Drawing.Point(400, 72);
+            this.groupBox11.Name = "groupBox11";
+            this.groupBox11.Size = new System.Drawing.Size(381, 54);
+            this.groupBox11.TabIndex = 3;
+            this.groupBox11.TabStop = false;
+            this.groupBox11.Text = "Dump process";
             // 
-            // stopScriptButton
+            // dumpButton
             // 
-            this.stopScriptButton.Enabled = false;
-            this.stopScriptButton.Location = new System.Drawing.Point(234, 58);
-            this.stopScriptButton.Name = "stopScriptButton";
-            this.stopScriptButton.Size = new System.Drawing.Size(75, 23);
-            this.stopScriptButton.TabIndex = 4;
-            this.stopScriptButton.Text = "Stop";
-            this.stopScriptButton.UseVisualStyleBackColor = true;
-            this.stopScriptButton.Click += new System.EventHandler(this.stopScriptButton_Click);
+            this.dumpButton.Location = new System.Drawing.Point(296, 18);
+            this.dumpButton.Name = "dumpButton";
+            this.dumpButton.Size = new System.Drawing.Size(75, 23);
+            this.dumpButton.TabIndex = 2;
+            this.dumpButton.Text = "Dump";
+            this.dumpButton.UseVisualStyleBackColor = true;
+            this.dumpButton.Click += new System.EventHandler(this.dumpButton_Click);
+            // 
+            // dumpProcessLabel
+            // 
+            this.dumpProcessLabel.AutoSize = true;
+            this.dumpProcessLabel.Location = new System.Drawing.Point(7, 23);
+            this.dumpProcessLabel.Name = "dumpProcessLabel";
+            this.dumpProcessLabel.Size = new System.Drawing.Size(48, 13);
+            this.dumpProcessLabel.TabIndex = 2;
+            this.dumpProcessLabel.Text = "Process:";
+            // 
+            // dumpTextBox
+            // 
+            this.dumpTextBox.Location = new System.Drawing.Point(61, 20);
+            this.dumpTextBox.Name = "dumpTextBox";
+            this.dumpTextBox.Size = new System.Drawing.Size(100, 20);
+            this.dumpTextBox.TabIndex = 1;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(793, 637);
+            this.Controls.Add(this.groupBox11);
             this.Controls.Add(this.groupBox10);
             this.Controls.Add(this.groupBox9);
             this.Controls.Add(this.groupBox8);
@@ -761,6 +784,8 @@
             this.groupBox9.PerformLayout();
             this.groupBox10.ResumeLayout(false);
             this.groupBox10.PerformLayout();
+            this.groupBox11.ResumeLayout(false);
+            this.groupBox11.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -806,7 +831,6 @@
         private System.Windows.Forms.TextBox deleteFileTextBox;
         private System.Windows.Forms.Label deleteFileLabel;
         private System.Windows.Forms.GroupBox groupBox7;
-        private System.Windows.Forms.TextBox readTextBox;
         private System.Windows.Forms.TextBox readClientTextBox;
         private System.Windows.Forms.Label readClientLabel;
         private System.Windows.Forms.Button readFileButton;
@@ -821,7 +845,6 @@
         private System.Windows.Forms.Label writeFileLabel;
         private System.Windows.Forms.GroupBox groupBox9;
         private System.Windows.Forms.TextBox statusTextBox;
-        private System.Windows.Forms.Label textReadFile;
         private System.Windows.Forms.Label textWriteFile;
         private System.Windows.Forms.Label semanticsFileLabel;
         private System.Windows.Forms.ComboBox semanticsComboBox;
@@ -832,6 +855,10 @@
         private System.Windows.Forms.OpenFileDialog openScriptDialog;
         private System.Windows.Forms.Button stopScriptButton;
         private System.Windows.Forms.Button nextStepScriptButton;
+        private System.Windows.Forms.GroupBox groupBox11;
+        private System.Windows.Forms.TextBox dumpTextBox;
+        private System.Windows.Forms.Label dumpProcessLabel;
+        private System.Windows.Forms.Button dumpButton;
 
     }
 }

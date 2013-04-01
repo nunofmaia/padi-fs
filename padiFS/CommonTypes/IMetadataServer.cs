@@ -15,6 +15,7 @@ namespace padiFS
         void Delete(string filename);
         void Fail();
         void Recover();
+        string Dump();
 
         // Auxiliar API
         void RegisterMetadataServer(string name, string address);

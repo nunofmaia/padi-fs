@@ -7,6 +7,5 @@ namespace padiFS
 {
     public interface IPuppetMaster
     {
-        void test(string name);
     }
 }
