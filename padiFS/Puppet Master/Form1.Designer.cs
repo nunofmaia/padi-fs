@@ -92,9 +92,9 @@
             this.runScriptButton = new System.Windows.Forms.Button();
             this.openScriptDialog = new System.Windows.Forms.OpenFileDialog();
             this.groupBox11 = new System.Windows.Forms.GroupBox();
-            this.dumpButton = new System.Windows.Forms.Button();
-            this.dumpProcessLabel = new System.Windows.Forms.Label();
             this.dumpTextBox = new System.Windows.Forms.TextBox();
+            this.dumpProcessLabel = new System.Windows.Forms.Label();
+            this.dumpButton = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -633,10 +633,11 @@
             // 
             // statusTextBox
             // 
-            this.statusTextBox.Enabled = false;
             this.statusTextBox.Location = new System.Drawing.Point(6, 19);
             this.statusTextBox.Multiline = true;
             this.statusTextBox.Name = "statusTextBox";
+            this.statusTextBox.ReadOnly = true;
+            this.statusTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.statusTextBox.Size = new System.Drawing.Size(369, 283);
             this.statusTextBox.TabIndex = 6;
             // 
@@ -721,15 +722,12 @@
             this.groupBox11.TabStop = false;
             this.groupBox11.Text = "Dump process";
             // 
-            // dumpButton
+            // dumpTextBox
             // 
-            this.dumpButton.Location = new System.Drawing.Point(296, 18);
-            this.dumpButton.Name = "dumpButton";
-            this.dumpButton.Size = new System.Drawing.Size(75, 23);
-            this.dumpButton.TabIndex = 2;
-            this.dumpButton.Text = "Dump";
-            this.dumpButton.UseVisualStyleBackColor = true;
-            this.dumpButton.Click += new System.EventHandler(this.dumpButton_Click);
+            this.dumpTextBox.Location = new System.Drawing.Point(61, 20);
+            this.dumpTextBox.Name = "dumpTextBox";
+            this.dumpTextBox.Size = new System.Drawing.Size(100, 20);
+            this.dumpTextBox.TabIndex = 1;
             // 
             // dumpProcessLabel
             // 
@@ -740,12 +738,15 @@
             this.dumpProcessLabel.TabIndex = 2;
             this.dumpProcessLabel.Text = "Process:";
             // 
-            // dumpTextBox
+            // dumpButton
             // 
-            this.dumpTextBox.Location = new System.Drawing.Point(61, 20);
-            this.dumpTextBox.Name = "dumpTextBox";
-            this.dumpTextBox.Size = new System.Drawing.Size(100, 20);
-            this.dumpTextBox.TabIndex = 1;
+            this.dumpButton.Location = new System.Drawing.Point(296, 18);
+            this.dumpButton.Name = "dumpButton";
+            this.dumpButton.Size = new System.Drawing.Size(75, 23);
+            this.dumpButton.TabIndex = 2;
+            this.dumpButton.Text = "Dump";
+            this.dumpButton.UseVisualStyleBackColor = true;
+            this.dumpButton.Click += new System.EventHandler(this.dumpButton_Click);
             // 
             // Form1
             // 
