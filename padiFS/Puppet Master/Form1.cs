@@ -150,7 +150,7 @@ namespace padiFS
                 UpdateClientServer(c);
             }
         }
-            
+
 
         private void UpdateClientServer(string c)
         {
@@ -523,14 +523,20 @@ namespace padiFS
             {
                 string command = script.ReadLine();
 
+
+                while (command != null && command[0] == '#')
+                {
+                    command.Trim();
+                    statusTextBox.Text += command + "\r\n";
+                    command = script.ReadLine();
+                }
+
                 if (command != null)
                 {
                     command.Trim();
-                    if (command[0] != '#')
-                    {
-                        HandleCommand(command);
-                    }
+                    HandleCommand(command);
                 }
+
             }
             catch (IOException)
             {
@@ -569,7 +575,7 @@ namespace padiFS
                 c_address = clients[process];
             }
 
-            
+
             IMetadataServer ms_server = null;
             IDataServer ds_server = null;
             IClient client = null;
@@ -612,6 +618,7 @@ namespace padiFS
             string[] args = lower_command.Split(new char[] { ' ' });
             int length = args.Length;
 
+            statusTextBox.Text += "command: " + lower_command + "\r\n";
 
             switch (args[0])
             {
@@ -654,18 +661,6 @@ namespace padiFS
                 case "create":
                     if (length == 6)
                     {
-                        if (metadataServers.Count < 1)
-                        {
-                            string ms_name = "m-" + mscounter;
-                            LaunchProcess(ms_name);
-                        }
-
-                        if (dataServers.Count < 1)
-                        {
-                            string ds_name = "d-" + dscounter;
-                            LaunchProcess(ds_name);
-                        }
-
                         string process = args[1];
                         LaunchProcess(process);
                         CreateCommand(process, args[2], args[3], args[4], args[5]);
@@ -742,7 +737,7 @@ namespace padiFS
                     break;
             }
 
-            statusTextBox.Text += "command: " + lower_command + "\r\n";
+
         }
 
         // CLIENT
@@ -754,7 +749,32 @@ namespace padiFS
         // DATA, METADATA, CLIENT
         private void DumpCommand(string process)
         {
-            throw new NotImplementedException();
+            char code = process[0];
+
+            switch (code)
+            {
+                case 'm':
+                    IMetadataServer ms_server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), processes[process]);
+                    if (ms_server != null)
+                    {
+                        statusTextBox.Text += ms_server.Dump() + "\r\n";
+                    }
+                    break;
+                case 'd':
+                    IDataServer ds_server = (IDataServer)Activator.GetObject(typeof(IDataServer), processes[process]);
+                    if (ds_server != null)
+                    {
+                        statusTextBox.Text += ds_server.Dump() + "\r\n";
+                    }
+                    break;
+                case 'c':
+                    IClient client = (IClient)Activator.GetObject(typeof(IClient), processes[process]);
+                    if (client != null)
+                    {
+                        statusTextBox.Text += client.Dump() + "\r\n";
+                    }
+                    break;
+            }
         }
 
         private void CopyCommand(string process, string fileRegister1, string semantics, string fileRegister2, string salt)
