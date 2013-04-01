@@ -22,6 +22,7 @@ namespace padiFS
         private ConcurrentBag<File> readFiles;
         private ConcurrentBag<int> writeFiles;
         private byte[][] stringRegister;
+        private Metadata[] fileRegister;
 
         public Client(string name, string port)
         {
@@ -32,6 +33,7 @@ namespace padiFS
             this.openFiles = new Dictionary<string, Metadata>(10);
             this.historic = new Dictionary<string, File>();
             this.stringRegister = new byte[10][];
+            this.fileRegister = new Metadata[10];
         }
 
         public void Create(string filename, int nServers, int rQuorum, int wQuorum)
