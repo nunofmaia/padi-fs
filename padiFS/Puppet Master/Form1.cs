@@ -29,6 +29,10 @@ namespace padiFS
         private List<string> activeClients;
         private List<string> activeDataServers;
         private List<string> activeMetadataServers;
+        private Dictionary<string, string> processes;
+
+        private StreamReader script;
+
 
 
         public Form1()
@@ -60,6 +64,9 @@ namespace padiFS
             activeClients = new List<string>();
             activeDataServers = new List<string>();
             activeMetadataServers = new List<string>();
+            processes = new Dictionary<string, string>();
+
+            script = null;
 
             channel = new TcpChannel(8070);
             ChannelServices.RegisterChannel(channel, true);
@@ -68,6 +75,66 @@ namespace padiFS
         }
 
         // LAUNCHING SITE
+        private void LaunchProcess(string name)
+        {
+            int port = Util.FreeTcpPort();
+            string address = "tcp://localhost:" + port + "/" + name;
+            char code = name[0];
+
+            switch (code)
+            {
+                case 'm':
+                    if (!metadataServers.ContainsKey(name))
+                    {
+                        LaunchMetadataServer(name, port);
+                        metadataServers.Add(name, address);
+                        mscounter++;
+                        registerMetadataServer(name, address);
+                        activeMetadataServers.Add(name);
+                        processes.Add(name, address);
+                    }
+
+                    break;
+
+                case 'd':
+                    if (!dataServers.ContainsKey(name))
+                    {
+                        if (mscounter != 0)
+                        {
+                            LaunchDataServer(name, port);
+                            dataServers.Add(name, address);
+                            activeDataServers.Add(name);
+                            dscounter++;
+                            registerDataServer(name, address);
+                            processes.Add(name, address);
+                        }
+                        else
+                        {
+                            System.Windows.Forms.MessageBox.Show("A Data Server should be launched only after a Metadata Server");
+                        }
+                    }
+
+                    break;
+
+                case 'c':
+                    if (!clients.ContainsKey(name))
+                    {
+                        LaunchClient(name, port);
+                        clients.Add(name, address);
+                        activeClients.Add(name);
+                        UpdateClientServer(name);
+                        if (metadataServers.Count > 0 && dataServers.Count > 0)
+                        {
+                            EnableButtons();
+                        }
+                        ccounter++;
+                        processes.Add(name, address);
+                    }
+
+                    break;
+            }
+        }
+
         private void LaunchMetadataServer(string name, int port)
         {
             ProcessStartInfo info = new ProcessStartInfo();
@@ -174,6 +241,7 @@ namespace padiFS
             }
         }
 
+        // TODO: use the LaunchProcess method to launch each process instead of doing always the same thing
         private void launchButton_Click(object sender, EventArgs e)
         {
             switch (serversComboBox.Text)
@@ -191,6 +259,7 @@ namespace padiFS
                     mscounter++;
                     registerMetadataServer(ms_name, ms_address);
                     activeMetadataServers.Add(ms_name);
+                    processes.Add(ms_name, ms_address);
                     break;
 
                 case "Data":
@@ -205,6 +274,7 @@ namespace padiFS
                         activeDataServers.Add(ds_name);
                         dscounter++;
                         registerDataServer(ds_name, ds_address);
+                        processes.Add(ds_name, ds_address);
                     }
                     else
                     {
@@ -225,6 +295,7 @@ namespace padiFS
                         EnableButtons();
                     }
                     ccounter++;
+                    processes.Add(c_name, c_address);
                     break;
             }
         }
@@ -422,6 +493,7 @@ namespace padiFS
                 try
                 {
                     scriptTextBox.Text = file;
+                    runScriptButton.Enabled = true;
                 }
                 catch (IOException)
                 {
@@ -433,9 +505,313 @@ namespace padiFS
         {
             string filePath = scriptTextBox.Text;
             scriptTextBox.Clear();
+            statusTextBox.Clear();
 
-            string text = System.IO.File.ReadAllText(filePath);
-            statusTextBox.Text = text;
+            script = new StreamReader(filePath);
+
+            runScriptButton.Enabled = false;
+            nextStepScriptButton.Enabled = true;
+            stopScriptButton.Enabled = true;
+            loadScriptButton.Enabled = false;
+        }
+
+        private void nextStepScriptButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string command = script.ReadLine();
+
+                if (command != null)
+                {
+                    command.Trim();
+                    if (command[0] != '#')
+                    {
+                        HandleCommand(command);
+                    }
+                }
+            }
+            catch (IOException)
+            {
+            }
+        }
+
+        private void stopScriptButton_Click(object sender, EventArgs e)
+        {
+            script.Close();
+            script = null;
+
+            loadScriptButton.Enabled = true;
+            nextStepScriptButton.Enabled = false;
+            stopScriptButton.Enabled = false;
+        }
+
+        // TODO: Ask the professor if the commands are always well-formed so we can ditch the if conditions
+        private void HandleCommand(string command)
+        {
+            string lower_command = command.ToLower();
+            string[] args = lower_command.Split(new char[] { ' ' });
+            int length = args.Length;
+
+
+            switch (args[0])
+            {
+                case "fail":
+                    if (length == 2)
+                    {
+                        string process = args[1];
+                        LaunchProcess(process);
+                        FailCommand(process);
+                    }
+                    break;
+
+                case "recover":
+                    if (length == 2)
+                    {
+                        string process = args[1];
+                        LaunchProcess(process);
+                        RecoverCommand(process);
+                    }
+                    break;
+
+                case "freeze":
+                    if (length == 2)
+                    {
+                        string process = args[1];
+                        LaunchProcess(process);
+                        FreezeCommand(process);
+                    }
+                    break;
+
+                case "unfreeze":
+                    if (length == 2)
+                    {
+                        string process = args[1];
+                        LaunchProcess(process);
+                        UnfreezeCommand(process);
+                    }
+                    break;
+
+                case "create":
+                    if (length == 6)
+                    {
+                        if (metadataServers.Count < 1)
+                        {
+                            string ms_name = "m-" + mscounter;
+                            LaunchProcess(ms_name);
+                        }
+
+                        if (dataServers.Count < 1)
+                        {
+                            string ds_name = "d-" + dscounter;
+                            LaunchProcess(ds_name);
+                        }
+
+                        string process = args[1];
+                        LaunchProcess(process);
+                        CreateCommand(process, args[2], args[3], args[4], args[5]);
+                    }
+                    break;
+
+                case "open":
+                    if (length == 3)
+                    {
+                        string process = args[1];
+                        LaunchProcess(process);
+                        OpenCommand(process, args[2]);
+                    }
+                    break;
+
+                case "close":
+                    if (length == 3)
+                    {
+                        string process = args[1];
+                        LaunchProcess(process);
+                        CloseCommand(process, args[2]);
+                    }
+                    break;
+
+                case "read":
+                    if (length == 5)
+                    {
+                        string process = args[1];
+                        LaunchProcess(process);
+                        ReadCommand(process, args[2], args[3], args[4]);
+                    }
+                    break;
+
+                case "write":
+                    if (length == 4)
+                    {
+                        string process = args[1];
+                        LaunchProcess(process);
+                        WriteCommand(process, args[2], args[3]);
+                    }
+                    break;
+
+                case "copy":
+                    if (length == 6)
+                    {
+                        string process = args[1];
+                        LaunchProcess(process);
+                        CopyCommand(process, args[2], args[3], args[4], args[5]);
+                    }
+                    break;
+
+                case "dump":
+                    if (length == 2)
+                    {
+                        string process = args[1];
+                        LaunchProcess(process);
+                        DumpCommand(process);
+
+                    }
+                    break;
+
+                case "exescript":
+                    if (length == 3)
+                    {
+                        string process = args[1];
+                        LaunchProcess(process);
+                        ExecScriptCommand(process, args[2]);
+
+                    }
+                    break;
+
+                default:
+                    System.Windows.Forms.MessageBox.Show("Wrong command");
+                    break;
+            }
+
+            statusTextBox.Text += "command: " + lower_command + "\r\n";
+        }
+
+        // CLIENT
+        private void ExecScriptCommand(string process, string filename)
+        {
+            throw new NotImplementedException();
+        }
+
+        // DATA, METADATA, CLIENT
+        private void DumpCommand(string process)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void CopyCommand(string process, string fileRegister1, string semantics, string fileRegister2, string salt)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void WriteCommand(string process, string fileRegister, string source)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ReadCommand(string process, string fileRegister, string semantics, string register)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void CloseCommand(string process, string filename)
+        {
+            IClient client = (IClient)Activator.GetObject(typeof(IClient), (string)clients[process]);
+
+            if (client != null)
+            {
+                client.Close(filename);
+            }
+        }
+
+        private void OpenCommand(string process, string filename)
+        {
+            IClient client = (IClient)Activator.GetObject(typeof(IClient), (string)clients[process]);
+
+            if (client != null)
+            {
+                client.Open(filename);
+            }
+        }
+
+        private void CreateCommand(string process, string filename, string numberOfServers, string readQuorum, string writeQuorum)
+        {
+            int nServers = int.Parse(numberOfServers);
+            int rQuorum = int.Parse(readQuorum);
+            int wQuorum = int.Parse(writeQuorum);
+
+            IClient client = (IClient)Activator.GetObject(typeof(IClient), (string)clients[process]);
+
+            if (client != null)
+            {
+                client.Create(filename, nServers, rQuorum, wQuorum);
+            }
+        }
+
+        // DATA
+        private void UnfreezeCommand(string process)
+        {
+            IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), processes[process]);
+
+            if (server != null)
+            {
+                server.Unfreeze();
+            }
+        }
+
+        // DATA
+        private void FreezeCommand(string process)
+        {
+            IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), processes[process]);
+
+            if (server != null)
+            {
+                server.Freeze();
+            }
+        }
+
+        // DATA, METADATA
+        private void RecoverCommand(string process)
+        {
+            char code = process[0];
+
+            switch (code)
+            {
+                case 'm':
+                    IMetadataServer ms_server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), processes[process]);
+                    if (ms_server != null)
+                    {
+                        ms_server.Recover();
+                        activeMetadataServers.Add(process);
+                    }
+                    break;
+
+                case 'd':
+                    IDataServer ds_server = (IDataServer)Activator.GetObject(typeof(IDataServer), processes[process]);
+                    if (ds_server != null)
+                    {
+                        ds_server.Recover();
+                    }
+                    break;
+            }
+        }
+
+        // DATA, METADATA
+        private void FailCommand(string process)
+        {
+            char code = process[0];
+
+            switch (code)
+            {
+                case 'm':
+                    IMetadataServer ms_server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), processes[process]);
+                    ms_server.Fail();
+                    activeMetadataServers.Remove(process);
+                    break;
+
+                case 'd':
+                    IDataServer ds_server = (IDataServer)Activator.GetObject(typeof(IDataServer), processes[process]);
+                    ds_server.Fail();
+                    break;
+            }
         }
     }
 }

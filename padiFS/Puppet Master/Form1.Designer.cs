@@ -87,10 +87,12 @@
             this.groupBox9 = new System.Windows.Forms.GroupBox();
             this.statusTextBox = new System.Windows.Forms.TextBox();
             this.groupBox10 = new System.Windows.Forms.GroupBox();
-            this.runScriptButton = new System.Windows.Forms.Button();
-            this.loadScriptButton = new System.Windows.Forms.Button();
             this.scriptTextBox = new System.Windows.Forms.TextBox();
+            this.loadScriptButton = new System.Windows.Forms.Button();
+            this.runScriptButton = new System.Windows.Forms.Button();
             this.openScriptDialog = new System.Windows.Forms.OpenFileDialog();
+            this.nextStepScriptButton = new System.Windows.Forms.Button();
+            this.stopScriptButton = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -656,29 +658,29 @@
             // 
             // groupBox10
             // 
+            this.groupBox10.Controls.Add(this.stopScriptButton);
+            this.groupBox10.Controls.Add(this.nextStepScriptButton);
             this.groupBox10.Controls.Add(this.scriptTextBox);
             this.groupBox10.Controls.Add(this.loadScriptButton);
             this.groupBox10.Controls.Add(this.runScriptButton);
             this.groupBox10.Location = new System.Drawing.Point(13, 534);
             this.groupBox10.Name = "groupBox10";
-            this.groupBox10.Size = new System.Drawing.Size(380, 57);
+            this.groupBox10.Size = new System.Drawing.Size(380, 90);
             this.groupBox10.TabIndex = 10;
             this.groupBox10.TabStop = false;
             this.groupBox10.Text = "Load script";
             // 
-            // runScriptButton
+            // scriptTextBox
             // 
-            this.runScriptButton.Location = new System.Drawing.Point(299, 19);
-            this.runScriptButton.Name = "runScriptButton";
-            this.runScriptButton.Size = new System.Drawing.Size(75, 23);
-            this.runScriptButton.TabIndex = 0;
-            this.runScriptButton.Text = "Run";
-            this.runScriptButton.UseVisualStyleBackColor = true;
-            this.runScriptButton.Click += new System.EventHandler(this.runScriptButton_Click);
+            this.scriptTextBox.Enabled = false;
+            this.scriptTextBox.Location = new System.Drawing.Point(6, 21);
+            this.scriptTextBox.Name = "scriptTextBox";
+            this.scriptTextBox.Size = new System.Drawing.Size(287, 20);
+            this.scriptTextBox.TabIndex = 2;
             // 
             // loadScriptButton
             // 
-            this.loadScriptButton.Location = new System.Drawing.Point(218, 19);
+            this.loadScriptButton.Location = new System.Drawing.Point(299, 19);
             this.loadScriptButton.Name = "loadScriptButton";
             this.loadScriptButton.Size = new System.Drawing.Size(75, 23);
             this.loadScriptButton.TabIndex = 1;
@@ -686,23 +688,48 @@
             this.loadScriptButton.UseVisualStyleBackColor = true;
             this.loadScriptButton.Click += new System.EventHandler(this.loadScriptButton_Click);
             // 
-            // scriptTextBox
+            // runScriptButton
             // 
-            this.scriptTextBox.Enabled = false;
-            this.scriptTextBox.Location = new System.Drawing.Point(6, 21);
-            this.scriptTextBox.Name = "scriptTextBox";
-            this.scriptTextBox.Size = new System.Drawing.Size(206, 20);
-            this.scriptTextBox.TabIndex = 2;
+            this.runScriptButton.Enabled = false;
+            this.runScriptButton.Location = new System.Drawing.Point(72, 58);
+            this.runScriptButton.Name = "runScriptButton";
+            this.runScriptButton.Size = new System.Drawing.Size(75, 23);
+            this.runScriptButton.TabIndex = 0;
+            this.runScriptButton.Text = "Run";
+            this.runScriptButton.UseVisualStyleBackColor = true;
+            this.runScriptButton.Click += new System.EventHandler(this.runScriptButton_Click);
             // 
             // openScriptDialog
             // 
             this.openScriptDialog.Filter = "Text Files|*.txt";
             // 
+            // nextStepScriptButton
+            // 
+            this.nextStepScriptButton.Enabled = false;
+            this.nextStepScriptButton.Location = new System.Drawing.Point(153, 58);
+            this.nextStepScriptButton.Name = "nextStepScriptButton";
+            this.nextStepScriptButton.Size = new System.Drawing.Size(75, 23);
+            this.nextStepScriptButton.TabIndex = 3;
+            this.nextStepScriptButton.Text = "Next step";
+            this.nextStepScriptButton.UseVisualStyleBackColor = true;
+            this.nextStepScriptButton.Click += new System.EventHandler(this.nextStepScriptButton_Click);
+            // 
+            // stopScriptButton
+            // 
+            this.stopScriptButton.Enabled = false;
+            this.stopScriptButton.Location = new System.Drawing.Point(234, 58);
+            this.stopScriptButton.Name = "stopScriptButton";
+            this.stopScriptButton.Size = new System.Drawing.Size(75, 23);
+            this.stopScriptButton.TabIndex = 4;
+            this.stopScriptButton.Text = "Stop";
+            this.stopScriptButton.UseVisualStyleBackColor = true;
+            this.stopScriptButton.Click += new System.EventHandler(this.stopScriptButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(793, 604);
+            this.ClientSize = new System.Drawing.Size(793, 637);
             this.Controls.Add(this.groupBox10);
             this.Controls.Add(this.groupBox9);
             this.Controls.Add(this.groupBox8);
@@ -803,6 +830,8 @@
         private System.Windows.Forms.Button loadScriptButton;
         private System.Windows.Forms.Button runScriptButton;
         private System.Windows.Forms.OpenFileDialog openScriptDialog;
+        private System.Windows.Forms.Button stopScriptButton;
+        private System.Windows.Forms.Button nextStepScriptButton;
 
     }
 }
