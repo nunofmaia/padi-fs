@@ -43,13 +43,13 @@ namespace padiFS
                 freeze.WaitOne();
 
                 File file = new File();
+                string[] args = Util.SplitArguments(fileName);
 
-                file.Version = DateTime.Now;
-                Console.WriteLine(file.Version);
+                file.Version = Convert.ToDateTime(args[0]);
                 file.Content = new byte[1];
 
                 this.currentDir = Environment.CurrentDirectory;
-                string path = currentDir + @"\" + this.name + @"\" + fileName + @".txt";
+                string path = currentDir + @"\" + this.name + @"\" + args[1] + @".txt";
 
 
                 Console.WriteLine(path);
@@ -64,6 +64,7 @@ namespace padiFS
 
         public File Read(string localFile, string semantics)
         {
+            Console.WriteLine(localFile);
             if (!onFailure)
             {
                 freeze.WaitOne();

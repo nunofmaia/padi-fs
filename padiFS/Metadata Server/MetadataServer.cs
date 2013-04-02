@@ -120,11 +120,14 @@ namespace padiFS
                     {
                         List<string> servers = new List<string>();
                         List<string> chosen = ChooseBestServers(serversNumber);
+
+                        // Before sending the requests, a time stamp is added to the filename
+                        string f = DateTime.Now.ToString("o") + (char)0x7f + filename;
                         foreach (string v in chosen)
                         {
                             List<string> arguments = new List<string>();
                             arguments.Add(liveDataServers[v]);
-                            arguments.Add(filename);
+                            arguments.Add(f);
                             servers.Add(liveDataServers[v]);
                             ThreadPool.QueueUserWorkItem(CreateCallback, arguments);
                             serversLoad[v]++;
