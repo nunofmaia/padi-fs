@@ -488,6 +488,7 @@ namespace padiFS
         private void loadScriptButton_Click(object sender, EventArgs e)
         {
             DialogResult result = openScriptDialog.ShowDialog();
+            statusTextBox.Clear();
             if (result == DialogResult.OK)
             {
                 string file = openScriptDialog.FileName;
@@ -495,7 +496,9 @@ namespace padiFS
                 try
                 {
                     scriptTextBox.Text = file;
+                    script = new StreamReader(file);
                     runScriptButton.Enabled = true;
+                    stepScriptButton.Enabled = true;
                 }
                 catch (IOException)
                 {
@@ -507,18 +510,50 @@ namespace padiFS
         {
             string filePath = scriptTextBox.Text;
             scriptTextBox.Clear();
-            statusTextBox.Clear();
 
-            script = new StreamReader(filePath);
 
             runScriptButton.Enabled = false;
-            nextStepScriptButton.Enabled = true;
+            stepScriptButton.Enabled = false;
             stopScriptButton.Enabled = true;
             loadScriptButton.Enabled = false;
+
+            while (!script.EndOfStream)
+            {
+                try
+                {
+                    string command = script.ReadLine();
+
+
+                    while (command != null && command[0] == '#')
+                    {
+                        command.Trim();
+                        statusTextBox.Text += command + "\r\n";
+                        command = script.ReadLine();
+                    }
+
+                    if (command != null)
+                    {
+                        command.Trim();
+                        HandleCommand(command);
+                    }
+
+                }
+                catch (IOException)
+                {
+                }
+            }
         }
 
         private void nextStepScriptButton_Click(object sender, EventArgs e)
         {
+            scriptTextBox.Clear();
+
+
+            runScriptButton.Enabled = false;
+            stepScriptButton.Enabled = true;
+            stopScriptButton.Enabled = true;
+            loadScriptButton.Enabled = false;
+
             try
             {
                 string command = script.ReadLine();
@@ -549,7 +584,7 @@ namespace padiFS
             script = null;
 
             loadScriptButton.Enabled = true;
-            nextStepScriptButton.Enabled = false;
+            stepScriptButton.Enabled = false;
             stopScriptButton.Enabled = false;
         }
 

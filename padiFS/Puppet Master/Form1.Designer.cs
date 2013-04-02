@@ -86,7 +86,7 @@
             this.statusTextBox = new System.Windows.Forms.TextBox();
             this.groupBox10 = new System.Windows.Forms.GroupBox();
             this.stopScriptButton = new System.Windows.Forms.Button();
-            this.nextStepScriptButton = new System.Windows.Forms.Button();
+            this.stepScriptButton = new System.Windows.Forms.Button();
             this.scriptTextBox = new System.Windows.Forms.TextBox();
             this.loadScriptButton = new System.Windows.Forms.Button();
             this.runScriptButton = new System.Windows.Forms.Button();
@@ -644,7 +644,7 @@
             // groupBox10
             // 
             this.groupBox10.Controls.Add(this.stopScriptButton);
-            this.groupBox10.Controls.Add(this.nextStepScriptButton);
+            this.groupBox10.Controls.Add(this.stepScriptButton);
             this.groupBox10.Controls.Add(this.scriptTextBox);
             this.groupBox10.Controls.Add(this.loadScriptButton);
             this.groupBox10.Controls.Add(this.runScriptButton);
@@ -666,16 +666,16 @@
             this.stopScriptButton.UseVisualStyleBackColor = true;
             this.stopScriptButton.Click += new System.EventHandler(this.stopScriptButton_Click);
             // 
-            // nextStepScriptButton
+            // stepScriptButton
             // 
-            this.nextStepScriptButton.Enabled = false;
-            this.nextStepScriptButton.Location = new System.Drawing.Point(153, 58);
-            this.nextStepScriptButton.Name = "nextStepScriptButton";
-            this.nextStepScriptButton.Size = new System.Drawing.Size(75, 23);
-            this.nextStepScriptButton.TabIndex = 3;
-            this.nextStepScriptButton.Text = "Next step";
-            this.nextStepScriptButton.UseVisualStyleBackColor = true;
-            this.nextStepScriptButton.Click += new System.EventHandler(this.nextStepScriptButton_Click);
+            this.stepScriptButton.Enabled = false;
+            this.stepScriptButton.Location = new System.Drawing.Point(153, 58);
+            this.stepScriptButton.Name = "stepScriptButton";
+            this.stepScriptButton.Size = new System.Drawing.Size(75, 23);
+            this.stepScriptButton.TabIndex = 3;
+            this.stepScriptButton.Text = "Step";
+            this.stepScriptButton.UseVisualStyleBackColor = true;
+            this.stepScriptButton.Click += new System.EventHandler(this.nextStepScriptButton_Click);
             // 
             // scriptTextBox
             // 
@@ -855,7 +855,7 @@
         private System.Windows.Forms.Button runScriptButton;
         private System.Windows.Forms.OpenFileDialog openScriptDialog;
         private System.Windows.Forms.Button stopScriptButton;
-        private System.Windows.Forms.Button nextStepScriptButton;
+        private System.Windows.Forms.Button stepScriptButton;
         private System.Windows.Forms.GroupBox groupBox11;
         private System.Windows.Forms.TextBox dumpTextBox;
         private System.Windows.Forms.Label dumpProcessLabel;
