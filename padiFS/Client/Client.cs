@@ -142,9 +142,12 @@ namespace padiFS
 
                 File selected = received[votes.Keys.Last()];
 
-                if (semantic.Equals("default"))
+                if (semantic.Equals("default", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    historic.Add(filename, selected);
+                    if (!historic.ContainsKey(filename))
+                    {
+                        historic.Add(filename, selected);
+                    }
                     Console.WriteLine("Read file " + filename + ": " + Util.ConvertByteArrayToString(selected.Content));
                 }
                 else
@@ -263,9 +266,12 @@ namespace padiFS
 
             File selected = received[votes.Keys.Last()];
 
-            if (semantic.Equals("default"))
+            if (semantic.Equals("default", StringComparison.InvariantCultureIgnoreCase))
             {
-                historic.Add(filename, selected);
+                if (!historic.ContainsKey(filename))
+                {
+                    historic.Add(filename, selected);
+                }
                 stringRegister[register] = selected.Content;
                 Console.WriteLine("Read file " + filename + ": " + Util.ConvertByteArrayToString(selected.Content));
             }
@@ -366,6 +372,7 @@ namespace padiFS
 
         public void Write(string file, string content)
         {
+            Console.WriteLine(content);
             Thread t = new Thread(() => ExecutePMWriteContent(file, content));
             t.Start();
         }
