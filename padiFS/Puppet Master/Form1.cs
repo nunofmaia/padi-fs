@@ -666,7 +666,7 @@ namespace padiFS
                     LaunchProcess(args[1]);
                     if (length > 4)
                     {
-                        string contents = Util.MakeStringFromEnumerate(args.Skip(2));
+                        string contents = Util.MakeStringFromArray(args, 3);
                         System.Windows.Forms.MessageBox.Show(contents);
                         WriteCommand(args[1], args[2], contents);
                     }
