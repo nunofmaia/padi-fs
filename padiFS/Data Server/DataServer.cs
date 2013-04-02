@@ -53,7 +53,6 @@ namespace padiFS
 
 
                 Console.WriteLine(path);
-                Console.WriteLine(file.GetType());
                 TextWriter tw = new StreamWriter(path);
                 System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
                 x.Serialize(tw, file);
@@ -64,7 +63,6 @@ namespace padiFS
 
         public File Read(string localFile, string semantics)
         {
-            Console.WriteLine(localFile);
             if (!onFailure)
             {
                 freeze.WaitOne();
@@ -100,32 +98,33 @@ namespace padiFS
                 string date = content[0];
                 byte[] bytes = Util.ConvertStringToByteArray(content[1]);
 
-                File file = new File();
+                File newFile = new File();
+                File oldFile = Read(localFile, "default");
 
-
-                file.Version = Convert.ToDateTime(date);
-                file.Content = bytes;
-
-                this.currentDir = Environment.CurrentDirectory;
-                string path = currentDir + @"\" + this.name + @"\" + localFile + @".txt";
-
-                if (System.IO.File.Exists(path))
+                if (oldFile.Version < Convert.ToDateTime(date))
                 {
-                    Console.WriteLine(path);
-                    Console.WriteLine(file.GetType());
-                    TextWriter tw = new StreamWriter(path);
-                    System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
-                    x.Serialize(tw, file);
-                    Console.WriteLine("object written to file");
-                    tw.Close();
-                    //success
-                    return 0;
+                    newFile.Version = Convert.ToDateTime(date);
+                    newFile.Content = bytes;
+                    this.currentDir = Environment.CurrentDirectory;
+                    string path = currentDir + @"\" + this.name + @"\" + localFile + @".txt";
+
+                    if (System.IO.File.Exists(path))
+                    {
+                        Console.WriteLine(path);
+                        TextWriter tw = new StreamWriter(path);
+                        System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(newFile.GetType());
+                        x.Serialize(tw, newFile);
+                        Console.WriteLine("object written to file");
+                        tw.Close();
+                    }
+                    else
+                    {
+                        //isto TEM DE SER MUDADO
+                        Console.WriteLine("O ficheiro não existe");
+                    }
                 }
-                else
-                {
-                    //isto TEM DE SER MUDADO
-                    Console.WriteLine("O ficheiro não existe");
-                }
+                //success
+                return 0;
             }
             //failure
             return -1;

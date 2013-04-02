@@ -508,6 +508,12 @@ namespace padiFS
 
         private void runScriptButton_Click(object sender, EventArgs e)
         {
+            Thread t = new Thread(() => ExecuteRun());
+            t.Start();
+        }
+
+        private void ExecuteRun()
+        {
             string filePath = scriptTextBox.Text;
             scriptTextBox.Clear();
 
@@ -702,7 +708,6 @@ namespace padiFS
                     if (length > 4)
                     {
                         string contents = Util.MakeStringFromArray(args, 3);
-                        System.Windows.Forms.MessageBox.Show(contents);
                         WriteCommand(args[1], args[2], contents);
                     }
                     else

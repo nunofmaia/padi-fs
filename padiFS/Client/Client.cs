@@ -18,7 +18,7 @@ namespace padiFS
         private Bridge bridge;
         private Dictionary<string, Metadata> myFiles;
         private Dictionary<string, Metadata> openFiles;
-        private Dictionary<string, File> historic;
+        private ConcurrentDictionary<string, File> historic;
         private ConcurrentBag<File> readFiles;
         private ConcurrentBag<int> writeFiles;
         private byte[][] stringRegister;
@@ -31,7 +31,7 @@ namespace padiFS
             this.bridge = new Bridge();
             this.myFiles = new Dictionary<string, Metadata>();
             this.openFiles = new Dictionary<string, Metadata>(10);
-            this.historic = new Dictionary<string, File>();
+            this.historic = new ConcurrentDictionary<string, File>();
             this.stringRegister = new byte[10][];
             this.fileRegister = new Metadata[10];
         }
@@ -111,7 +111,7 @@ namespace padiFS
                             readFiles.Add(file);
                             break;
                         }
-                        Thread.Sleep(1000* requestInterval);
+                        Thread.Sleep(1000 * requestInterval);
                     }                 
                 }
                 catch (SystemException)
@@ -138,7 +138,12 @@ namespace padiFS
                 Dictionary<DateTime, int> votes = null;
                 int winner = -1;
 
-                ReadVoting(readQuorum, ref received, ref votes, ref winner);
+                while(!ReadVoting(readQuorum, ref received, ref votes, ref winner))
+                {
+                    ReadCallDataServers(filename, semantic, servers);
+                    received = null;
+                    votes = null;
+                }
 
                 File selected = received[votes.Keys.Last()];
 
@@ -146,7 +151,7 @@ namespace padiFS
                 {
                     if (!historic.ContainsKey(filename))
                     {
-                        historic.Add(filename, selected);
+                        historic.TryAdd(filename, selected);
                     }
                     Console.WriteLine("Read file " + filename + ": " + Util.ConvertByteArrayToString(selected.Content));
                 }
@@ -166,7 +171,7 @@ namespace padiFS
                     }
                     else
                     {
-                        historic.Add(filename, selected);
+                        historic.TryAdd(filename, selected);
                         Console.WriteLine("Read file " + filename + ": " + Util.ConvertByteArrayToString(selected.Content));
                     }
                 }
@@ -174,10 +179,17 @@ namespace padiFS
         }
 
         // Method that performs the voting count of answers from data servers
-        private void ReadVoting(int readQuorum, ref Dictionary<DateTime, File> received, ref Dictionary<DateTime, int> votes, ref int winner)
+        private bool ReadVoting(int readQuorum, ref Dictionary<DateTime, File> received, ref Dictionary<DateTime, int> votes, ref int winner)
         {
+            int timer = 0;
             while (winner < readQuorum)
             {
+                // Tries 5 times to reach a quorum before trying to read again
+                timer++;
+                if (timer > 5)
+                {
+                    return false;
+                }
 
                 // In the best case, all replies are right
                 // In the worst case, this cycle is useless
@@ -210,13 +222,13 @@ namespace padiFS
                 Console.WriteLine("Winner " + winner);
                 Thread.Sleep(1000);
             }
+            return true;
         }
 
         // Method that perform calls to all data servers that store the file
         private void ReadCallDataServers(string filename, string semantic, List<string> servers)
         {
             int i = 0;
-            int files = servers.Count;
             foreach (string s in servers)
             {
                 List<object> arguments = new List<object>();
@@ -262,7 +274,13 @@ namespace padiFS
             Dictionary<DateTime, int> votes = null;
             int winner = -1;
 
-            ReadVoting(readQuorum, ref received, ref votes, ref winner);
+            while (!ReadVoting(readQuorum, ref received, ref votes, ref winner))
+            {
+                ReadCallDataServers(filename, semantic, servers);
+                readFiles = new ConcurrentBag<File>();
+                received = null;
+                votes = null;
+            }
 
             File selected = received[votes.Keys.Last()];
 
@@ -270,7 +288,7 @@ namespace padiFS
             {
                 if (!historic.ContainsKey(filename))
                 {
-                    historic.Add(filename, selected);
+                    historic.TryAdd(filename, selected);
                 }
                 stringRegister[register] = selected.Content;
                 Console.WriteLine("Read file " + filename + ": " + Util.ConvertByteArrayToString(selected.Content));
@@ -293,7 +311,7 @@ namespace padiFS
                 }
                 else
                 {
-                    historic.Add(filename, selected);
+                    historic.TryAdd(filename, selected);
                     stringRegister[register] = selected.Content;
                     Console.WriteLine("Read file " + filename + ": " + Util.ConvertByteArrayToString(selected.Content));
                 }
@@ -343,18 +361,33 @@ namespace padiFS
                 string bytes = Util.ConvertByteArrayToString(bytearray);
                 byte[] content = Util.ConvertStringToByteArray(DateTime.Now.ToString("o") + (char)0x7f + bytes);
 
-                foreach (string s in servers)
-                {
-                    List<object> arguments = new List<object>();
-                    arguments.Add(s);
-                    arguments.Add(filename);
-                    arguments.Add(content);
-                    ThreadPool.QueueUserWorkItem(WriteCallback, arguments);
-                }
+                WriteCallDataServers(filename, servers, content);
+
+                // Tries 5 times to reach a quorum before trying to write again
+                int timer = 0;
                 while (writeFiles.Count < writeQuorum)
                 {
+                    timer++;
+                    if (timer > 5)
+                    {
+                        writeFiles = new ConcurrentBag<int>();
+                        WriteCallDataServers(filename, servers, content);
+                    }
+                    Thread.Sleep(1000);
                 }
                 Console.WriteLine("Write file: " + filename);
+            }
+        }
+
+        private void WriteCallDataServers(string filename, List<string> servers, byte[] content)
+        {
+            foreach (string s in servers)
+            {
+                List<object> arguments = new List<object>();
+                arguments.Add(s);
+                arguments.Add(filename);
+                arguments.Add(content);
+                ThreadPool.QueueUserWorkItem(WriteCallback, arguments);
             }
         }
 
@@ -372,7 +405,6 @@ namespace padiFS
 
         public void Write(string file, string content)
         {
-            Console.WriteLine(content);
             Thread t = new Thread(() => ExecutePMWriteContent(file, content));
             t.Start();
         }
