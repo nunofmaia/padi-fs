@@ -45,6 +45,7 @@ namespace padiFS
                 File file = new File();
 
                 file.Version = DateTime.Now;
+                Console.WriteLine(file.Version);
                 file.Content = new byte[1];
 
                 this.currentDir = Environment.CurrentDirectory;

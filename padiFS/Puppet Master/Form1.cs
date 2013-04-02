@@ -745,15 +745,17 @@ namespace padiFS
         {
             IClient client = (IClient)Activator.GetObject(typeof(IClient), (string)clients[process]);
             int register;
-            Int32.TryParse(source, out register);
 
             //Needed to do this here, to diferentiate what method to call
-            if (register >= 0 || register <= 9)
+            if (Int32.TryParse(source, out register))
             {
-                if (client != null)
+                if (register >= 0 || register <= 9)
                 {
-                    // Call Write with register
-                    client.Write(fileRegister, register);
+                    if (client != null)
+                    {
+                        // Call Write with register
+                        client.Write(fileRegister, register);
+                    }
                 }
             }
             else if (client != null)
