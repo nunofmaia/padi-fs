@@ -85,5 +85,18 @@ namespace padiFS
         {
             return int.Parse(name.Substring(2, name.Length - 2));
         }
+
+        public static string MakeStringFromArray(string[] arr, int index)
+        {
+            string result = "";
+
+            for (int i = index; i < arr.Length; i++)
+            {
+                result += arr[i] + " ";
+            }
+
+            return result;
+        }
+            
     }
 }
