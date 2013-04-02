@@ -85,5 +85,18 @@ namespace padiFS
         {
             return int.Parse(name.Substring(2, name.Length - 2));
         }
+
+        public static string MakeStringFromEnumerate(IEnumerable<string> e)
+        {
+            string result = "";
+
+            foreach (string s in e)
+            {
+                result += e;
+            }
+
+            return result;
+        }
+            
     }
 }

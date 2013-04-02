@@ -623,113 +623,72 @@ namespace padiFS
             switch (args[0])
             {
                 case "fail":
-                    if (length == 2)
-                    {
-                        string process = args[1];
-                        LaunchProcess(process);
-                        FailCommand(process);
-                    }
+                    LaunchProcess(args[1]);
+                    FailCommand(args[1]);
                     break;
 
                 case "recover":
-                    if (length == 2)
-                    {
-                        string process = args[1];
-                        LaunchProcess(process);
-                        RecoverCommand(process);
-                    }
+                    LaunchProcess(args[1]);
+                    RecoverCommand(args[1]);
                     break;
 
                 case "freeze":
-                    if (length == 2)
-                    {
-                        string process = args[1];
-                        LaunchProcess(process);
-                        FreezeCommand(process);
-                    }
+                    LaunchProcess(args[1]);
+                    FreezeCommand(args[1]);
                     break;
 
                 case "unfreeze":
-                    if (length == 2)
-                    {
-                        string process = args[1];
-                        LaunchProcess(process);
-                        UnfreezeCommand(process);
-                    }
+                    LaunchProcess(args[1]);
+                    UnfreezeCommand(args[1]);
                     break;
 
                 case "create":
-                    if (length == 6)
-                    {
-                        string process = args[1];
-                        LaunchProcess(process);
-                        CreateCommand(process, args[2], args[3], args[4], args[5]);
-                    }
+                    LaunchProcess(args[1]);
+                    CreateCommand(args[1], args[2], args[3], args[4], args[5]);
                     break;
 
                 case "open":
-                    if (length == 3)
-                    {
-                        string process = args[1];
-                        LaunchProcess(process);
-                        OpenCommand(process, args[2]);
-                    }
+                    LaunchProcess(args[1]);
+                    OpenCommand(args[1], args[2]);
                     break;
 
                 case "close":
-                    if (length == 3)
-                    {
-                        string process = args[1];
-                        LaunchProcess(process);
-                        CloseCommand(process, args[2]);
-                    }
+                    LaunchProcess(args[1]);
+                    CloseCommand(args[1], args[2]);
                     break;
 
                 case "read":
-                    if (length == 5)
-                    {
-                        string process = args[1];
-                        LaunchProcess(process);
-                        ReadCommand(process, args[2], args[3], args[4]);
-                    }
+                    LaunchProcess(args[1]);
+                    ReadCommand(args[1], args[2], args[3], args[4]);
                     break;
 
                 case "write":
-                    if (length == 4)
+                    LaunchProcess(args[1]);
+                    if (length > 4)
                     {
-                        string process = args[1];
-                        LaunchProcess(process);
-                        WriteCommand(process, args[2], args[3]);
+                        string contents = Util.MakeStringFromEnumerate(args.Skip(2));
+                        System.Windows.Forms.MessageBox.Show(contents);
+                        WriteCommand(args[1], args[2], contents);
+                    }
+                    else
+                    {
+                        WriteCommand(args[1], args[2], args[3]);
                     }
                     break;
 
                 case "copy":
-                    if (length == 6)
-                    {
-                        string process = args[1];
-                        LaunchProcess(process);
-                        CopyCommand(process, args[2], args[3], args[4], args[5]);
-                    }
+                    LaunchProcess(args[1]);
+                    CopyCommand(args[1], args[2], args[3], args[4], args[5]);
                     break;
 
                 case "dump":
-                    if (length == 2)
-                    {
-                        string process = args[1];
-                        LaunchProcess(process);
-                        DumpCommand(process);
-
-                    }
+                    LaunchProcess(args[1]);
+                    DumpCommand(args[1]);
                     break;
 
                 case "exescript":
-                    if (length == 3)
-                    {
-                        string process = args[1];
-                        LaunchProcess(process);
-                        ExecScriptCommand(process, args[2]);
-
-                    }
+                    LaunchProcess(args[1]);
+                    ExecScriptCommand(args[1], args[2]);
                     break;
 
                 default:
