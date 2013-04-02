@@ -233,10 +233,14 @@ namespace padiFS
         }
 
         // Read for Puppet Master Scripts
-        public void Read(int file, string semantic, int register)
+        public void Read(string file, string semantic, string register)
         {
-            Thread t = new Thread(() => ExecutePMRead(file, semantic, register));
-            t.Start();
+            int f, r;
+            if (Int32.TryParse(file, out f) && Int32.TryParse(register, out r))
+            {
+                Thread t = new Thread(() => ExecutePMRead(f, semantic, r));
+                t.Start();
+            }
         }
 
         private void ExecutePMRead(int file, string semantic, int register)
@@ -354,13 +358,13 @@ namespace padiFS
             t.Start();
         }
 
-        public void Write(int file, int register)
+        public void Write(string file, int register)
         {
             Thread t = new Thread(() => ExecutePMWriteRegister(file, register));
             t.Start();
         }
 
-        public void Write(int file, string content)
+        public void Write(string file, string content)
         {
             Thread t = new Thread(() => ExecutePMWriteContent(file, content));
             t.Start();
@@ -368,22 +372,30 @@ namespace padiFS
 
         // Method to get the file from the file register and write the content
         // provided in the script
-        private void ExecutePMWriteContent(int file, string content)
+        private void ExecutePMWriteContent(string file, string content)
         {
-            Metadata m = fileRegister[file];
-            string filename = m.FileName;
-            byte[] bytearray = Util.ConvertStringToByteArray(content);
-            ExecuteWrite(filename, bytearray);
+            int f;
+            if (Int32.TryParse(file, out f))
+            {
+                Metadata m = fileRegister[f];
+                string filename = m.FileName;
+                byte[] bytearray = Util.ConvertStringToByteArray(content);
+                ExecuteWrite(filename, bytearray);
+            }
         }
 
         // Method to get the file from the file register and write the content
         // previously stored in the client's string register
-        private void ExecutePMWriteRegister(int file, int register)
+        private void ExecutePMWriteRegister(string file, int register)
         {
-            Metadata m = fileRegister[file];
-            string filename = m.FileName;
-            byte[] bytearray = stringRegister[register];
-            ExecuteWrite(filename, bytearray);
+            int f;
+            if (Int32.TryParse(file, out f))
+            {
+                Metadata m = fileRegister[f];
+                string filename = m.FileName;
+                byte[] bytearray = stringRegister[register];
+                ExecuteWrite(filename, bytearray);
+            }
         }
 
         public void Close(string filename)

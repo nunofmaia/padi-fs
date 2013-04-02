@@ -784,12 +784,34 @@ namespace padiFS
 
         private void WriteCommand(string process, string fileRegister, string source)
         {
-            throw new NotImplementedException();
+            IClient client = (IClient)Activator.GetObject(typeof(IClient), (string)clients[process]);
+            int register;
+            Int32.TryParse(source, out register);
+
+            //Needed to do this here, to diferentiate what method to call
+            if (register >= 0 || register <= 9)
+            {
+                if (client != null)
+                {
+                    // Call Write with register
+                    client.Write(fileRegister, register);
+                }
+            }
+            else if (client != null)
+            {
+                // Call Write with content
+                client.Write(fileRegister, source);
+            }
         }
 
         private void ReadCommand(string process, string fileRegister, string semantics, string register)
         {
-            throw new NotImplementedException();
+            IClient client = (IClient)Activator.GetObject(typeof(IClient), (string)clients[process]);
+
+            if (client != null)
+            {
+                client.Read(fileRegister, semantics, register);
+            }
         }
 
         private void CloseCommand(string process, string filename)
