@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Net.Sockets;
 using System.Net;
+using System.Windows.Forms;
+using System.Collections;
 
 namespace padiFS
 {
@@ -75,7 +77,6 @@ namespace padiFS
             foreach (var item in dic.OrderBy(i => i.Value))
             {
                 res.Add(item.Key, item.Value);
-                Console.WriteLine(item);
             }
 
             return res;
@@ -96,6 +97,20 @@ namespace padiFS
             }
 
             return result;
+        }
+
+        public static string[] SliceArray(string[] args, int index)
+        {
+            List<string> result = new List<string>();
+            result.Capacity = args.Length - index;
+
+            for (int i = index; i < args.Length; index++)
+            {
+                string arg = args[i];
+                result.Add(arg);
+            }
+
+            return result.ToArray();
         }
             
     }

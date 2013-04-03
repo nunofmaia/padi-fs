@@ -166,13 +166,18 @@ namespace padiFS
 
         // Puppet Master Commands
         public void Fail() {
-            this.setStateFail();
-            // Should we deactivate the timers!? Maybe we can get rid of if's checking if it's on
-            // failure or not. Pretty code! :)
-            pingPrimaryReplicaTimer.Enabled = false;
-            pingDataServersTimer.Enabled = false;
+         
+            lock (this)
+            {
+                this.setStateFail();
+                // Should we deactivate the timers!? Maybe we can get rid of if's checking if it's on
+                // failure or not. Pretty code! :)
+                pingPrimaryReplicaTimer.Enabled = false;
+                pingDataServersTimer.Enabled = false;
+            }
             Console.WriteLine("On Failure!");
         }
+
         public void Recover() {
             foreach (string replica in replicas.Keys)
             {
@@ -182,6 +187,8 @@ namespace padiFS
                     if (server.Ping() == 1)
                     {
                         this.primary = server.GetPrimary();
+                        Console.WriteLine("PRIMARY "+this.primary);
+                        Console.WriteLine("REPLICA "+replica);
                         if (this.primary == replica)
                         {
                             MetadataInfo info = server.GetMetadataInfo();
@@ -189,14 +196,16 @@ namespace padiFS
                         }
                         else
                         {
-                            IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[this.primary]);
-                            if (primary != null)
-                            {
-                                MetadataInfo info = primary.GetMetadataInfo();
-                                UpdateReplica(info);
+                            // To prevent Lightning bolt failures
+                            if(replicas.ContainsKey(this.primary)) {
+                                IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[this.primary]);
+                                if (primary != null)
+                                {
+                                    MetadataInfo info = primary.GetMetadataInfo();
+                                    UpdateReplica(info);
+                                }
                             }
                         }
-
                         break;
                     }
                 }
@@ -214,7 +223,10 @@ namespace padiFS
                 }
             }
 
-            this.setStateNormal();
+            lock (this)
+            {
+                this.setStateNormal();
+            }
 
             Console.WriteLine("Uhf, recovered at last...");
         }

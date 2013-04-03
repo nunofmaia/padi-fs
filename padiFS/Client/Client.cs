@@ -7,14 +7,14 @@ using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting;
 using System.Threading;
 using System.Collections.Concurrent;
+using System.IO;
 
 namespace padiFS
 {
-    public class Client : MarshalByRefObject, IClient
+    public class Client : MarshalByRefObject, IClient, ICommander
     {
         private string name;
         private int port;
-        private int requestInterval = 5;
         private Bridge bridge;
         private Dictionary<string, Metadata> myFiles;
         private Dictionary<string, Metadata> openFiles;
@@ -23,6 +23,7 @@ namespace padiFS
         private ConcurrentBag<int> writeFiles;
         private byte[][] stringRegister;
         private Metadata[] fileRegister;
+        private int registersLimit;
 
         public Client(string name, string port)
         {
@@ -34,6 +35,7 @@ namespace padiFS
             this.historic = new ConcurrentDictionary<string, File>();
             this.stringRegister = new byte[10][];
             this.fileRegister = new Metadata[10];
+            registersLimit = 10;
         }
 
         public void Create(string filename, int nServers, int rQuorum, int wQuorum)
@@ -47,8 +49,6 @@ namespace padiFS
 
                 AddToFileRegister(meta);
                 Console.WriteLine("Create file " + filename);
-
-
             }
             else
             {
@@ -80,7 +80,7 @@ namespace padiFS
         // Limit - 10
         private void AddToFileRegister(Metadata meta)
         {
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < registersLimit; i++)
             {
                 if (fileRegister[i] == null)
                 {
@@ -103,16 +103,12 @@ namespace padiFS
             {
                 try
                 {
-                    while (file == null) {
-                        file = dataServer.Read(filename, semantic);
-                    
-                        if (file != null)
-                        {
-                            readFiles.Add(file);
-                            break;
-                        }
-                        Thread.Sleep(1000 * requestInterval);
-                    }                 
+                    file = dataServer.Read(filename, semantic);
+
+                    if (file != null)
+                    {
+                        readFiles.Add(file);
+                    }               
                 }
                 catch (SystemException)
                 {
@@ -138,7 +134,7 @@ namespace padiFS
                 Dictionary<DateTime, int> votes = null;
                 int winner = -1;
 
-                while(!ReadVoting(readQuorum, ref received, ref votes, ref winner))
+                while (!ReadVoting(readQuorum, ref received, ref votes, ref winner))
                 {
                     ReadCallDataServers(filename, semantic, servers);
                     received = null;
@@ -181,20 +177,27 @@ namespace padiFS
         // Method that performs the voting count of answers from data servers
         private bool ReadVoting(int readQuorum, ref Dictionary<DateTime, File> received, ref Dictionary<DateTime, int> votes, ref int winner)
         {
-            int timer = 0;
+            int votingTimer = 0;
             while (winner < readQuorum)
             {
                 // Tries 5 times to reach a quorum before trying to read again
-                timer++;
-                if (timer > 5)
+                votingTimer++;
+                if (votingTimer > 5)
                 {
                     return false;
                 }
 
                 // In the best case, all replies are right
                 // In the worst case, this cycle is useless
+                int countigTimer = 0;
                 while (readFiles.Count < readQuorum)
                 {
+                    countigTimer++;
+                    if (countigTimer > 5)
+                    {
+                        return false;
+                    }
+                    Thread.Sleep(1000);
                 }
 
                 votes = new Dictionary<DateTime, int>();
@@ -219,7 +222,6 @@ namespace padiFS
 
 
                 winner = votes.Values.Last();
-                Console.WriteLine("Winner " + winner);
                 Thread.Sleep(1000);
             }
             return true;
@@ -332,16 +334,11 @@ namespace padiFS
                 try
                 {
                     int intTest = -1;
-                    while (intTest == -1)
-                    {
-                        intTest = dataServer.Write(filename, bytearray);
+                    intTest = dataServer.Write(filename, bytearray);
 
-                        if (intTest == 0)
-                        {
-                            writeFiles.Add(intTest);
-                            break;
-                        }
-                        Thread.Sleep(1000 * requestInterval);
+                    if (intTest == 0)
+                    {
+                        writeFiles.Add(intTest);
                     }
                 }
                 catch (SystemException)
@@ -440,7 +437,7 @@ namespace padiFS
         public void Close(string filename)
         {
             bridge.Close(filename);
-
+            
             if (openFiles.ContainsKey(filename))
             {
                 openFiles.Remove(filename);
@@ -484,7 +481,7 @@ namespace padiFS
                 }
             }
             s += "String Register:\r\n";
-            for(int i = 0; i< 10; i++)
+            for (int i = 0; i < registersLimit; i++)
             {
                 if (stringRegister[i] != null)
                 {
@@ -492,6 +489,42 @@ namespace padiFS
                 }
             }
             return s;
+        }
+
+        public void ExecScript(string path)
+        {
+            //StreamReader script = new StreamReader(path);
+
+            //while (!script.EndOfStream)
+            //{
+            //    try
+            //    {
+            //        string command = script.ReadLine();
+
+
+            //        while (command != null && command[0] == '#')
+            //        {
+            //            command.Trim();
+            //            command = script.ReadLine();
+            //        }
+
+            //        if (command != null)
+            //        {
+            //            command.Trim();
+            //            HandleCommand(command);
+            //        }
+
+            //    }
+            //    catch (IOException)
+            //    {
+            //    }
+            //}
+            throw new NotImplementedException();
+        }
+
+        public object execute(padiFS.ICommand command, string[] args)
+        {
+            throw new NotImplementedException();
         }
 
         static void Main(string[] args)
@@ -505,5 +538,7 @@ namespace padiFS
             RemotingServices.Marshal(c, c.name, typeof(Client));
             Console.ReadLine();
         }
+
+        
     }
 }
