@@ -145,16 +145,17 @@ namespace padiFS
         public void Fail()
         {
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
-            Monitor.Enter(onFailure);
-            onFailure = true;
-            Monitor.Exit(onFailure);
+            lock (this)
+            {
+                onFailure = true;
+            }
             Console.WriteLine("On Failure!");
         }
         public void Recover()
         {
-            Monitor.Enter(onFailure);
-            onFailure = false;
-            Monitor.Exit(onFailure);
+            lock(this){
+                onFailure = false;
+            }
             Console.WriteLine("Uhf, recovered at last...");
         }
 
