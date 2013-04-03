@@ -12,6 +12,7 @@ namespace padiFS
 {
     public class MetadataServer : MarshalByRefObject, IMetadataServer
     {
+        private MetadataState state;
         private string name;
         private int port;
         private int pingInterval = 5;
@@ -25,10 +26,11 @@ namespace padiFS
         private Dictionary<string, Metadata> openFiles;
         private System.Timers.Timer pingDataServersTimer;
         private System.Timers.Timer pingPrimaryReplicaTimer;
-        private bool onFailure = false;
+
 
         public MetadataServer(string name, string port)
         {
+            this.state = new NormalState();
             this.name = name;
             this.port = int.Parse(port);
             this.primary = null;
@@ -48,112 +50,87 @@ namespace padiFS
 
             Console.WriteLine("ID: {0}", Util.MetadataServerId(name));
         }
+        public Dictionary<string, Metadata> Files 
+        {
+            get { return this.files; }
+        }
 
+        public Dictionary<string, Metadata>  OpenFiles
+        {
+            get { return this.openFiles; }
+        }
+
+        public Dictionary<string, int> ServersLoad
+        {
+            get { return this.serversLoad; }
+        }
+       
+        public Dictionary<string, string> LiveDataServers
+        {
+            get { return this.liveDataServers; }
+        }
+
+        public Dictionary<string, string> Replicas
+        {
+            get { return this.replicas; }
+        }
+
+        public Dictionary<string, string> DeadDataServers
+        {
+            get { return this.deadDataServers; }
+        }
+        
+        public string Name
+        {
+            get { return this.name; }
+        }
+       
+        public string Primary
+        {
+            get { return this.primary; }
+        }
+
+        public int Port
+        {
+            get { return this.port; }
+        }
+
+        protected void setStateFail()
+        {
+            this.state = new FailedState();
+        }
+        
+        protected void setStateNormal()
+        {
+            this.state = new NormalState();
+        }
+        
         // Project API
         public Metadata Open(string filename)
         {
-            if (!onFailure)
-            {
-                if (files.ContainsKey(filename))
-                {
-                    if (!openFiles.ContainsKey(filename))
-                    {
-                        openFiles.Add(filename, files[filename]);
-                        // Update other replicas. CHANGE THIS IN THE FUTURE
-                        ThreadPool.QueueUserWorkItem(UpdateReplicas, null);
-                    }
-                    else
-                    {
-                        Console.WriteLine("File already open. It's ok!");
-                    }
-
-                    return files[filename];
-                }
-            }
-            return null;
+            return this.state.Open(this,filename);
         }
+
         public void Close(string filename)
         {
-            if (!onFailure)
-            {
-                if (files.ContainsKey(filename))
-                {
-                    if (openFiles.ContainsKey(filename))
-                    {
-                        openFiles.Remove(filename);
-                        // Update other replicas. CHANGE THIS IN THE FUTURE
-                        ThreadPool.QueueUserWorkItem(UpdateReplicas, null);
-                    }
-                    else
-                    {
-                        Console.WriteLine("File already closed.");
-                    }
-                }
-            }
-        }
-
-        private void CreateCallback(object threadcontext)
-        {
-            List<string> args = (List<string>)threadcontext;
-            string v = args[0];
-            string filename = args[1];
-            IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), v);
-
-            if (server != null)
-            {
-                server.Create(filename);
-            }
-        }
-
-        private void LoadBalanceServers(object threadcontext)
-        {
-            serversLoad = Util.SortServerLoad(serversLoad);
+            this.state.Close(this, filename);
         }
 
         public Metadata Create(string filename, int serversNumber, int readQuorum, int writeQuorum)
         {
-            if (!onFailure)
-            {
-                if (!files.ContainsKey(filename))
-                {
-                    if (liveDataServers.Count >= serversNumber)
-                    {
-                        List<string> servers = new List<string>();
-                        List<string> chosen = ChooseBestServers(serversNumber);
-
-                        // Before sending the requests, a time stamp is added to the filename
-                        string f = DateTime.Now.ToString("o") + (char)0x7f + filename;
-                        foreach (string v in chosen)
-                        {
-                            List<string> arguments = new List<string>();
-                            arguments.Add(liveDataServers[v]);
-                            arguments.Add(f);
-                            servers.Add(liveDataServers[v]);
-                            ThreadPool.QueueUserWorkItem(CreateCallback, arguments);
-                            serversLoad[v]++;
-                        }
-                        ThreadPool.QueueUserWorkItem(LoadBalanceServers, null);
-                        Metadata meta = new Metadata(filename, serversNumber, readQuorum, writeQuorum, servers);
-                        files.Add(filename, meta);
-                        openFiles.Add(filename, meta);
-                        // Update other replicas. CHANGE THIS IN THE FUTURE
-                        ThreadPool.QueueUserWorkItem(UpdateReplicas, null);
-                        return meta;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Not enough servers.");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("File already exists.");
-                }
-            }
-            return null;
+            return this.state.Create(this, filename, serversNumber, readQuorum, writeQuorum); 
         }
 
-        private List<string> ChooseBestServers(int serversNumber)
+        public void Delete(string filename) {
+            this.state.Delete(this, filename);
+        }
+
+        public void LoadBalanceServers(object threadcontext)
+        {
+            serversLoad = Util.SortServerLoad(serversLoad);
+        }
+
+        public List<string> ChooseBestServers(int serversNumber)
         {
             List<string> chosen = new List<string>();
             int chosen_counter = 0;
@@ -173,7 +150,8 @@ namespace padiFS
             return chosen;
         }
 
-        private void UpdateReplicas(object threadcontext)
+
+        public void UpdateReplicas(object threadcontext)
         {
             foreach (string r in replicas.Keys)
             {
@@ -186,33 +164,9 @@ namespace padiFS
             }
         }
 
-        public void Delete(string filename) {
-            if (!onFailure)
-            {
-                if (files.ContainsKey(filename))
-                {
-                    if (!openFiles.ContainsKey(filename))
-                    {
-                        files.Remove(filename);
-                        // Update other replicas. CHANGE THIS IN THE FUTURE
-                        ThreadPool.QueueUserWorkItem(UpdateReplicas, null);
-                        Console.WriteLine("File " + filename + " deleted");
-                    }
-                    else
-                    {
-                        Console.WriteLine("File is opened.");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("File does not exists.");
-                }
-            }
-        }
-
         // Puppet Master Commands
         public void Fail() {
-            onFailure = true;
+            this.setStateFail();
             // Should we deactivate the timers!? Maybe we can get rid of if's checking if it's on
             // failure or not. Pretty code! :)
             pingPrimaryReplicaTimer.Enabled = false;
@@ -260,7 +214,8 @@ namespace padiFS
                 }
             }
 
-            onFailure = false;
+            this.setStateNormal();
+
             Console.WriteLine("Uhf, recovered at last...");
         }
 
@@ -283,27 +238,7 @@ namespace padiFS
 
         public void RegisterMetadataServer(string name, string address)
         {
-            // If the server doesn't have the new metadata registered,
-            // registers it and introduces to it "Hi, I'm Iurie's metadata server"
-            if (!onFailure)
-            {
-                if (!replicas.ContainsKey(name))
-                {
-                    Console.WriteLine("Metadata Server " + name + " : " + address);
-                    replicas.Add(name, address);
-
-                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
-                    if (server != null)
-                    {
-                        try
-                        {
-                            server.RegisterMetadataServer(this.name, "tcp://localhost:" + this.port + "/" + this.name);
-                        }
-                        catch (System.Net.Sockets.SocketException) { }
-                        // Ignore it
-                    }
-                }
-            }
+            this.state.RegisterMetadataServer(this, name, address);
         }
 
         public void UpdateReplica(MetadataInfo info)
@@ -324,7 +259,7 @@ namespace padiFS
         }
 
 
-        private void PingDataServer(object threadContext)
+        public void PingDataServer(object threadContext)
         {
             List<string> dataservers = (List<string>)threadContext;
             string name = dataservers[0];
@@ -366,27 +301,10 @@ namespace padiFS
 
         private void pingDataServers(object source, ElapsedEventArgs e)
         {
-            if (!onFailure)
-            {
-                foreach (string key in liveDataServers.Keys)
-                {
-                    List<string> dataservers = new List<string>();
-                    dataservers.Add(key);
-                    dataservers.Add(liveDataServers[key]);
-                    ThreadPool.QueueUserWorkItem(PingDataServer, dataservers);
-                }
-
-                foreach (string key in deadDataServers.Keys)
-                {
-                    List<string> dataservers = new List<string>();
-                    dataservers.Add(key);
-                    dataservers.Add(deadDataServers[key]);
-                    ThreadPool.QueueUserWorkItem(PingDataServer, dataservers);
-                }
-            }
+            this.state.pingDataServers(this, source, e);
         }
 
-        private void PingReplica(object threadContext)
+        public void PingReplica(object threadContext)
         {
             string replica = (string)threadContext;
             IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[replica]);
@@ -417,24 +335,12 @@ namespace padiFS
 
         private void PingPrimaryReplica(object source, ElapsedEventArgs e)
         {
-            if (primary != null && !onFailure)
-            {
-                if (name != primary)
-                {
-                    ThreadPool.QueueUserWorkItem(PingReplica, primary);
-                }
-            }
+            this.state.PingPrimaryReplica(this, source, e);
         }
 
         public int Ping()
         {
-            if (!onFailure)
-            {
-                Console.WriteLine("I'm Alive");
-                return 1;
-            }
-
-            return 0;
+            return this.state.Ping();
         }
 
         public string GetPrimary()

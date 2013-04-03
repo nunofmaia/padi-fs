@@ -44,6 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NormalState.cs" />
+    <Compile Include="FailedState.cs" />
+    <Compile Include="MetadataState.cs" />
     <Compile Include="MetadataServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
