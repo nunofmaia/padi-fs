@@ -133,6 +133,7 @@ namespace padiFS
         // Puppet Master Commands
         public void Freeze()
         {
+            Thread.CurrentThread.Priority = ThreadPriority.Highest;
             freeze.Reset();
             Console.WriteLine("Freezed!");
         }
@@ -143,14 +144,18 @@ namespace padiFS
         }
         public void Fail()
         {
+            Thread.CurrentThread.Priority = ThreadPriority.Highest;
+            Monitor.Enter(onFailure);
             onFailure = true;
+            Monitor.Exit(onFailure);
             Console.WriteLine("On Failure!");
         }
         public void Recover()
         {
+            Monitor.Enter(onFailure);
             onFailure = false;
+            Monitor.Exit(onFailure);
             Console.WriteLine("Uhf, recovered at last...");
-
         }
 
         

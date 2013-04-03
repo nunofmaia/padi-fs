@@ -77,7 +77,6 @@ namespace padiFS
             foreach (var item in dic.OrderBy(i => i.Value))
             {
                 res.Add(item.Key, item.Value);
-                Console.WriteLine(item);
             }
 
             return res;
