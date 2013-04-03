@@ -17,7 +17,7 @@ using System.IO;
 namespace padiFS
 {
 
-    public partial class Form1 : Form
+    public partial class Form1 : Form, ICommander
     {
         TcpChannel channel;
         private int mscounter;
@@ -33,8 +33,7 @@ namespace padiFS
         private Dictionary<string, string> processes;
 
         private StreamReader script;
-
-
+        private string scripts_dir;
 
         public Form1()
         {
@@ -68,6 +67,11 @@ namespace padiFS
             processes = new Dictionary<string, string>();
 
             script = null;
+            scripts_dir = Environment.CurrentDirectory + @"\Scripts"; 
+            if (!Directory.Exists(scripts_dir))
+            {
+                Directory.CreateDirectory(scripts_dir);
+            }
 
             channel = new TcpChannel(8070);
             ChannelServices.RegisterChannel(channel, true);
@@ -665,55 +669,65 @@ namespace padiFS
             {
                 case "fail":
                     LaunchProcess(args[1]);
-                    FailCommand(args[1]);
+                    execute(new FailCommand(), args);
+                    //FailCommand(args[1]);
                     break;
 
                 case "recover":
                     LaunchProcess(args[1]);
-                    RecoverCommand(args[1]);
+                    execute(new RecoverCommand(), args);
+                    //RecoverCommand(args[1]);
                     break;
 
                 case "freeze":
                     LaunchProcess(args[1]);
-                    FreezeCommand(args[1]);
+                    execute(new FreezeCommand(), args);
+                    //FreezeCommand(args[1]);
                     break;
 
                 case "unfreeze":
                     LaunchProcess(args[1]);
-                    UnfreezeCommand(args[1]);
+                    execute(new UnfreezeCommand(), args);
+                    //UnfreezeCommand(args[1]);
                     break;
 
                 case "create":
                     LaunchProcess(args[1]);
-                    CreateCommand(args[1], args[2], args[3], args[4], args[5]);
+                    execute(new CreateCommand(), args);
+                    //CreateCommand(args[1], args[2], args[3], args[4], args[5]);
                     break;
 
                 case "open":
                     LaunchProcess(args[1]);
-                    OpenCommand(args[1], args[2]);
+                    execute(new OpenCommand(), args);
+                    //OpenCommand(args[1], args[2]);
                     break;
 
                 case "close":
                     LaunchProcess(args[1]);
-                    CloseCommand(args[1], args[2]);
+                    execute(new CloseCommand(), args);
+                    //CloseCommand(args[1], args[2]);
                     break;
 
                 case "read":
                     LaunchProcess(args[1]);
-                    ReadCommand(args[1], args[2], args[3], args[4]);
+                    execute(new ReadCommand(), args);
+                    //ReadCommand(args[1], args[2], args[3], args[4]);
                     break;
 
                 case "write":
                     LaunchProcess(args[1]);
-                    if (length > 4)
-                    {
-                        string contents = Util.MakeStringFromArray(args, 3);
-                        WriteCommand(args[1], args[2], contents);
-                    }
-                    else
-                    {
-                        WriteCommand(args[1], args[2], args[3]);
-                    }
+                    //if (length > 4)
+                    //{
+                    //    string contents = Util.MakeStringFromArray(args, 3);
+
+                    //    WriteCommand(args[1], args[2], contents);
+                    //}
+                    //else
+                    //{
+                    //    WriteCommand(args[1], args[2], args[3]);
+                    //}
+                    execute(new WriteCommand(), args);
                     break;
 
                 case "copy":
@@ -723,7 +737,8 @@ namespace padiFS
 
                 case "dump":
                     LaunchProcess(args[1]);
-                    DumpCommand(args[1]);
+                    statusTextBox.Text += (string)execute(new DumpCommand(), args);
+                    //DumpCommand(args[1]);
                     break;
 
                 case "exescript":
@@ -915,6 +930,34 @@ namespace padiFS
                     ds_server.Fail();
                     break;
             }
+        }
+
+        public object execute(ICommand command, string[] args)
+        {
+            string process = args[1];
+            char code = process[0];
+
+            object result = null;
+
+            switch (code)
+            {
+                case 'm':
+                    IMetadataServer ms_server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), processes[process]);
+                    result = command.execute(ms_server, args);
+                    break;
+
+                case 'd':
+                    IDataServer ds_server = (IDataServer)Activator.GetObject(typeof(IDataServer), processes[process]);
+                    result = command.execute(ds_server, args);
+                    break;
+
+                case 'c':
+                    IClient client = (IClient)Activator.GetObject(typeof(IClient), processes[process]);
+                    result = command.execute(client, args);
+                    break;
+            }
+
+            return result;
         }
     }
 }

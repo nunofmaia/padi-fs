@@ -7,10 +7,11 @@ using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting;
 using System.Threading;
 using System.Collections.Concurrent;
+using System.IO;
 
 namespace padiFS
 {
-    public class Client : MarshalByRefObject, IClient
+    public class Client : MarshalByRefObject, IClient, ICommander
     {
         private string name;
         private int port;
@@ -440,7 +441,7 @@ namespace padiFS
         public void Close(string filename)
         {
             bridge.Close(filename);
-
+            
             if (openFiles.ContainsKey(filename))
             {
                 openFiles.Remove(filename);
@@ -494,6 +495,42 @@ namespace padiFS
             return s;
         }
 
+        public void ExecScript(string path)
+        {
+            //StreamReader script = new StreamReader(path);
+
+            //while (!script.EndOfStream)
+            //{
+            //    try
+            //    {
+            //        string command = script.ReadLine();
+
+
+            //        while (command != null && command[0] == '#')
+            //        {
+            //            command.Trim();
+            //            command = script.ReadLine();
+            //        }
+
+            //        if (command != null)
+            //        {
+            //            command.Trim();
+            //            HandleCommand(command);
+            //        }
+
+            //    }
+            //    catch (IOException)
+            //    {
+            //    }
+            //}
+            throw new NotImplementedException();
+        }
+
+        public object execute(padiFS.ICommand command, string[] args)
+        {
+            throw new NotImplementedException();
+        }
+
         static void Main(string[] args)
         {
             string[] arguments = Util.SplitArguments(args[0]);
@@ -505,5 +542,7 @@ namespace padiFS
             RemotingServices.Marshal(c, c.name, typeof(Client));
             Console.ReadLine();
         }
+
+        
     }
 }
