@@ -493,38 +493,87 @@ namespace padiFS
 
         public void ExecScript(string path)
         {
-            //StreamReader script = new StreamReader(path);
+            StreamReader script = new StreamReader(path);
 
-            //while (!script.EndOfStream)
-            //{
-            //    try
-            //    {
-            //        string command = script.ReadLine();
+            while (!script.EndOfStream)
+            {
+                try
+                {
+                    string command = script.ReadLine();
 
 
-            //        while (command != null && command[0] == '#')
-            //        {
-            //            command.Trim();
-            //            command = script.ReadLine();
-            //        }
+                    while (command != null && command[0] == '#')
+                    {
+                        command.Trim();
+                        command = script.ReadLine();
+                    }
 
-            //        if (command != null)
-            //        {
-            //            command.Trim();
-            //            HandleCommand(command);
-            //        }
+                    if (command != null)
+                    {
+                        command.Trim();
+                        HandleCommand(command);
+                    }
 
-            //    }
-            //    catch (IOException)
-            //    {
-            //    }
-            //}
-            throw new NotImplementedException();
+                }
+                catch (IOException)
+                {
+                }
+            }
+
+            script.Close();
+            script = null;
+        }
+        private void HandleCommand(string command)
+        {
+            string lower_command = command.ToLower();
+            string[] args = lower_command.Split(new char[] { ' ' });
+            int length = args.Length;
+
+            switch (args[0])
+            {
+                case "create":
+                    execute(new CreateCommand(), args);
+                    break;
+
+                case "open":
+                    execute(new OpenCommand(), args);
+                    break;
+
+                case "close":
+                    execute(new CloseCommand(), args);
+                    break;
+
+                case "read":
+                    execute(new ReadCommand(), args);
+                    break;
+
+                case "write":
+                    execute(new WriteCommand(), args);
+                    break;
+
+                case "copy":
+                    //CopyCommand(args[1], args[2], args[3], args[4], args[5]);
+                    break;
+
+                case "dump":
+                    Console.WriteLine((string)execute(new DumpCommand(), args));
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid command");
+                    break;
+            }
+
+
         }
 
         public object execute(padiFS.ICommand command, string[] args)
         {
-            throw new NotImplementedException();
+            object result;
+            
+            result = command.execute(this, args);
+
+            return result;
         }
 
         static void Main(string[] args)

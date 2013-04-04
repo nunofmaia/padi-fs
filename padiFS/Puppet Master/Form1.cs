@@ -741,13 +741,14 @@ namespace padiFS
                     //DumpCommand(args[1]);
                     break;
 
-                case "exescript":
+                case "execscript":
                     LaunchProcess(args[1]);
-                    ExecScriptCommand(args[1], args[2]);
+                    //ExecScriptCommand(args[1], args[2]);
+                    execute(new ExecScriptCommand(), args);
                     break;
 
                 default:
-                    System.Windows.Forms.MessageBox.Show("Wrong command");
+                    System.Windows.Forms.MessageBox.Show("Invalid command");
                     break;
             }
 
