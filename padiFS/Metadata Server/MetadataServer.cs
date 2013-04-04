@@ -336,9 +336,10 @@ namespace padiFS
                     NextPrimaryReplica();
                 }
             }
-            catch (System.SystemException)
+            catch (ServerNotAvailableException e)
             {
                 deadReplicas.Add(replica);
+                Console.WriteLine(e.Message);
                 Console.WriteLine("EXCEP: esta é a primary: {0}", replica);
                 Console.WriteLine(replica + ": MORTO");
                 NextPrimaryReplica();
