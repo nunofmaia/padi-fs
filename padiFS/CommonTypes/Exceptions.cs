@@ -26,6 +26,10 @@ namespace padiFS
     {
     }
 
+    public class FileNotOpenException : PadiFsException
+    {
+    }
+
     public class ServerNotFound : PadiFsException
     {
     }
