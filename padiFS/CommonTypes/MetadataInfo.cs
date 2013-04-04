@@ -13,10 +13,10 @@ namespace padiFS
         private Dictionary<string, string> deadDataServers;
         private Dictionary<string, int> serversLoad;
         private Dictionary<string, Metadata> files;
-        private Dictionary<string, Metadata> openFiles;
+        private Dictionary<string, List<string>> openFiles;
 
         public MetadataInfo(string primary, Dictionary<string, string> liveDataServers, Dictionary<string, string> deadDataServers,
-            Dictionary<string, int> serversLoad, Dictionary<string, Metadata> files, Dictionary<string, Metadata> openFiles)
+            Dictionary<string, int> serversLoad, Dictionary<string, Metadata> files, Dictionary<string, List<string>> openFiles)
         {
             this.primary = primary;
             this.liveDataServers = liveDataServers;
@@ -66,7 +66,7 @@ namespace padiFS
             }
         }
 
-        public Dictionary<string, Metadata> OpenFiles
+        public Dictionary<string, List<string>> OpenFiles
         {
             get
             {

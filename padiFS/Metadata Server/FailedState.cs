@@ -12,7 +12,7 @@ namespace padiFS
         public override Metadata Open(MetadataServer md, string clientName, string filename)
         { return null; }
         public override void Close(MetadataServer md, string clientName, string filename) { }
-        public override Metadata Create(MetadataServer md,
+        public override Metadata Create(MetadataServer md, string clientName,
                                 string filename,
                                 int serversNumber,
                                 int readQuorum,

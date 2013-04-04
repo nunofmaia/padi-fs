@@ -13,38 +13,63 @@ namespace padiFS
         // Project API
         public override Metadata Open(MetadataServer md, string clientName, string filename)
         {
-            if (!md.OpenFiles.ContainsKey(filename))
+            // If already opened by one client
+            if (md.TempOpenFiles.ContainsKey(filename))
             {
-                Console.WriteLine("Before: " + md.OpenFiles.ContainsKey(filename));
-                md.OpenFiles.Add(filename, md.Files[filename]);
-                Console.WriteLine("After: " + md.OpenFiles.ContainsKey(filename));
-                // Update other replicas. CHANGE THIS IN THE FUTURE
-                ThreadPool.QueueUserWorkItem(md.UpdateReplicas, null);
+                List<string> clientsList = md.TempOpenFiles[filename];
+                if (!clientsList.Contains(clientName))
+                {
+                    md.TempOpenFiles[filename].Add(clientName);
+                    ThreadPool.QueueUserWorkItem(md.UpdateReplicas, null);
+                    return md.Files[filename];
+                }
+                else
+                {
+                    Console.WriteLine("File already open. It's ok!");
+                    return null;
+                }
             }
             else
             {
-                Console.WriteLine("File already open. It's ok!");
+                if (md.Files.ContainsKey(filename))
+                {
+                    List<string> clientsList = new List<string>();
+                    clientsList.Add(clientName);
+                    md.TempOpenFiles.Add(filename, clientsList);
+                    ThreadPool.QueueUserWorkItem(md.UpdateReplicas, null);
+                    return md.Files[filename];
+                }
+                else
+                {
+                    Console.WriteLine("File does not exists.");
+                    return null;
+                }
             }
-
-            return md.Files[filename];
         }
 
         public override void Close(MetadataServer md, string clientName, string filename)
         {
-            if (md.Files.ContainsKey(filename))
+            if (md.TempOpenFiles.ContainsKey(filename))
             {
-                if (md.OpenFiles.ContainsKey(filename))
+                List<string> clientsList = md.TempOpenFiles[filename];
+
+                if (clientsList.Contains(clientName))
                 {
-                    Console.WriteLine("Before: " + md.OpenFiles.ContainsKey(filename));
-                    md.OpenFiles.Remove(filename);
-                    Console.WriteLine("After " + md.OpenFiles.ContainsKey(filename));
-                    // Update other replicas. CHANGE THIS IN THE FUTURE
+                    clientsList.Remove(clientName);
+                    if (clientsList.Count == 0)
+                    {
+                        md.TempOpenFiles.Remove(filename);
+                    }
                     ThreadPool.QueueUserWorkItem(md.UpdateReplicas, null);
                 }
                 else
                 {
-                    Console.WriteLine("File already closed.");
+                    Console.WriteLine("This client " + clientName + " did not open this file " + filename + ".");
                 }
+            }
+            else
+            {
+                Console.WriteLine("File " + filename + " is not open by any client.");
             }
         }
 
@@ -70,8 +95,10 @@ namespace padiFS
                     }
                     ThreadPool.QueueUserWorkItem(md.LoadBalanceServers, null);
                     Metadata meta = new Metadata(filename, serversNumber, readQuorum, writeQuorum, servers);
+                    List<string> clientsList = new List<string>();
+                    clientsList.Add(clientName);
                     md.Files.Add(filename, meta);
-                    md.OpenFiles.Add(filename, meta);
+                    md.TempOpenFiles.Add(filename, clientsList);
                     // Update other replicas. CHANGE THIS IN THE FUTURE
                     ThreadPool.QueueUserWorkItem(md.UpdateReplicas, null);
                     return meta;
@@ -92,7 +119,7 @@ namespace padiFS
         {
             if (md.Files.ContainsKey(filename))
             {
-                if (!md.OpenFiles.ContainsKey(filename))
+                if (!md.TempOpenFiles.ContainsKey(filename))
                 {
                     md.Files.Remove(filename);
                     // Update other replicas. CHANGE THIS IN THE FUTURE
@@ -101,12 +128,12 @@ namespace padiFS
                 }
                 else
                 {
-                    Console.WriteLine("File is opened.");
+                    Console.WriteLine("File " + filename + " is opened.");
                 }
             }
             else
             {
-                Console.WriteLine("File does not exists.");
+                Console.WriteLine("File " + filename + " does not exists.");
             }
         }
 

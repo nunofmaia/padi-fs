@@ -23,8 +23,7 @@ namespace padiFS
         private Dictionary<string, string> deadDataServers;
         private Dictionary<string, int> serversLoad;
         private Dictionary<string, Metadata> files;
-        private Dictionary<string, Metadata> openFiles;
-        private Dictionary<string, List<Metadata>> tempOpenFiles;
+        private Dictionary<string, List<string>> tempOpenFiles;
         private System.Timers.Timer pingDataServersTimer;
         private System.Timers.Timer pingPrimaryReplicaTimer;
 
@@ -41,8 +40,7 @@ namespace padiFS
             this.deadDataServers = new Dictionary<string, string>();
             this.serversLoad = new Dictionary<string, int>();
             this.files = new Dictionary<string, Metadata>();
-            this.openFiles = new Dictionary<string, Metadata>();
-            this.tempOpenFiles = new Dictionary<string, List<Metadata>>();
+            this.tempOpenFiles = new Dictionary<string, List<string>>();
             this.pingDataServersTimer = new System.Timers.Timer();
             pingDataServersTimer.Elapsed += new System.Timers.ElapsedEventHandler(pingDataServers);
             pingDataServersTimer.Interval = 1000 * pingInterval;
@@ -57,12 +55,7 @@ namespace padiFS
             get { return this.files; }
         }
 
-        public Dictionary<string, Metadata>  OpenFiles
-        {
-            get { return this.openFiles; }
-        }
-
-        public Dictionary<string, List<Metadata>> TempOpenFiles
+        public Dictionary<string, List<string>> TempOpenFiles
         {
             get { return this.tempOpenFiles; }
         }
@@ -166,7 +159,7 @@ namespace padiFS
                 IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[r]);
                 if (replica != null)
                 {
-                    MetadataInfo info = new MetadataInfo(primary, liveDataServers, deadDataServers, serversLoad, files, openFiles);
+                    MetadataInfo info = new MetadataInfo(primary, liveDataServers, deadDataServers, serversLoad, files, tempOpenFiles);
                     replica.UpdateReplica(info);
                 }
             }
@@ -268,14 +261,14 @@ namespace padiFS
             this.deadDataServers = info.DeadDataServers;
             this.serversLoad = info.ServersLoad;
             this.files = info.Files;
-            this.openFiles = info.OpenFiles;
+            this.tempOpenFiles = info.OpenFiles;
 
             Console.WriteLine("Updated metadata info.");
         }
 
         public MetadataInfo GetMetadataInfo()
         {
-            return new MetadataInfo(primary, liveDataServers, deadDataServers, serversLoad, files, openFiles);
+            return new MetadataInfo(primary, liveDataServers, deadDataServers, serversLoad, files, tempOpenFiles);
         }
 
 
@@ -421,9 +414,9 @@ namespace padiFS
 
             // files open in metadata server
             s += "Open Files:\r\n";
-            foreach (string m in openFiles.Keys)
+            foreach (string m in tempOpenFiles.Keys)
             {
-                s += openFiles[m].ToString() + "\r\n";
+                s += files[m].ToString() + "\r\n";
             }
 
             return s;
@@ -434,15 +427,6 @@ namespace padiFS
             string[] arguments = Util.SplitArguments(args[0]);
             MetadataServer ms = new MetadataServer(arguments[0], arguments[1]);
             Console.Title = "Iurie's Metadata Server: " + ms.name;
-            //if (ms.name == ms.primary)
-            //{
-            //    ms.pingDataServersTimer.Enabled = true;
-            //}
-            //else
-            //{
-            //    ms.pingPrimaryReplicaTimer.Enabled = true;
-            //}
-            //ms.pingPrimaryReplicaTimer.Enabled = true;
             // Ficar esperar pedidos de Iurie
             TcpChannel channel = new TcpChannel(ms.port);
             ChannelServices.RegisterChannel(channel, true);

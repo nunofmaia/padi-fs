@@ -76,6 +76,35 @@ namespace padiFS
 
         }
 
+        public void Close(string filename)
+        {
+            bridge.Close(this.name, filename);
+
+            if (openFiles.ContainsKey(filename))
+            {
+                openFiles.Remove(filename);
+                Console.WriteLine("Close file " + filename);
+            }
+            else
+            {
+                Console.WriteLine("File already closed.");
+            }
+        }
+
+        public void Delete(string filename)
+        {
+            if (!openFiles.ContainsKey(filename))
+            {
+                bridge.Delete(this.name, filename);
+                Console.WriteLine("Delete file " + filename);
+            }
+            else
+            {
+                Console.WriteLine("File is opened.");
+            }
+        }
+
+
         // Method used to add a new/open file to a free file register
         // Limit - 10
         private void AddToFileRegister(Metadata meta)
@@ -431,34 +460,6 @@ namespace padiFS
                 string filename = m.FileName;
                 byte[] bytearray = stringRegister[register];
                 ExecuteWrite(filename, bytearray);
-            }
-        }
-
-        public void Close(string filename)
-        {
-            bridge.Close(this.name, filename);
-            
-            if (openFiles.ContainsKey(filename))
-            {
-                openFiles.Remove(filename);
-                Console.WriteLine("Close file " + filename);
-            }
-            else
-            {
-                Console.WriteLine("File already closed.");
-            }
-        }
-
-        public void Delete(string filename)
-        {
-            if (!openFiles.ContainsKey(filename))
-            {
-                bridge.Delete(this.name, filename);
-                Console.WriteLine("Delete file " + filename);
-            }
-            else
-            {
-                Console.WriteLine("File is opened.");
             }
         }
 
