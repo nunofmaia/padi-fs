@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands.cs" />
+    <Compile Include="Exceptions.cs" />
     <Compile Include="MetadataInfo.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="File.cs" />
