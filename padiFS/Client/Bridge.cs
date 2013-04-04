@@ -23,7 +23,7 @@ namespace padiFS
 
         }
 
-        public Metadata Create(string filename, int nServers, int rQuorum, int wQuorum)
+        public Metadata Create(string clientName, string filename, int nServers, int rQuorum, int wQuorum)
         {
             string primary = AskForPrimary();
             if (primary != null)
@@ -32,7 +32,7 @@ namespace padiFS
 
                 if (server != null)
                 {
-                    Metadata meta = server.Create(filename, nServers, rQuorum, wQuorum);
+                    Metadata meta = server.Create(clientName, filename, nServers, rQuorum, wQuorum);
                     return meta;
                 }
             }
@@ -40,7 +40,7 @@ namespace padiFS
             return null;
         }
 
-        public Metadata Open(string filename)
+        public Metadata Open(string clientName, string filename)
         {
             string primary = AskForPrimary();
             if (primary != null)
@@ -49,7 +49,7 @@ namespace padiFS
 
                 if (server != null)
                 {
-                    Metadata meta = server.Open(filename);
+                    Metadata meta = server.Open(clientName, filename);
                     if (meta != null)
                     {
                         Console.WriteLine(meta);
@@ -61,7 +61,7 @@ namespace padiFS
             return null;
         }
 
-        public void Close(string filename)
+        public void Close(string clientName, string filename)
         {
             string primary = AskForPrimary();
             if (primary != null)
@@ -70,12 +70,12 @@ namespace padiFS
 
                 if (server != null)
                 {
-                    server.Close(filename);
+                    server.Close(clientName, filename);
                 }
             }
         }
 
-        public void Delete(string filename)
+        public void Delete(string clientName, string filename)
         {
             string primary = AskForPrimary();
             if (primary != null)
@@ -84,7 +84,7 @@ namespace padiFS
 
                 if (server != null)
                 {
-                    server.Delete(filename);
+                    server.Delete(clientName, filename);
                 }
             }
         }

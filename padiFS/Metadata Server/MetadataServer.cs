@@ -24,6 +24,7 @@ namespace padiFS
         private Dictionary<string, int> serversLoad;
         private Dictionary<string, Metadata> files;
         private Dictionary<string, Metadata> openFiles;
+        private Dictionary<string, List<Metadata>> tempOpenFiles;
         private System.Timers.Timer pingDataServersTimer;
         private System.Timers.Timer pingPrimaryReplicaTimer;
 
@@ -41,6 +42,7 @@ namespace padiFS
             this.serversLoad = new Dictionary<string, int>();
             this.files = new Dictionary<string, Metadata>();
             this.openFiles = new Dictionary<string, Metadata>();
+            this.tempOpenFiles = new Dictionary<string, List<Metadata>>();
             this.pingDataServersTimer = new System.Timers.Timer();
             pingDataServersTimer.Elapsed += new System.Timers.ElapsedEventHandler(pingDataServers);
             pingDataServersTimer.Interval = 1000 * pingInterval;
@@ -58,6 +60,11 @@ namespace padiFS
         public Dictionary<string, Metadata>  OpenFiles
         {
             get { return this.openFiles; }
+        }
+
+        public Dictionary<string, List<Metadata>> TempOpenFiles
+        {
+            get { return this.tempOpenFiles; }
         }
 
         public Dictionary<string, int> ServersLoad
@@ -106,23 +113,24 @@ namespace padiFS
         }
         
         // Project API
-        public Metadata Open(string filename)
+        public Metadata Open(string clientName, string filename)
         {
-            return this.state.Open(this,filename);
+            return this.state.Open(this, clientName, filename);
         }
 
-        public void Close(string filename)
+        public void Close(string clientName, string filename)
         {
-            this.state.Close(this, filename);
+            this.state.Close(this, clientName, filename);
         }
 
-        public Metadata Create(string filename, int serversNumber, int readQuorum, int writeQuorum)
+        public Metadata Create(string clientName, string filename, int serversNumber, int readQuorum, int writeQuorum)
         {
-            return this.state.Create(this, filename, serversNumber, readQuorum, writeQuorum); 
+            return this.state.Create(this, clientName, filename, serversNumber, readQuorum, writeQuorum); 
         }
 
-        public void Delete(string filename) {
-            this.state.Delete(this, filename);
+        public void Delete(string clientName, string filename)
+        {
+            this.state.Delete(this, clientName, filename);
         }
 
         public void LoadBalanceServers(object threadcontext)

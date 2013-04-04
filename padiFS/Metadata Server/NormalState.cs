@@ -11,11 +11,13 @@ namespace padiFS
     {
 
         // Project API
-        public override Metadata Open(MetadataServer md, string filename)
+        public override Metadata Open(MetadataServer md, string clientName, string filename)
         {
             if (!md.OpenFiles.ContainsKey(filename))
             {
+                Console.WriteLine("Before: " + md.OpenFiles.ContainsKey(filename));
                 md.OpenFiles.Add(filename, md.Files[filename]);
+                Console.WriteLine("After: " + md.OpenFiles.ContainsKey(filename));
                 // Update other replicas. CHANGE THIS IN THE FUTURE
                 ThreadPool.QueueUserWorkItem(md.UpdateReplicas, null);
             }
@@ -27,13 +29,15 @@ namespace padiFS
             return md.Files[filename];
         }
 
-        public override void Close(MetadataServer md, string filename)
+        public override void Close(MetadataServer md, string clientName, string filename)
         {
             if (md.Files.ContainsKey(filename))
             {
                 if (md.OpenFiles.ContainsKey(filename))
                 {
+                    Console.WriteLine("Before: " + md.OpenFiles.ContainsKey(filename));
                     md.OpenFiles.Remove(filename);
+                    Console.WriteLine("After " + md.OpenFiles.ContainsKey(filename));
                     // Update other replicas. CHANGE THIS IN THE FUTURE
                     ThreadPool.QueueUserWorkItem(md.UpdateReplicas, null);
                 }
@@ -44,7 +48,7 @@ namespace padiFS
             }
         }
 
-        public override Metadata Create(MetadataServer md, string filename, int serversNumber, int readQuorum, int writeQuorum)
+        public override Metadata Create(MetadataServer md, string clientName, string filename, int serversNumber, int readQuorum, int writeQuorum)
         {
             if (!md.Files.ContainsKey(filename))
             {
@@ -84,7 +88,7 @@ namespace padiFS
             return null;
         }
 
-        public override void Delete(MetadataServer md, string filename)
+        public override void Delete(MetadataServer md, string clientName, string filename)
         {
             if (md.Files.ContainsKey(filename))
             {

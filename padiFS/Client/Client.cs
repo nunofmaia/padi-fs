@@ -40,7 +40,7 @@ namespace padiFS
 
         public void Create(string filename, int nServers, int rQuorum, int wQuorum)
         {
-            Metadata meta = bridge.Create(filename, nServers, rQuorum, wQuorum);
+            Metadata meta = bridge.Create(this.name, filename, nServers, rQuorum, wQuorum);
 
             if (meta != null)
             {
@@ -58,7 +58,7 @@ namespace padiFS
 
         public void Open(string filename)
         {
-            Metadata meta = bridge.Open(filename);
+            Metadata meta = bridge.Open(this.name, filename);
 
             if (meta != null)
             {
@@ -436,7 +436,7 @@ namespace padiFS
 
         public void Close(string filename)
         {
-            bridge.Close(filename);
+            bridge.Close(this.name, filename);
             
             if (openFiles.ContainsKey(filename))
             {
@@ -453,7 +453,7 @@ namespace padiFS
         {
             if (!openFiles.ContainsKey(filename))
             {
-                bridge.Delete(filename);
+                bridge.Delete(this.name, filename);
                 Console.WriteLine("Delete file " + filename);
             }
             else

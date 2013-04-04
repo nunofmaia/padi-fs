@@ -9,10 +9,10 @@ namespace padiFS
     public interface IMetadataServer
     {
         // Project API
-        Metadata Open(string filename);
-        void Close(string filename);
-        Metadata Create(string filename, int serversNumber, int readQuorum, int writeQuorum);
-        void Delete(string filename);
+        Metadata Open(string clientName, string filename);
+        void Close(string clientName, string filename);
+        Metadata Create(string clientName, string filename, int serversNumber, int readQuorum, int writeQuorum);
+        void Delete(string clientName, string filename);
         void Fail();
         void Recover();
         string Dump();

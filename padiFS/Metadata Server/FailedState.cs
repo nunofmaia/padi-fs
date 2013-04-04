@@ -9,12 +9,9 @@ namespace padiFS
 {
     class FailedState : MetadataState 
     {
-        public override Metadata Open(MetadataServer md, string filename)
-        {
-            return null;
-        }
-        public override void Close(MetadataServer md, string filename)
-        { }
+        public override Metadata Open(MetadataServer md, string clientName, string filename)
+        { return null; }
+        public override void Close(MetadataServer md, string clientName, string filename) { }
         public override Metadata Create(MetadataServer md,
                                 string filename,
                                 int serversNumber,
@@ -24,8 +21,7 @@ namespace padiFS
             return null;
         }
 
-        public override void Delete(MetadataServer md, string filename)
-        { }
+        public override void Delete(MetadataServer md, string clientName, string filename) { }
 
         public override int Ping()
         {
