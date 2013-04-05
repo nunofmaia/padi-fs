@@ -605,11 +605,20 @@ namespace padiFS
                 {
                     string command = script.ReadLine();
 
-
-                    while (command != null && command[0] == '#')
+                    while (command != null)
                     {
-                        command.Trim();
-                        statusTextBox.Text += command + "\r\n";
+                        if (!string.IsNullOrWhiteSpace(command))
+                        {
+                            command.Trim();
+                            if (command.Length > 0 && command[0] == '#')
+                            {
+                                statusTextBox.Text += command + "\r\n";
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
                         command = script.ReadLine();
                     }
 
@@ -641,10 +650,21 @@ namespace padiFS
                 string command = script.ReadLine();
 
 
-                while (command != null && command[0] == '#')
+
+                while (command != null)
                 {
-                    command.Trim();
-                    statusTextBox.Text += command + "\r\n";
+                    if (!string.IsNullOrWhiteSpace(command))
+                    {
+                        command.Trim();
+                        if (command.Length > 0 && command[0] == '#')
+                        {
+                            statusTextBox.Text += command + "\r\n";
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
                     command = script.ReadLine();
                 }
 
@@ -734,6 +754,7 @@ namespace padiFS
             string lower_command = command.ToLower();
             string[] args = lower_command.Split(new char[] { ' ' });
             int length = args.Length;
+
 
             statusTextBox.Text += "command: " + lower_command + "\r\n";
 
