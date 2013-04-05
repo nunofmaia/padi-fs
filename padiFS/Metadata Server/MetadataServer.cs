@@ -64,6 +64,7 @@ namespace padiFS
         public Dictionary<string, int> ServersLoad
         {
             get { return this.serversLoad; }
+            set { this.serversLoad = value;}
         }
        
         public Dictionary<string, string> LiveDataServers
@@ -126,46 +127,7 @@ namespace padiFS
         {
             this.state.Delete(this, clientName, filename);
         }
-
-        public void LoadBalanceServers(object threadcontext)
-        {
-            serversLoad = Util.SortServerLoad(serversLoad);
-        }
-
-        public List<string> ChooseBestServers(int serversNumber)
-        {
-            List<string> chosen = new List<string>();
-            int chosen_counter = 0;
-            foreach (string s in serversLoad.Keys)
-            {
-                if (liveDataServers.ContainsKey(s))
-                {
-                    chosen.Add(s);
-                    chosen_counter++;
-                }
-
-                if (chosen_counter == serversNumber)
-                {
-                    break;
-                }
-            }
-            return chosen;
-        }
-
-
-        public void UpdateReplicas(object threadcontext)
-        {
-            foreach (string r in replicas.Keys)
-            {
-                IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[r]);
-                if (replica != null)
-                {
-                    MetadataInfo info = new MetadataInfo(primary, liveDataServers, deadDataServers, serversLoad, files, tempOpenFiles);
-                    replica.UpdateReplica(info);
-                }
-            }
-        }
-
+        
         // Puppet Master Commands
         public void Fail() {
          
