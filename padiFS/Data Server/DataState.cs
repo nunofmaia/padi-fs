@@ -125,11 +125,11 @@ namespace padiFS
         public override int Write(DataServer ds, string localFile, byte[] bytearray)
         {
             //failure
-            return -1;    
+            return -1;
         }
         public override bool Ping(DataServer ds)
         {
-            throw new ServerNotAvailableException("The server is on fail mode.");
+            throw new ServerNotAvailableException("The server " + ds.Name + " is not available.");
         }
     }
 }

@@ -105,9 +105,24 @@ namespace padiFS
                         IMetadataServer m = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), metadataServers[name]);
                         try
                         {
-                            m.Ping();
+                            if (m != null)
+                            {
+                                m.Ping();
+                            }
+                        }
+                        catch (ServerNotAvailableException)
+                        {
+                            //IGNORE
                         }
                         catch (System.IO.IOException)
+                        {
+                            LaunchMetadataServer(name, port);
+                            metadataServers[name] = address;
+                            mscounter++;
+                            registerMetadataServer(name, address);
+                            processes[name] = address;
+                        }
+                        catch (System.Net.Sockets.SocketException)
                         {
                             LaunchMetadataServer(name, port);
                             metadataServers[name] = address;
