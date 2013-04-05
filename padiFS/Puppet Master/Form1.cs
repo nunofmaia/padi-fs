@@ -751,7 +751,7 @@ namespace padiFS
                 case "exescript":
                     LaunchProcess(args[1]);
                     //ExecScriptCommand(args[1], args[2]);
-                    execute(new ExeScriptCommand(), args);
+                    new Thread(() => execute(new ExeScriptCommand(), args)).Start();
                     break;
 
                 default:
