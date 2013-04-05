@@ -108,9 +108,9 @@ namespace padiFS
 
         
         // Auxiliar API
-        public int ping()
+        public bool Ping()
         {
-            return this.state.ping(this);
+            return this.state.Ping(this);
         }
 
         public string Dump()

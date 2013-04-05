@@ -17,6 +17,6 @@ namespace padiFS
         string Dump();
 
         // Auxiliar API
-        int ping();
+        bool Ping();
     }
 }

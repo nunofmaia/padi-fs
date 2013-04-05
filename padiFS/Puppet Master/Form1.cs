@@ -66,6 +66,8 @@ namespace padiFS
             activeMetadataServers = new List<string>();
             processes = new Dictionary<string, string>();
 
+            this.TopMost = true;
+
             script = null;
             scripts_dir = Environment.CurrentDirectory + @"\Scripts"; 
             if (!Directory.Exists(scripts_dir))
