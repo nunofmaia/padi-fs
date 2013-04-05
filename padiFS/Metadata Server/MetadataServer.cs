@@ -432,11 +432,6 @@ namespace padiFS
             }
             return false;
         }
-        static ConsoleEventDelegate handler;   // Keeps it from getting garbage collected
-        // Pinvoke
-        private delegate bool ConsoleEventDelegate(int eventType);
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
 
         static void Main(string[] args)
         {
@@ -447,8 +442,6 @@ namespace padiFS
             TcpChannel channel = new TcpChannel(ms.port);
             ChannelServices.RegisterChannel(channel, true);
             RemotingServices.Marshal(ms, ms.name, typeof(MetadataServer));
-            handler = new ConsoleEventDelegate(ConsoleEventCallback);
-            SetConsoleCtrlHandler(handler, true);
             Console.ReadLine();
         }
     }
