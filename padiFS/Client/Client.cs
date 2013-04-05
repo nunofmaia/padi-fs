@@ -492,7 +492,7 @@ namespace padiFS
             return s;
         }
 
-        public void ExecScript(string path)
+        public void ExeScript(string path)
         {
             StreamReader script = new StreamReader(path);
 
@@ -550,6 +550,10 @@ namespace padiFS
 
                 case "write":
                     execute(new WriteCommand(), args);
+                    break;
+
+                case "delete":
+                    execute(new DeleteCommand(), args);
                     break;
 
                 case "copy":

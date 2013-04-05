@@ -730,6 +730,11 @@ namespace padiFS
                     execute(new WriteCommand(), args);
                     break;
 
+                case "delete":
+                    LaunchProcess(args[1]);
+                    execute(new DeleteCommand(), args);
+                    break;
+
                 case "copy":
                     LaunchProcess(args[1]);
                     CopyCommand(args[1], args[2], args[3], args[4], args[5]);
@@ -744,7 +749,7 @@ namespace padiFS
                 case "exescript":
                     LaunchProcess(args[1]);
                     //ExecScriptCommand(args[1], args[2]);
-                    new Thread(() => execute(new ExecScriptCommand(), args)).Start();
+                    new Thread(() => execute(new ExeScriptCommand(), args)).Start();
                     break;
 
                 default:
