@@ -84,7 +84,16 @@ namespace padiFS
         // LAUNCHING SITE
         private void LaunchProcess(string name)
         {
-            int port = Util.FreeTcpPort();
+            int port;
+            if (processes.ContainsKey(name))
+            {
+                port = Util.GetPortOnAddress(processes[name]);
+            }
+            else
+            {
+                port = Util.FreeTcpPort();
+            }
+            //int port = Util.FreeTcpPort();
             string address = "tcp://localhost:" + port + "/" + name;
             char code = name[0];
 
@@ -102,9 +111,10 @@ namespace padiFS
                     }
                     else
                     {
-                        IMetadataServer m = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), metadataServers[name]);
                         try
                         {
+                            IMetadataServer m = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), metadataServers[name]);
+
                             if (m != null)
                             {
                                 m.Ping();
@@ -112,24 +122,47 @@ namespace padiFS
                         }
                         catch (ServerNotAvailableException)
                         {
-                            //IGNORE
                         }
                         catch (System.IO.IOException)
                         {
                             LaunchMetadataServer(name, port);
-                            metadataServers[name] = address;
-                            mscounter++;
                             registerMetadataServer(name, address);
-                            processes[name] = address;
                         }
                         catch (System.Net.Sockets.SocketException)
                         {
                             LaunchMetadataServer(name, port);
-                            metadataServers[name] = address;
-                            mscounter++;
                             registerMetadataServer(name, address);
-                            processes[name] = address;
                         }
+                            
+                        
+                        //IMetadataServer m = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), metadataServers[name]);
+                        //try
+                        //{
+                        //    if (m != null)
+                        //    {
+                        //        m.Ping();
+                        //    }
+                        //}
+                        //catch (ServerNotAvailableException)
+                        //{
+                        //    //IGNORE
+                        //}
+                        //catch (System.IO.IOException)
+                        //{
+                        //    LaunchMetadataServer(name, port);
+                        //    metadataServers[name] = address;
+                        //    mscounter++;
+                        //    registerMetadataServer(name, address);
+                        //    processes[name] = address;
+                        //}
+                        //catch (System.Net.Sockets.SocketException)
+                        //{
+                        //    LaunchMetadataServer(name, port);
+                        //    metadataServers[name] = address;
+                        //    mscounter++;
+                        //    registerMetadataServer(name, address);
+                        //    processes[name] = address;
+                        //}
                     }
 
                     break;
@@ -237,9 +270,10 @@ namespace padiFS
 
         private void registerMetadataServer(string name, string address)
         {
-            if (activeMetadataServers.Count > 0)
+
+            if (metadataServers.Count > 1)
             {
-                foreach (string key in activeMetadataServers)
+                foreach (string key in metadataServers.Keys)
                 {
                     if (key != name)
                     {
@@ -256,13 +290,16 @@ namespace padiFS
                             catch (System.IO.IOException)
                             {
                             }
+                            catch (ServerNotAvailableException)
+                            {
+                            }
                         }
                     }
                 }
 
-                string random_server = activeMetadataServers[0];
+                string primary_name = AskForPrimary(name);
                 IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[name]);
-                IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[random_server]);
+                IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary_name]);
                 if (primary != null)
                 {
                     MetadataInfo info = primary.GetMetadataInfo();
@@ -278,6 +315,7 @@ namespace padiFS
                 IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
                 server.SetPrimary(name);
             }
+            
         }
 
         // TODO: use the LaunchProcess method to launch each process instead of doing always the same thing
@@ -998,6 +1036,38 @@ namespace padiFS
             }
 
             return result;
+        }
+
+        private string AskForPrimary(string name)
+        {
+            foreach (string address in metadataServers.Values)
+            {
+                if (address != metadataServers[name])
+                {
+                    try
+                    {
+                        IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
+                        if (server != null)
+                        {
+                            if (server.Ping())
+                            {
+                                return server.GetPrimary();
+                            }
+                        }
+                    }
+                    catch (ServerNotAvailableException)
+                    {
+                    }
+                    catch (System.IO.IOException)
+                    {
+                    }
+                    catch (System.Net.Sockets.SocketException)
+                    {
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

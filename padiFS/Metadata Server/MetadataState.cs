@@ -328,7 +328,7 @@ namespace padiFS
                 IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), md.Replicas[r]);
                 if (replica != null)
                 {
-                    MetadataInfo info = new MetadataInfo(md.Primary, md.LiveDataServers, md.DeadDataServers, md.ServersLoad, md.Files, md.TempOpenFiles);
+                    MetadataInfo info = new MetadataInfo(md.Primary, md.Address, md.Replicas, md.LiveDataServers, md.DeadDataServers, md.ServersLoad, md.Files, md.TempOpenFiles);
                     replica.UpdateReplica(info);
                 }
             }

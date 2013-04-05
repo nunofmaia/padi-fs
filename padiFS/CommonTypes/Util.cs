@@ -10,6 +10,7 @@ using System.Xml.Serialization;
 using System.Runtime.Serialization;
 using System.Xml;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace padiFS
 {
@@ -165,6 +166,20 @@ namespace padiFS
             x.Serialize(tw, file);
             Console.WriteLine("object written to file");
             tw.Close();
+        }
+
+        public static int GetPortOnAddress(string address)
+        {
+            int port = -1;
+            Match match = Regex.Match(address, @"localhost:([0-9]+)/", RegexOptions.IgnoreCase);
+
+            if (match.Success)
+            {
+                string key = match.Groups[1].Value;
+                port = int.Parse(key);
+            }
+
+            return port;
         }
     }
 }

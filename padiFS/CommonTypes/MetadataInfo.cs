@@ -9,21 +9,25 @@ namespace padiFS
     public class MetadataInfo
     {
         private string primary;
+        private string address;
+        private Dictionary<string, string> replicas;
         private Dictionary<string, string> liveDataServers;
         private Dictionary<string, string> deadDataServers;
         private Dictionary<string, int> serversLoad;
         private Dictionary<string, Metadata> files;
         private Dictionary<string, List<string>> openFiles;
 
-        public MetadataInfo(string primary, Dictionary<string, string> liveDataServers, Dictionary<string, string> deadDataServers,
+        public MetadataInfo(string primary, string address, Dictionary<string, string>replicas, Dictionary<string, string> liveDataServers, Dictionary<string, string> deadDataServers,
             Dictionary<string, int> serversLoad, Dictionary<string, Metadata> files, Dictionary<string, List<string>> openFiles)
         {
             this.primary = primary;
-            this.liveDataServers = liveDataServers;
-            this.deadDataServers = deadDataServers;
-            this.serversLoad = serversLoad;
-            this.files = files;
-            this.openFiles = openFiles;
+            this.address = address;
+            this.replicas = new Dictionary<string,string>(replicas);
+            this.liveDataServers = new Dictionary<string,string>(liveDataServers);
+            this.deadDataServers = new Dictionary<string,string>(deadDataServers);
+            this.serversLoad = new Dictionary<string,int>(serversLoad);
+            this.files = new Dictionary<string,Metadata>(files);
+            this.openFiles = new Dictionary<string,List<string>>(openFiles);
         }
 
         public string Primary
@@ -31,6 +35,22 @@ namespace padiFS
             get
             {
                 return primary;
+            }
+        }
+
+        public string Address
+        {
+            get
+            {
+                return address;
+            }
+        }
+
+        public Dictionary<string, string> Replicas
+        {
+            get
+            {
+                return replicas;
             }
         }
 

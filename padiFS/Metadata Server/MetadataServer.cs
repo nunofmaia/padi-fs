@@ -16,6 +16,7 @@ namespace padiFS
         private static TcpChannel channel;
         private MetadataState state;
         private string name;
+        private string address;
         private int port;
         private int pingInterval = 5;
         private string primary;
@@ -35,6 +36,7 @@ namespace padiFS
             this.state = new NormalState();
             this.name = name;
             this.port = int.Parse(port);
+            this.address = "tcp://localhost:" + this.port + "/" + this.name;
             this.primary = null;
             this.replicas = new Dictionary<string, string>();
             this.deadReplicas = new List<string>();
@@ -91,6 +93,11 @@ namespace padiFS
         public string Primary
         {
             get { return this.primary; }
+        }
+
+        public string Address
+        {
+            get { return this.address; }
         }
 
         public int Port
@@ -229,6 +236,17 @@ namespace padiFS
         public void UpdateReplica(MetadataInfo info)
         {
             SetPrimary(info.Primary);
+            this.replicas = info.Replicas;
+
+            if (replicas.ContainsKey(name))
+            {
+                replicas.Remove(name);
+            }
+
+            if (!replicas.ContainsKey(primary))
+            {
+                this.replicas.Add(primary, info.Address);
+            }
             this.liveDataServers = info.LiveDataServers;
             this.deadDataServers = info.DeadDataServers;
             this.serversLoad = info.ServersLoad;
@@ -240,7 +258,7 @@ namespace padiFS
 
         public MetadataInfo GetMetadataInfo()
         {
-            return new MetadataInfo(primary, liveDataServers, deadDataServers, serversLoad, files, tempOpenFiles);
+            return new MetadataInfo(primary, address, replicas, liveDataServers, deadDataServers, serversLoad, files, tempOpenFiles);
         }
 
 
@@ -366,17 +384,28 @@ namespace padiFS
 
             foreach (string r in replicas.Keys)
             {
-                if (r != primary && !deadReplicas.Contains(r))
+                if (r != primary)
                 {
-                    int r_id = Util.MetadataServerId(r);
-                    if (r_id < id)
+                    try
                     {
-                        id = r_id;
-                        replica = r;
+                        IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[r]);
+                        if (server != null)
+                        {
+                            server.Ping();
+                            int r_id = Util.MetadataServerId(r);
+                            if (r_id < id)
+                            {
+                                id = r_id;
+                                replica = r;
+                            }
+                        }
                     }
+                    catch (ServerNotAvailableException) { }
+                    catch (System.IO.IOException) { }
+                    catch (System.Net.Sockets.SocketException) { }
                 }
             }
-
+            Console.WriteLine("new primary: " + replica);
             SetPrimary(replica);
         }
 
@@ -400,6 +429,13 @@ namespace padiFS
             {
                 s += files[m].ToString() + "\r\n";
             }
+            // files open in metadata server
+            s += "Replicas:\r\n";
+            foreach (string m in replicas.Keys)
+            {
+                s += replicas[m].ToString() + "\r\n";
+            }
+
 
             return s;
         }
