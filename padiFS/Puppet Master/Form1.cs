@@ -712,25 +712,25 @@ namespace padiFS
 
                 case "create":
                     LaunchProcess(args[1]);
-                    new Thread(() => execute(new CreateCommand(), args));
+                    execute(new CreateCommand(), args);
                     //CreateCommand(args[1], args[2], args[3], args[4], args[5]);
                     break;
 
                 case "open":
                     LaunchProcess(args[1]);
-                    new Thread(() => execute(new OpenCommand(), args));
+                    execute(new OpenCommand(), args);
                     //OpenCommand(args[1], args[2]);
                     break;
 
                 case "close":
                     LaunchProcess(args[1]);
-                    new Thread(() => execute(new CloseCommand(), args));
+                    execute(new CloseCommand(), args);
                     //CloseCommand(args[1], args[2]);
                     break;
 
                 case "read":
                     LaunchProcess(args[1]);
-                    new Thread(() => execute(new ReadCommand(), args));
+                    execute(new ReadCommand(), args);
                     //ReadCommand(args[1], args[2], args[3], args[4]);
                     break;
 
@@ -746,12 +746,12 @@ namespace padiFS
                     //{
                     //    WriteCommand(args[1], args[2], args[3]);
                     //}
-                    new Thread(() => execute(new WriteCommand(), args));
+                    execute(new WriteCommand(), args);
                     break;
 
                 case "delete":
                     LaunchProcess(args[1]);
-                    new Thread(() => execute(new DeleteCommand(), args));
+                    execute(new DeleteCommand(), args);
                     break;
 
                 case "copy":

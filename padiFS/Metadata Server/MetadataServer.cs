@@ -317,6 +317,14 @@ namespace padiFS
                 //Console.WriteLine(replica + ": MORTO");
                 NextPrimaryReplica();
             }
+            catch (System.IO.IOException)
+            {
+                deadReplicas.Add(replica);
+                //Console.WriteLine(e.Message);
+                //Console.WriteLine("EXCEP: esta é a primary: {0}", replica);
+                //Console.WriteLine(replica + ": MORTO");
+                NextPrimaryReplica();
+            }
         }
 
 
@@ -394,16 +402,6 @@ namespace padiFS
             }
 
             return s;
-        }
-
-
-        private void RegisterExit()
-        {
-            IPuppetMaster p = (IPuppetMaster)Activator.GetObject(typeof(IPuppetMaster), "tcp://localhost:8070/PuppetMaster");
-            if (p != null)
-            {
-                p.RegisterClose(name);
-            }
         }
 
         // TEST AREA
