@@ -295,6 +295,31 @@ namespace padiFS
         }
     }
 
+    public class DeleteCommand : ICommand
+    {
+        public object execute(IClient client, string[] args)
+        {
+            if (client != null)
+            {
+                string filename = args[2];
+
+                client.Delete(filename);
+            }
+
+            return null;
+        }
+
+        public object execute(IMetadataServer metadata, string[] args)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object execute(IDataServer data, string[] args)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class CopyCommand : ICommand
     {
         public object execute(IClient client, string[] args)
@@ -313,7 +338,7 @@ namespace padiFS
         }
     }
 
-    public class ExecScriptCommand : ICommand
+    public class ExeScriptCommand : ICommand
     {
         public object execute(IClient client, string[] args)
         {
@@ -322,7 +347,7 @@ namespace padiFS
                 string filename = args[2];
                 string path = Environment.CurrentDirectory + @"\Scripts\" + filename;
 
-                client.ExecScript(path);
+                client.ExeScript(path);
             }
 
             return null;
