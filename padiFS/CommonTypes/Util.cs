@@ -150,7 +150,7 @@ namespace padiFS
             }
         }
 
-        public static File DeserializeFile(string path)
+        public static File DeserializeFile(string path, File file)
         {
              TextReader tr = new StreamReader(path);
              System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
@@ -161,7 +161,7 @@ namespace padiFS
         public static void SerializeFile(string path, File file)
         {
             TextWriter tw = new StreamWriter(path);
-            System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(newFile.GetType());
+            System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
             x.Serialize(tw, file);
             Console.WriteLine("object written to file");
             tw.Close();
