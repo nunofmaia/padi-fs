@@ -7,4 +7,4 @@ EXESCRIPT c-1 scriptcreatec-1.txt
 EXESCRIPT c-2 scriptcreatec-2.txt
 EXESCRIPT c-3 scriptcreatec-3.txt
 EXESCRIPT c-4 scriptcreatec-4.txt
-EXESCRIPT c-5 scriptcreatec-4.txt
+EXESCRIPT c-5 scriptcreatec-5.txt

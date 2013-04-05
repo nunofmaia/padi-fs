@@ -13,6 +13,7 @@ namespace padiFS
 {
     public class MetadataServer : MarshalByRefObject, IMetadataServer
     {
+        private static TcpChannel channel;
         private MetadataState state;
         private string name;
         private int port;
@@ -145,33 +146,41 @@ namespace padiFS
         public void Recover() {
             foreach (string replica in replicas.Keys)
             {
-                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[replica]);
-                if (server != null)
+                try
                 {
-                    if (server.Ping() == 1)
+                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[replica]);
+                    if (server != null)
                     {
-                        this.primary = server.GetPrimary();
-                        Console.WriteLine("PRIMARY "+this.primary);
-                        Console.WriteLine("REPLICA "+replica);
-                        if (this.primary == replica)
+                        if (server.Ping())
                         {
-                            MetadataInfo info = server.GetMetadataInfo();
-                            UpdateReplica(info);
-                        }
-                        else
-                        {
-                            // To prevent Lightning bolt failures
-                            if(replicas.ContainsKey(this.primary)) {
-                                IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[this.primary]);
-                                if (primary != null)
+                            this.primary = server.GetPrimary();
+                            Console.WriteLine("PRIMARY " + this.primary);
+                            Console.WriteLine("REPLICA " + replica);
+                            if (this.primary == replica)
+                            {
+                                MetadataInfo info = server.GetMetadataInfo();
+                                UpdateReplica(info);
+                            }
+                            else
+                            {
+                                // To prevent Lightning bolt failures
+                                if (replicas.ContainsKey(this.primary))
                                 {
-                                    MetadataInfo info = primary.GetMetadataInfo();
-                                    UpdateReplica(info);
+                                    IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[this.primary]);
+                                    if (primary != null)
+                                    {
+                                        MetadataInfo info = primary.GetMetadataInfo();
+                                        UpdateReplica(info);
+                                    }
                                 }
                             }
+                            break;
                         }
-                        break;
                     }
+                }
+                catch (ServerNotAvailableException e)
+                {
+                    Console.WriteLine(e.Message);
                 }
             }
 
@@ -244,7 +253,7 @@ namespace padiFS
 
             try
             {
-                if (server.ping() == 1)
+                if (server.Ping())
                 {
                     Console.WriteLine(name + ": VIVO");
                     if (!liveDataServers.ContainsKey(name))
@@ -253,19 +262,20 @@ namespace padiFS
                         deadDataServers.Remove(name);
                     }
                 }
-                else
-                {
-                    Console.WriteLine(name + ": MORTO");
-                    if (!deadDataServers.ContainsKey(name))
-                    {
-                        deadDataServers.Add(name, address);
-                        liveDataServers.Remove(name);
-                    }
-                }
+                //else
+                //{
+                //    Console.WriteLine(name + ": MORTO");
+                //    if (!deadDataServers.ContainsKey(name))
+                //    {
+                //        deadDataServers.Add(name, address);
+                //        liveDataServers.Remove(name);
+                //    }
+                //}
             }
-            catch (System.SystemException)
+            catch (ServerNotAvailableException e)
             {
-                Console.WriteLine(name + ": MORTO");
+                Console.WriteLine(e.Message);
+                //Console.WriteLine(name + ": MORTO");
                 if (!deadDataServers.ContainsKey(name))
                 {
                     deadDataServers.Add(name, address);
@@ -287,24 +297,32 @@ namespace padiFS
 
             try
             {
-                if (server.Ping() == 1)
+                if (server.Ping())
                 {
                     Console.WriteLine(replica + ": VIVO");
                 }
-                else
-                {
-                    deadReplicas.Add(replica);
-                    Console.WriteLine("ELSE: esta é a primary: {0}", replica);
-                    Console.WriteLine(replica + ": MORTO");
-                    NextPrimaryReplica();
-                }
+                //else
+                //{
+                //    deadReplicas.Add(replica);
+                //    Console.WriteLine("ELSE: esta é a primary: {0}", replica);
+                //    Console.WriteLine(replica + ": MORTO");
+                //    NextPrimaryReplica();
+                //}
             }
             catch (ServerNotAvailableException e)
             {
                 deadReplicas.Add(replica);
                 Console.WriteLine(e.Message);
-                Console.WriteLine("EXCEP: esta é a primary: {0}", replica);
-                Console.WriteLine(replica + ": MORTO");
+                //Console.WriteLine("EXCEP: esta é a primary: {0}", replica);
+                //Console.WriteLine(replica + ": MORTO");
+                NextPrimaryReplica();
+            }
+            catch (System.IO.IOException)
+            {
+                deadReplicas.Add(replica);
+                //Console.WriteLine(e.Message);
+                //Console.WriteLine("EXCEP: esta é a primary: {0}", replica);
+                //Console.WriteLine(replica + ": MORTO");
                 NextPrimaryReplica();
             }
         }
@@ -315,7 +333,7 @@ namespace padiFS
             this.state.PingPrimaryReplica(this, source, e);
         }
 
-        public int Ping()
+        public bool Ping()
         {
             return this.state.Ping();
         }
@@ -386,14 +404,27 @@ namespace padiFS
             return s;
         }
 
-        static bool ConsoleEventCallback(int eventType)
+        // TEST AREA
+        private static void Exit(object sender, ConsoleCancelEventArgs e)
+        {
+            Console.WriteLine("Control+C hit. Shutting down.");
+            Environment.Exit(0);
+        }
+
+        private static bool ConsoleEventCallback(int eventType)
         {
             if (eventType == 2)
             {
-                System.Windows.Forms.MessageBox.Show("Exit");
+                Console.WriteLine("Exit");
             }
             return false;
         }
+        static ConsoleEventDelegate handler;   // Keeps it from getting garbage collected
+        // Pinvoke
+        private delegate bool ConsoleEventDelegate(int eventType);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
+        //
 
         static void Main(string[] args)
         {
@@ -401,9 +432,15 @@ namespace padiFS
             MetadataServer ms = new MetadataServer(arguments[0], arguments[1]);
             Console.Title = "Iurie's Metadata Server: " + ms.name;
             // Ficar esperar pedidos de Iurie
-            TcpChannel channel = new TcpChannel(ms.port);
+            channel = new TcpChannel(ms.port);
             ChannelServices.RegisterChannel(channel, true);
             RemotingServices.Marshal(ms, ms.name, typeof(MetadataServer));
+
+            // TEST AREA
+            handler = new ConsoleEventDelegate(ConsoleEventCallback);
+            SetConsoleCtrlHandler(handler, true);
+            Console.CancelKeyPress += new ConsoleCancelEventHandler(Exit);
+            //
             Console.ReadLine();
         }
     }

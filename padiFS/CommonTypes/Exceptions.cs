@@ -51,20 +51,29 @@ namespace padiFS
     }
 
     [Serializable]
-    public class FileAlreadyOpenException : PadiFsException
+    public class FileAlreadyExists : PadiFsException
     {
-        public FileAlreadyOpenException() : base() { }
-        public FileAlreadyOpenException(string message) : base(message) { }
-        public FileAlreadyOpenException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
+        public FileAlreadyExists() : base() { }
+        public FileAlreadyExists(string message) : base(message) { }
+        public FileAlreadyExists(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
             : base(info, context) { }
     }
 
     [Serializable]
-    public class FileAlreadyCloseException : PadiFsException
+    public class FileIsOpenedException : PadiFsException
     {
-        public FileAlreadyCloseException() : base() { }
-        public FileAlreadyCloseException(string message) : base(message) { }
-        public FileAlreadyCloseException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
+        public FileIsOpenedException() : base() { }
+        public FileIsOpenedException(string message) : base(message) { }
+        public FileIsOpenedException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
+            : base(info, context) { }
+    }
+
+    [Serializable]
+    public class FileAlreadyClosedException : PadiFsException
+    {
+        public FileAlreadyClosedException() : base() { }
+        public FileAlreadyClosedException(string message) : base(message) { }
+        public FileAlreadyClosedException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
             : base(info, context) { }
     }
 
@@ -78,11 +87,11 @@ namespace padiFS
     }
 
     [Serializable]
-    public class ServerNotFoundException : PadiFsException
+    public class NotEnoughServersException : PadiFsException
     {
-        public ServerNotFoundException() : base() { }
-        public ServerNotFoundException(string message) : base(message) { }
-        public ServerNotFoundException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
+        public NotEnoughServersException() : base() { }
+        public NotEnoughServersException(string message) : base(message) { }
+        public NotEnoughServersException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
             : base(info, context) { }
     }
 }

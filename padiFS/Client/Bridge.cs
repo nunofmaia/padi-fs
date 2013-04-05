@@ -96,7 +96,7 @@ namespace padiFS
                 IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
                 if (server != null)
                 {
-                    if (server.Ping() == 1)
+                    if (server.Ping())
                     {
                         return server.GetPrimary();
                     }

@@ -11,6 +11,7 @@ namespace padiFS
 {
     public class DataServer : MarshalByRefObject, IDataServer
     {
+        private static TcpChannel channel;
         private string name;
         private int port;
 
@@ -95,25 +96,21 @@ namespace padiFS
         public void Fail()
         {
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
-            lock (this)
-            {
-                this.setStateFail();
-            }
+            this.setStateFail();
+            
             Console.WriteLine("On Failure!");
         }
         public void Recover()
         {
-            lock(this){
-                this.setStateNormal();
-            }
+            this.setStateNormal();
             Console.WriteLine("Uhf, recovered at last...");
         }
 
         
         // Auxiliar API
-        public int ping()
+        public bool Ping()
         {
-            return this.state.ping(this);
+            return this.state.Ping(this);
         }
 
         public string Dump()
@@ -134,7 +131,7 @@ namespace padiFS
             //Console.WriteLine(ds.Read("iuriesun", "cena").content);
             
             // Ficar esperar pedidos de Iurie
-            TcpChannel channel = new TcpChannel(ds.port);
+            channel = new TcpChannel(ds.port);
             ChannelServices.RegisterChannel(channel, true);
             RemotingServices.Marshal(ds, ds.name, typeof(DataServer));
             //IPuppetMaster master = (IPuppetMaster)Activator.GetObject(typeof(IPuppetMaster), "tcp://localhost:8070/PuppetMaster");

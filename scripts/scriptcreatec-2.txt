@@ -24,3 +24,289 @@ CREATE c-2 ww 1 1 1
 CREATE c-2 xx 1 1 1
 CREATE c-2 yy 1 1 1
 CREATE c-2 zz 1 1 1
+CREATE c-2 1aa 1 1 1
+CREATE c-2 1bb 1 1 1
+CREATE c-2 1cc 1 1 1
+CREATE c-2 1dd 1 1 1
+CREATE c-2 1ee 1 1 1
+CREATE c-2 1ff 1 1 1
+CREATE c-2 1gg 1 1 1
+CREATE c-2 1hh 1 1 1
+CREATE c-2 1ii 1 1 1
+CREATE c-2 1jj 1 1 1
+CREATE c-2 1kk 1 1 1
+CREATE c-2 1ll 1 1 1
+CREATE c-2 1mm 1 1 1
+CREATE c-2 1nn 1 1 1
+CREATE c-2 1oo 1 1 1
+CREATE c-2 1pp 1 1 1
+CREATE c-2 1qq 1 1 1
+CREATE c-2 1rr 1 1 1
+CREATE c-2 1ss 1 1 1
+CREATE c-2 1tt 1 1 1
+CREATE c-2 1uu 1 1 1
+CREATE c-2 1vv 1 1 1
+CREATE c-2 1ww 1 1 1
+CREATE c-2 1xx 1 1 1
+CREATE c-2 1yy 1 1 1
+CREATE c-2 1zz 1 1 1
+CREATE c-2 2aa 1 1 1
+CREATE c-2 2bb 1 1 1
+CREATE c-2 2cc 1 1 1
+CREATE c-2 2dd 1 1 1
+CREATE c-2 2ee 1 1 1
+CREATE c-2 2ff 1 1 1
+CREATE c-2 2gg 1 1 1
+CREATE c-2 2hh 1 1 1
+CREATE c-2 2ii 1 1 1
+CREATE c-2 2jj 1 1 1
+CREATE c-2 2kk 1 1 1
+CREATE c-2 2ll 1 1 1
+CREATE c-2 2mm 1 1 1
+CREATE c-2 2nn 1 1 1
+CREATE c-2 2oo 1 1 1
+CREATE c-2 2pp 1 1 1
+CREATE c-2 2qq 1 1 1
+CREATE c-2 2rr 1 1 1
+CREATE c-2 2ss 1 1 1
+CREATE c-2 2tt 1 1 1
+CREATE c-2 2uu 1 1 1
+CREATE c-2 2vv 1 1 1
+CREATE c-2 2ww 1 1 1
+CREATE c-2 2xx 1 1 1
+CREATE c-2 2yy 1 1 1
+CREATE c-2 2zz 1 1 1
+CREATE c-2 3aa 1 1 1
+CREATE c-2 3bb 1 1 1
+CREATE c-2 3cc 1 1 1
+CREATE c-2 3dd 1 1 1
+CREATE c-2 3ee 1 1 1
+CREATE c-2 3ff 1 1 1
+CREATE c-2 3gg 1 1 1
+CREATE c-2 3hh 1 1 1
+CREATE c-2 3ii 1 1 1
+CREATE c-2 3jj 1 1 1
+CREATE c-2 3kk 1 1 1
+CREATE c-2 3ll 1 1 1
+CREATE c-2 3mm 1 1 1
+CREATE c-2 3nn 1 1 1
+CREATE c-2 3oo 1 1 1
+CREATE c-2 3pp 1 1 1
+CREATE c-2 3qq 1 1 1
+CREATE c-2 3rr 1 1 1
+CREATE c-2 3ss 1 1 1
+CREATE c-2 3tt 1 1 1
+CREATE c-2 3uu 1 1 1
+CREATE c-2 3vv 1 1 1
+CREATE c-2 3ww 1 1 1
+CREATE c-2 3xx 1 1 1
+CREATE c-2 3yy 1 1 1
+CREATE c-2 3zz 1 1 1
+CLOSE c-2 aa
+CLOSE c-2 bb
+CLOSE c-2 cc
+CLOSE c-2 dd
+CLOSE c-2 ee
+CLOSE c-2 ff
+CLOSE c-2 gg
+CLOSE c-2 hh
+CLOSE c-2 ii
+CLOSE c-2 jj
+CLOSE c-2 kk
+CLOSE c-2 ll
+CLOSE c-2 mm
+CLOSE c-2 nn
+CLOSE c-2 oo
+CLOSE c-2 pp
+CLOSE c-2 qq
+CLOSE c-2 rr
+CLOSE c-2 ss
+CLOSE c-2 tt
+CLOSE c-2 uu
+CLOSE c-2 vv
+CLOSE c-2 ww
+CLOSE c-2 xx
+CLOSE c-2 yy
+CLOSE c-2 zz
+CLOSE c-2 1aa
+CLOSE c-2 1bb
+CLOSE c-2 1cc
+CLOSE c-2 1dd
+CLOSE c-2 1ee
+CLOSE c-2 1ff
+CLOSE c-2 1gg
+CLOSE c-2 1hh
+CLOSE c-2 1ii
+CLOSE c-2 1jj
+CLOSE c-2 1kk
+CLOSE c-2 1ll
+CLOSE c-2 1mm
+CLOSE c-2 1nn
+CLOSE c-2 1oo
+CLOSE c-2 1pp
+CLOSE c-2 1qq
+CLOSE c-2 1rr
+CLOSE c-2 1ss
+CLOSE c-2 1tt
+CLOSE c-2 1uu
+CLOSE c-2 1vv
+CLOSE c-2 1ww
+CLOSE c-2 1xx
+CLOSE c-2 1yy
+CLOSE c-2 1zz
+CLOSE c-2 2aa
+CLOSE c-2 2bb
+CLOSE c-2 2cc
+CLOSE c-2 2dd
+CLOSE c-2 2ee
+CLOSE c-2 2ff
+CLOSE c-2 2gg
+CLOSE c-2 2hh
+CLOSE c-2 2ii
+CLOSE c-2 2jj
+CLOSE c-2 2kk
+CLOSE c-2 2ll
+CLOSE c-2 2mm
+CLOSE c-2 2nn
+CLOSE c-2 2oo
+CLOSE c-2 2pp
+CLOSE c-2 2qq
+CLOSE c-2 2rr
+CLOSE c-2 2ss
+CLOSE c-2 2tt
+CLOSE c-2 2uu
+CLOSE c-2 2vv
+CLOSE c-2 2ww
+CLOSE c-2 2xx
+CLOSE c-2 2yy
+CLOSE c-2 2zz
+CLOSE c-2 3aa
+CLOSE c-2 3bb
+CLOSE c-2 3cc
+CLOSE c-2 3dd
+CLOSE c-2 3ee
+CLOSE c-2 3ff
+CLOSE c-2 3gg
+CLOSE c-2 3hh
+CLOSE c-2 3ii
+CLOSE c-2 3jj
+CLOSE c-2 3kk
+CLOSE c-2 3ll
+CLOSE c-2 3mm
+CLOSE c-2 3nn
+CLOSE c-2 3oo
+CLOSE c-2 3pp
+CLOSE c-2 3qq
+CLOSE c-2 3rr
+CLOSE c-2 3ss
+CLOSE c-2 3tt
+CLOSE c-2 3uu
+CLOSE c-2 3vv
+CLOSE c-2 3ww
+CLOSE c-2 3xx
+CLOSE c-2 3yy
+CLOSE c-2 3zz
+DELETE c-2 aa
+DELETE c-2 bb
+DELETE c-2 cc
+DELETE c-2 dd
+DELETE c-2 ee
+DELETE c-2 ff
+DELETE c-2 gg
+DELETE c-2 hh
+DELETE c-2 ii
+DELETE c-2 jj
+DELETE c-2 kk
+DELETE c-2 ll
+DELETE c-2 mm
+DELETE c-2 nn
+DELETE c-2 oo
+DELETE c-2 pp
+DELETE c-2 qq
+DELETE c-2 rr
+DELETE c-2 ss
+DELETE c-2 tt
+DELETE c-2 uu
+DELETE c-2 vv
+DELETE c-2 ww
+DELETE c-2 xx
+DELETE c-2 yy
+DELETE c-2 zz
+DELETE c-2 1aa
+DELETE c-2 1bb
+DELETE c-2 1cc
+DELETE c-2 1dd
+DELETE c-2 1ee
+DELETE c-2 1ff
+DELETE c-2 1gg
+DELETE c-2 1hh
+DELETE c-2 1ii
+DELETE c-2 1jj
+DELETE c-2 1kk
+DELETE c-2 1ll
+DELETE c-2 1mm
+DELETE c-2 1nn
+DELETE c-2 1oo
+DELETE c-2 1pp
+DELETE c-2 1qq
+DELETE c-2 1rr
+DELETE c-2 1ss
+DELETE c-2 1tt
+DELETE c-2 1uu
+DELETE c-2 1vv
+DELETE c-2 1ww
+DELETE c-2 1xx
+DELETE c-2 1yy
+DELETE c-2 1zz
+DELETE c-2 2aa
+DELETE c-2 2bb
+DELETE c-2 2cc
+DELETE c-2 2dd
+DELETE c-2 2ee
+DELETE c-2 2ff
+DELETE c-2 2gg
+DELETE c-2 2hh
+DELETE c-2 2ii
+DELETE c-2 2jj
+DELETE c-2 2kk
+DELETE c-2 2ll
+DELETE c-2 2mm
+DELETE c-2 2nn
+DELETE c-2 2oo
+DELETE c-2 2pp
+DELETE c-2 2qq
+DELETE c-2 2rr
+DELETE c-2 2ss
+DELETE c-2 2tt
+DELETE c-2 2uu
+DELETE c-2 2vv
+DELETE c-2 2ww
+DELETE c-2 2xx
+DELETE c-2 2yy
+DELETE c-2 2zz
+DELETE c-2 3aa
+DELETE c-2 3bb
+DELETE c-2 3cc
+DELETE c-2 3dd
+DELETE c-2 3ee
+DELETE c-2 3ff
+DELETE c-2 3gg
+DELETE c-2 3hh
+DELETE c-2 3ii
+DELETE c-2 3jj
+DELETE c-2 3kk
+DELETE c-2 3ll
+DELETE c-2 3mm
+DELETE c-2 3nn
+DELETE c-2 3oo
+DELETE c-2 3pp
+DELETE c-2 3qq
+DELETE c-2 3rr
+DELETE c-2 3ss
+DELETE c-2 3tt
+DELETE c-2 3uu
+DELETE c-2 3vv
+DELETE c-2 3ww
+DELETE c-2 3xx
+DELETE c-2 3yy
+DELETE c-2 3zz

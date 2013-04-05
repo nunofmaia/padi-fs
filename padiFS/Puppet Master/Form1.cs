@@ -19,7 +19,7 @@ namespace padiFS
 
     public partial class Form1 : Form, ICommander
     {
-        TcpChannel channel;
+        private static TcpChannel channel;
         private int mscounter;
         private int dscounter;
         private int ccounter;
@@ -66,6 +66,8 @@ namespace padiFS
             activeMetadataServers = new List<string>();
             processes = new Dictionary<string, string>();
 
+            this.TopMost = true;
+
             script = null;
             scripts_dir = Environment.CurrentDirectory + @"\Scripts"; 
             if (!Directory.Exists(scripts_dir))
@@ -97,6 +99,22 @@ namespace padiFS
                         registerMetadataServer(name, address);
                         activeMetadataServers.Add(name);
                         processes.Add(name, address);
+                    }
+                    else
+                    {
+                        IMetadataServer m = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), metadataServers[name]);
+                        try
+                        {
+                            m.Ping();
+                        }
+                        catch (System.IO.IOException)
+                        {
+                            LaunchMetadataServer(name, port);
+                            metadataServers[name] = address;
+                            mscounter++;
+                            registerMetadataServer(name, address);
+                            processes[name] = address;
+                        }
                     }
 
                     break;
@@ -208,22 +226,23 @@ namespace padiFS
             {
                 foreach (string key in activeMetadataServers)
                 {
-                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
-                    if (server != null)
+                    if (key != name)
                     {
-                        try
+                        IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
+                        if (server != null)
                         {
-                            server.RegisterMetadataServer(name, address);
+                            try
+                            {
+                                server.RegisterMetadataServer(name, address);
+                            }
+                            catch (System.Net.Sockets.SocketException)
+                            {
+                            }
+                            catch (System.IO.IOException)
+                            {
+                            }
                         }
-                        catch (System.Net.Sockets.SocketException)
-                        {
-                        }
-                        catch (System.IO.IOException)
-                        {
-                        }
-
                     }
-
                 }
 
                 string random_server = activeMetadataServers[0];
@@ -749,7 +768,7 @@ namespace padiFS
                 case "exescript":
                     LaunchProcess(args[1]);
                     //ExecScriptCommand(args[1], args[2]);
-                    execute(new ExeScriptCommand(), args);
+                    new Thread(() => execute(new ExeScriptCommand(), args)).Start();
                     break;
 
                 default:

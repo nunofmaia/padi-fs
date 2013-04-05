@@ -13,7 +13,7 @@ namespace padiFS
         public abstract void Create(DataServer ds, string fileName);
         public abstract File Read(DataServer ds, string localFile, string semantics);
         public abstract int Write(DataServer ds, string localFile, byte[] bytearray);
-        public abstract int ping(DataServer ds); 
+        public abstract bool Ping(DataServer ds); 
     }
 
     class NormalState : DataState
@@ -69,19 +69,28 @@ namespace padiFS
             byte[] bytes = Util.ConvertStringToByteArray(content[1]);
 
             File newFile = new File();
-            File oldFile =ds.Read(localFile, "default");
+            File oldFile = new File();
+
+            string path = ds.CurrentDir + @"\" + ds.Name + @"\" + localFile + ".txt";
+            if (System.IO.File.Exists(path))
+            {
+                TextReader tr = new StreamReader(path);
+                System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(oldFile.GetType());
+                oldFile = (File)x.Deserialize(tr);
+                tr.Close();
+            }
 
             if (oldFile.Version < Convert.ToDateTime(date))
             {
                 newFile.Version = Convert.ToDateTime(date);
                 newFile.Content = bytes;
                 ds.CurrentDir = Environment.CurrentDirectory;
-                string path = ds.CurrentDir + @"\" + ds.Name + @"\" + localFile + @".txt";
+                string readPath = ds.CurrentDir + @"\" + ds.Name + @"\" + localFile + @".txt";
 
-                if (System.IO.File.Exists(path))
+                if (System.IO.File.Exists(readPath))
                 {
-                    Console.WriteLine(path);
-                    TextWriter tw = new StreamWriter(path);
+                    Console.WriteLine(readPath);
+                    TextWriter tw = new StreamWriter(readPath);
                     System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(newFile.GetType());
                     x.Serialize(tw, newFile);
                     Console.WriteLine("object written to file");
@@ -96,12 +105,12 @@ namespace padiFS
             //success
             return 0;
         }
-        public override int ping(DataServer ds)
+        public override bool Ping(DataServer ds)
         {
             ds.GetFreeze.WaitOne();
 
             Console.WriteLine("I'm Alive");
-            return 1;
+            return true;
         }
     }
 
@@ -118,9 +127,9 @@ namespace padiFS
             //failure
             return -1;    
         }
-        public override int ping(DataServer ds)
+        public override bool Ping(DataServer ds)
         {
-            return 0;
+            throw new ServerNotAvailableException("The server is on fail mode.");
         }
     }
 }

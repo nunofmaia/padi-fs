@@ -13,6 +13,7 @@ namespace padiFS
 {
     public class Client : MarshalByRefObject, IClient, ICommander
     {
+        private static TcpChannel channel;
         private string name;
         private int port;
         private Bridge bridge;
@@ -40,67 +41,127 @@ namespace padiFS
 
         public void Create(string filename, int nServers, int rQuorum, int wQuorum)
         {
-            Metadata meta = bridge.Create(this.name, filename, nServers, rQuorum, wQuorum);
-
-            if (meta != null)
+            try
             {
+                Metadata meta = bridge.Create(this.name, filename, nServers, rQuorum, wQuorum);
+
+                //if (meta != null)
+                //{
                 myFiles.Add(filename, meta);
                 openFiles.Add(filename, meta);
 
                 AddToFileRegister(meta);
                 Console.WriteLine("Create file " + filename);
+                //}
+                //else
+                //{
+                //    Console.WriteLine("Could not create the file " + filename);
+                //}
             }
-            else
+            catch (FileAlreadyExists e)
             {
-                Console.WriteLine("Could not create the file " + filename);
+                Console.WriteLine(e.Message);
+            }
+            catch (NotEnoughServersException e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            catch (ServerNotAvailableException e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
 
         public void Open(string filename)
         {
-            Metadata meta = bridge.Open(this.name, filename);
+            try
+            {
+                Metadata meta = bridge.Open(this.name, filename);
 
-            if (meta != null)
-            {
-                if (!openFiles.ContainsKey(filename))
+                if (meta != null)
                 {
-                    openFiles.Add(filename, meta);
-                    AddToFileRegister(meta);
+                    if (!openFiles.ContainsKey(filename))
+                    {
+                        openFiles.Add(filename, meta);
+                        AddToFileRegister(meta);
+                    }
+                    Console.WriteLine("Open file " + filename);
                 }
-                Console.WriteLine("Open file " + filename);
+                else
+                {
+                    Console.WriteLine("Something wrong happened.");
+                }
             }
-            else
+            catch (FileNotFoundException e)
             {
-                Console.WriteLine("Something wrong happened.");
+                Console.WriteLine(e.Message);
+            }
+            catch (FileIsOpenedException e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            catch (ServerNotAvailableException e)
+            {
+                Console.WriteLine(e.Message);
             }
 
         }
 
         public void Close(string filename)
         {
-            bridge.Close(this.name, filename);
-
-            if (openFiles.ContainsKey(filename))
+            try
             {
+                bridge.Close(this.name, filename);
+
+                //if (openFiles.ContainsKey(filename))
+                //{
                 openFiles.Remove(filename);
                 Console.WriteLine("Close file " + filename);
+                //}
             }
-            else
+            catch (FileNotFoundException e)
             {
-                Console.WriteLine("File already closed.");
+                Console.WriteLine(e.Message);
+            }
+            catch (FileNotOpenException e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            catch (FileAlreadyClosedException e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            catch (ServerNotAvailableException e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
 
         public void Delete(string filename)
         {
-            if (!openFiles.ContainsKey(filename))
+            try
             {
+                //if (!openFiles.ContainsKey(filename))
+                //{
                 bridge.Delete(this.name, filename);
                 Console.WriteLine("Delete file " + filename);
+                //}
+                //else
+                //{
+                //    Console.WriteLine("File is opened.");
+                //}
             }
-            else
+            catch (FileNotFoundException e)
             {
-                Console.WriteLine("File is opened.");
+                Console.WriteLine(e.Message);
+            }
+            catch (FileIsOpenedException e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            catch (ServerNotAvailableException e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
 
@@ -419,20 +480,17 @@ namespace padiFS
 
         public void Write(string filename, byte[] bytearray)
         {
-            Thread t = new Thread(() => ExecuteWrite(filename, bytearray));
-            t.Start();
+            new Thread(() => ExecuteWrite(filename, bytearray)).Start();
         }
 
         public void Write(string file, int register)
         {
-            Thread t = new Thread(() => ExecutePMWriteRegister(file, register));
-            t.Start();
+            new Thread(() => ExecutePMWriteRegister(file, register)).Start();
         }
 
         public void Write(string file, string content)
         {
-            Thread t = new Thread(() => ExecutePMWriteContent(file, content));
-            t.Start();
+            new Thread(() => ExecutePMWriteContent(file, content)).Start();
         }
 
         // Method to get the file from the file register and write the content
@@ -587,7 +645,7 @@ namespace padiFS
             Client c = new Client(arguments[0], arguments[1]);
             Console.Title = "Iurie's Client: " + c.name;
             // Fazer coisas que Iuri mandar
-            TcpChannel channel = new TcpChannel(c.port);
+            channel = new TcpChannel(c.port);
             ChannelServices.RegisterChannel(channel, true);
             RemotingServices.Marshal(c, c.name, typeof(Client));
             Console.ReadLine();
