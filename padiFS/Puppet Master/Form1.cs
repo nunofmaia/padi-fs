@@ -27,7 +27,6 @@ namespace padiFS
         private Dictionary<string, string> dataServers;
         private Dictionary<string, string> metadataServers;
         private Dictionary<string, string> clients;
-        private List<string> closedProcesses;
         private List<string> activeClients;
         private List<string> activeDataServers;
         private List<string> activeMetadataServers;
@@ -62,7 +61,6 @@ namespace padiFS
             dataServers = new Dictionary<string, string>();
             metadataServers = new Dictionary<string, string>();
             clients = new Dictionary<string, string>();
-            closedProcesses = new List<string>();
             activeClients = new List<string>();
             activeDataServers = new List<string>();
             activeMetadataServers = new List<string>();
@@ -79,10 +77,6 @@ namespace padiFS
             ChannelServices.RegisterChannel(channel, true);
             RemotingConfiguration.RegisterWellKnownServiceType(typeof(PuppetMaster), "PuppetMaster", WellKnownObjectMode.Singleton);
 
-        }
-
-        public void ClosedProcesses(string s) {
-            closedProcesses.Add(s);
         }
 
         // LAUNCHING SITE
@@ -230,22 +224,23 @@ namespace padiFS
             {
                 foreach (string key in activeMetadataServers)
                 {
-                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
-                    if (server != null)
+                    if (key != name)
                     {
-                        try
+                        IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
+                        if (server != null)
                         {
-                            server.RegisterMetadataServer(name, address);
+                            try
+                            {
+                                server.RegisterMetadataServer(name, address);
+                            }
+                            catch (System.Net.Sockets.SocketException)
+                            {
+                            }
+                            catch (System.IO.IOException)
+                            {
+                            }
                         }
-                        catch (System.Net.Sockets.SocketException)
-                        {
-                        }
-                        catch (System.IO.IOException)
-                        {
-                        }
-
                     }
-
                 }
 
                 string random_server = activeMetadataServers[0];
