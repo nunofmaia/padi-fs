@@ -60,7 +60,7 @@ namespace padiFS
                 if (!clientsList.Contains(clientName))
                 {
                     md.TempOpenFiles[filename].Add(clientName);
-                    ThreadPool.QueueUserWorkItem(md.UpdateReplicas, null);
+                    ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
                     return md.Files[filename];
                 }
                 else
@@ -76,7 +76,7 @@ namespace padiFS
                     List<string> clientsList = new List<string>();
                     clientsList.Add(clientName);
                     md.TempOpenFiles.Add(filename, clientsList);
-                    ThreadPool.QueueUserWorkItem(md.UpdateReplicas, null);
+                    ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
                     return md.Files[filename];
                 }
                 else
@@ -100,7 +100,7 @@ namespace padiFS
                     {
                         md.TempOpenFiles.Remove(filename);
                     }
-                    ThreadPool.QueueUserWorkItem(md.UpdateReplicas, null);
+                    ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
                 }
                 else
                 {
@@ -120,7 +120,7 @@ namespace padiFS
                 if (md.LiveDataServers.Count >= serversNumber)
                 {
                     List<string> servers = new List<string>();
-                    List<string> chosen = md.ChooseBestServers(serversNumber);
+                    List<string> chosen = ChooseBestServers(serversNumber, md);
 
                     // Before sending the requests, a time stamp is added to the filename
                     string f = DateTime.Now.ToString("o") + (char)0x7f + filename;
@@ -133,14 +133,14 @@ namespace padiFS
                         ThreadPool.QueueUserWorkItem(CreateCallback, arguments);
                         md.ServersLoad[v]++;
                     }
-                    ThreadPool.QueueUserWorkItem(md.LoadBalanceServers, null);
+                    ThreadPool.QueueUserWorkItem(LoadBalanceServers, md);
                     Metadata meta = new Metadata(filename, serversNumber, readQuorum, writeQuorum, servers);
                     List<string> clientsList = new List<string>();
                     clientsList.Add(clientName);
                     md.Files.Add(filename, meta);
                     md.TempOpenFiles.Add(filename, clientsList);
                     // Update other replicas. CHANGE THIS IN THE FUTURE
-                    ThreadPool.QueueUserWorkItem(md.UpdateReplicas, null);
+                    ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
                     return meta;
                 }
                 else
@@ -163,7 +163,7 @@ namespace padiFS
                 {
                     md.Files.Remove(filename);
                     // Update other replicas. CHANGE THIS IN THE FUTURE
-                    ThreadPool.QueueUserWorkItem(md.UpdateReplicas, null);
+                    ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
                     Console.WriteLine("File " + filename + " deleted");
                 }
                 else
@@ -246,5 +246,48 @@ namespace padiFS
                 server.Create(filename);
             }
         }
+
+        private void LoadBalanceServers(object threadcontext)
+        {
+            MetadataServer md = (MetadataServer)threadcontext; 
+            md.ServersLoad = Util.SortServerLoad(md.ServersLoad);
+        }
+
+        private List<string> ChooseBestServers(int serversNumber, MetadataServer md)
+        {
+            List<string> chosen = new List<string>();
+            int chosen_counter = 0;
+            foreach (string s in md.ServersLoad.Keys)
+            {
+                if (md.LiveDataServers.ContainsKey(s))
+                {
+                    chosen.Add(s);
+                    chosen_counter++;
+                }
+
+                if (chosen_counter == serversNumber)
+                {
+                    break;
+                }
+            }
+            return chosen;
+        }
+
+
+        private void UpdateReplicas(object threadcontext)
+        {
+            MetadataServer md = (MetadataServer)threadcontext; 
+            foreach (string r in md.Replicas.Keys)
+            {
+                IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), md.Replicas[r]);
+                if (replica != null)
+                {
+                    MetadataInfo info = new MetadataInfo(md.Primary, md.LiveDataServers, md.DeadDataServers, md.ServersLoad, md.Files, md.TempOpenFiles);
+                    replica.UpdateReplica(info);
+                }
+            }
+        }
+    
+    
     }
 }
