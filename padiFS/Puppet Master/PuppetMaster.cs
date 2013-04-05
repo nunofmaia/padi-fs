@@ -22,5 +22,10 @@ namespace padiFS
 
             Application.Run(form);
         }
+
+        public void RegisterClose(string s)
+        {
+            form.ClosedProcesses(s);
+        }
     }
 }

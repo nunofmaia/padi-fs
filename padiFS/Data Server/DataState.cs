@@ -69,19 +69,28 @@ namespace padiFS
             byte[] bytes = Util.ConvertStringToByteArray(content[1]);
 
             File newFile = new File();
-            File oldFile =ds.Read(localFile, "default");
+            File oldFile = new File();
+
+            string path = ds.CurrentDir + @"\" + ds.Name + @"\" + localFile + ".txt";
+            if (System.IO.File.Exists(path))
+            {
+                TextReader tr = new StreamReader(path);
+                System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(oldFile.GetType());
+                oldFile = (File)x.Deserialize(tr);
+                tr.Close();
+            }
 
             if (oldFile.Version < Convert.ToDateTime(date))
             {
                 newFile.Version = Convert.ToDateTime(date);
                 newFile.Content = bytes;
                 ds.CurrentDir = Environment.CurrentDirectory;
-                string path = ds.CurrentDir + @"\" + ds.Name + @"\" + localFile + @".txt";
+                string readPath = ds.CurrentDir + @"\" + ds.Name + @"\" + localFile + @".txt";
 
-                if (System.IO.File.Exists(path))
+                if (System.IO.File.Exists(readPath))
                 {
-                    Console.WriteLine(path);
-                    TextWriter tw = new StreamWriter(path);
+                    Console.WriteLine(readPath);
+                    TextWriter tw = new StreamWriter(readPath);
                     System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(newFile.GetType());
                     x.Serialize(tw, newFile);
                     Console.WriteLine("object written to file");

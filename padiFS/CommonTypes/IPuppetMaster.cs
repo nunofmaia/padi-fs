@@ -7,5 +7,6 @@ namespace padiFS
 {
     public interface IPuppetMaster
     {
+        void RegisterClose(string s);
     }
 }

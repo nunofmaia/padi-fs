@@ -13,6 +13,7 @@ namespace padiFS
 {
     public class Client : MarshalByRefObject, IClient, ICommander
     {
+        private static TcpChannel channel;
         private string name;
         private int port;
         private Bridge bridge;
@@ -419,20 +420,17 @@ namespace padiFS
 
         public void Write(string filename, byte[] bytearray)
         {
-            Thread t = new Thread(() => ExecuteWrite(filename, bytearray));
-            t.Start();
+            new Thread(() => ExecuteWrite(filename, bytearray)).Start();
         }
 
         public void Write(string file, int register)
         {
-            Thread t = new Thread(() => ExecutePMWriteRegister(file, register));
-            t.Start();
+            new Thread(() => ExecutePMWriteRegister(file, register)).Start();
         }
 
         public void Write(string file, string content)
         {
-            Thread t = new Thread(() => ExecutePMWriteContent(file, content));
-            t.Start();
+            new Thread(() => ExecutePMWriteContent(file, content)).Start();
         }
 
         // Method to get the file from the file register and write the content
@@ -587,7 +585,7 @@ namespace padiFS
             Client c = new Client(arguments[0], arguments[1]);
             Console.Title = "Iurie's Client: " + c.name;
             // Fazer coisas que Iuri mandar
-            TcpChannel channel = new TcpChannel(c.port);
+            channel = new TcpChannel(c.port);
             ChannelServices.RegisterChannel(channel, true);
             RemotingServices.Marshal(c, c.name, typeof(Client));
             Console.ReadLine();

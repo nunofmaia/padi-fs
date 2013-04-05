@@ -19,7 +19,7 @@ namespace padiFS
 
     public partial class Form1 : Form, ICommander
     {
-        TcpChannel channel;
+        private static TcpChannel channel;
         private int mscounter;
         private int dscounter;
         private int ccounter;
@@ -27,6 +27,7 @@ namespace padiFS
         private Dictionary<string, string> dataServers;
         private Dictionary<string, string> metadataServers;
         private Dictionary<string, string> clients;
+        private List<string> closedProcesses;
         private List<string> activeClients;
         private List<string> activeDataServers;
         private List<string> activeMetadataServers;
@@ -61,6 +62,7 @@ namespace padiFS
             dataServers = new Dictionary<string, string>();
             metadataServers = new Dictionary<string, string>();
             clients = new Dictionary<string, string>();
+            closedProcesses = new List<string>();
             activeClients = new List<string>();
             activeDataServers = new List<string>();
             activeMetadataServers = new List<string>();
@@ -77,6 +79,10 @@ namespace padiFS
             ChannelServices.RegisterChannel(channel, true);
             RemotingConfiguration.RegisterWellKnownServiceType(typeof(PuppetMaster), "PuppetMaster", WellKnownObjectMode.Singleton);
 
+        }
+
+        public void ClosedProcesses(string s) {
+            closedProcesses.Add(s);
         }
 
         // LAUNCHING SITE
@@ -97,6 +103,22 @@ namespace padiFS
                         registerMetadataServer(name, address);
                         activeMetadataServers.Add(name);
                         processes.Add(name, address);
+                    }
+                    else
+                    {
+                        IMetadataServer m = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), metadataServers[name]);
+                        try
+                        {
+                            m.Ping();
+                        }
+                        catch (System.IO.IOException)
+                        {
+                            LaunchMetadataServer(name, port);
+                            metadataServers[name] = address;
+                            mscounter++;
+                            registerMetadataServer(name, address);
+                            processes[name] = address;
+                        }
                     }
 
                     break;
@@ -693,25 +715,25 @@ namespace padiFS
 
                 case "create":
                     LaunchProcess(args[1]);
-                    execute(new CreateCommand(), args);
+                    new Thread(() => execute(new CreateCommand(), args));
                     //CreateCommand(args[1], args[2], args[3], args[4], args[5]);
                     break;
 
                 case "open":
                     LaunchProcess(args[1]);
-                    execute(new OpenCommand(), args);
+                    new Thread(() => execute(new OpenCommand(), args));
                     //OpenCommand(args[1], args[2]);
                     break;
 
                 case "close":
                     LaunchProcess(args[1]);
-                    execute(new CloseCommand(), args);
+                    new Thread(() => execute(new CloseCommand(), args));
                     //CloseCommand(args[1], args[2]);
                     break;
 
                 case "read":
                     LaunchProcess(args[1]);
-                    execute(new ReadCommand(), args);
+                    new Thread(() => execute(new ReadCommand(), args));
                     //ReadCommand(args[1], args[2], args[3], args[4]);
                     break;
 
@@ -727,12 +749,12 @@ namespace padiFS
                     //{
                     //    WriteCommand(args[1], args[2], args[3]);
                     //}
-                    execute(new WriteCommand(), args);
+                    new Thread(() => execute(new WriteCommand(), args));
                     break;
 
                 case "delete":
                     LaunchProcess(args[1]);
-                    execute(new DeleteCommand(), args);
+                    new Thread(() => execute(new DeleteCommand(), args));
                     break;
 
                 case "copy":

@@ -13,6 +13,7 @@ namespace padiFS
 {
     public class MetadataServer : MarshalByRefObject, IMetadataServer
     {
+        private static TcpChannel channel;
         private MetadataState state;
         private string name;
         private int port;
@@ -386,14 +387,37 @@ namespace padiFS
             return s;
         }
 
-        static bool ConsoleEventCallback(int eventType)
+
+        private void RegisterExit()
+        {
+            IPuppetMaster p = (IPuppetMaster)Activator.GetObject(typeof(IPuppetMaster), "tcp://localhost:8070/PuppetMaster");
+            if (p != null)
+            {
+                p.RegisterClose(name);
+            }
+        }
+
+        // TEST AREA
+        private static void Exit(object sender, ConsoleCancelEventArgs e)
+        {
+            Console.WriteLine("Control+C hit. Shutting down.");
+            Environment.Exit(0);
+        }
+
+        private static bool ConsoleEventCallback(int eventType)
         {
             if (eventType == 2)
             {
-                System.Windows.Forms.MessageBox.Show("Exit");
+                Console.WriteLine("Exit");
             }
             return false;
         }
+        static ConsoleEventDelegate handler;   // Keeps it from getting garbage collected
+        // Pinvoke
+        private delegate bool ConsoleEventDelegate(int eventType);
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
+        //
 
         static void Main(string[] args)
         {
@@ -401,9 +425,15 @@ namespace padiFS
             MetadataServer ms = new MetadataServer(arguments[0], arguments[1]);
             Console.Title = "Iurie's Metadata Server: " + ms.name;
             // Ficar esperar pedidos de Iurie
-            TcpChannel channel = new TcpChannel(ms.port);
+            channel = new TcpChannel(ms.port);
             ChannelServices.RegisterChannel(channel, true);
             RemotingServices.Marshal(ms, ms.name, typeof(MetadataServer));
+
+            // TEST AREA
+            handler = new ConsoleEventDelegate(ConsoleEventCallback);
+            SetConsoleCtrlHandler(handler, true);
+            Console.CancelKeyPress += new ConsoleCancelEventHandler(Exit);
+            //
             Console.ReadLine();
         }
     }
