@@ -20,6 +20,8 @@ OPEN c-6 p
 OPEN c-7 p
 OPEN c-8 p
 OPEN c-9 p
+FREEZE d-0
+FREEZE d-1
 WRITE c-1 0 ESCRITO PELO c-1
 WRITE c-2 0 ESCRITO PELO c-2
 WRITE c-3 0 ESCRITO PELO c-3
@@ -49,6 +51,8 @@ READ c-6 0 default 0
 READ c-7 0 monotonic 0
 READ c-8 0 default 0
 READ c-9 0 monotonic 0
+UNFREEZE d-0
+UNFREEZE d-1
 CREATE c-1 a 3 2 3
 CREATE c-2 b 4 3 3
 CREATE c-3 c 4 4 4

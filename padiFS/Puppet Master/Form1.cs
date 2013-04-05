@@ -741,7 +741,7 @@ namespace padiFS
                     //DumpCommand(args[1]);
                     break;
 
-                case "execscript":
+                case "exescript":
                     LaunchProcess(args[1]);
                     //ExecScriptCommand(args[1], args[2]);
                     execute(new ExecScriptCommand(), args);
