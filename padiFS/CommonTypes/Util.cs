@@ -6,6 +6,10 @@ using System.Net.Sockets;
 using System.Net;
 using System.Windows.Forms;
 using System.Collections;
+using System.Xml.Serialization;
+using System.Runtime.Serialization;
+using System.Xml;
+using System.IO;
 
 namespace padiFS
 {
@@ -112,6 +116,55 @@ namespace padiFS
 
             return result.ToArray();
         }
-            
+
+        public static void SerializeObject(Object md, string currentDir, string name)
+        {
+            var serializer = new DataContractSerializer(md.GetType());
+
+
+            string path = currentDir + @"\" + name;
+            Console.WriteLine(path);
+            using (var sw = new StreamWriter(path))
+            {
+                using (var writer = new XmlTextWriter(sw))
+                {
+                    writer.Formatting = Formatting.Indented; // indent the Xml so it's human readable
+                    serializer.WriteObject(writer, md);
+                    writer.Flush();
+                    //xmlString = sw.ToString();
+                    //Console.WriteLine(xmlString);
+                    sw.Close();
+                }
+            }
+        }
+        public static Object DeserializeObject(Object ob, string currentDir, string name)
+        {
+            var serializer = new DataContractSerializer(ob.GetType());
+            string path = currentDir + @"\" + name;
+            using (var tw = new StreamReader(path))
+            {
+                using (var reader = new XmlTextReader(tw))
+                {
+                    return serializer.ReadObject(reader);
+                }
+            }
+        }
+
+        public static File DeserializeFile(string path)
+        {
+             TextReader tr = new StreamReader(path);
+             System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
+             tr.Close();
+             return (File)x.Deserialize(tr); 
+        }
+
+        public static void SerializeFile(string path, File file)
+        {
+            TextWriter tw = new StreamWriter(path);
+            System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(newFile.GetType());
+            x.Serialize(tw, file);
+            Console.WriteLine("object written to file");
+            tw.Close();
+        }
     }
 }
