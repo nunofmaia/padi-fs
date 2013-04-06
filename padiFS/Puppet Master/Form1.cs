@@ -13,6 +13,7 @@ using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting;
 using System.Threading;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace padiFS
 {
@@ -749,62 +750,70 @@ namespace padiFS
         }
 
         // TODO: Ask the professor if the commands are always well-formed so we can ditch the if conditions
-        private void HandleCommand(string command)
+        private void HandleCommand(string line)
         {
-            string lower_command = command.ToLower();
-            string[] args = lower_command.Split(new char[] { ' ' });
-            int length = args.Length;
+            //string lower_line = line.ToLower();
+            string command = "null";
+
+            Match match = Regex.Match(line, @"^(\w+)\s.*$", RegexOptions.IgnoreCase);
+
+            if (match.Success)
+            {
+                command = match.Groups[1].Value.ToLower();
+            }
+
+            string[] args = line.Split(' ');
 
 
-            statusTextBox.Text += "command: " + lower_command + "\r\n";
+            statusTextBox.Text += "command: " + line + "\r\n";
 
-            switch (args[0])
+            switch (command)
             {
                 case "fail":
                     LaunchProcess(args[1]);
-                    execute(new FailCommand(), args);
+                    execute(new FailCommand(), line);
                     //FailCommand(args[1]);
                     break;
 
                 case "recover":
                     LaunchProcess(args[1]);
-                    execute(new RecoverCommand(), args);
+                    execute(new RecoverCommand(), line);
                     //RecoverCommand(args[1]);
                     break;
 
                 case "freeze":
                     LaunchProcess(args[1]);
-                    execute(new FreezeCommand(), args);
+                    execute(new FreezeCommand(), line);
                     //FreezeCommand(args[1]);
                     break;
 
                 case "unfreeze":
                     LaunchProcess(args[1]);
-                    execute(new UnfreezeCommand(), args);
+                    execute(new UnfreezeCommand(), line);
                     //UnfreezeCommand(args[1]);
                     break;
 
                 case "create":
                     LaunchProcess(args[1]);
-                    execute(new CreateCommand(), args);
+                    execute(new CreateCommand(), line);
                     //CreateCommand(args[1], args[2], args[3], args[4], args[5]);
                     break;
 
                 case "open":
                     LaunchProcess(args[1]);
-                    execute(new OpenCommand(), args);
+                    execute(new OpenCommand(), line);
                     //OpenCommand(args[1], args[2]);
                     break;
 
                 case "close":
                     LaunchProcess(args[1]);
-                    execute(new CloseCommand(), args);
+                    execute(new CloseCommand(), line);
                     //CloseCommand(args[1], args[2]);
                     break;
 
                 case "read":
                     LaunchProcess(args[1]);
-                    execute(new ReadCommand(), args);
+                    execute(new ReadCommand(), line);
                     //ReadCommand(args[1], args[2], args[3], args[4]);
                     break;
 
@@ -820,29 +829,29 @@ namespace padiFS
                     //{
                     //    WriteCommand(args[1], args[2], args[3]);
                     //}
-                    execute(new WriteCommand(), args);
+                    execute(new WriteCommand(), line);
                     break;
 
                 case "delete":
                     LaunchProcess(args[1]);
-                    execute(new DeleteCommand(), args);
+                    execute(new DeleteCommand(), line);
                     break;
 
                 case "copy":
                     LaunchProcess(args[1]);
-                    CopyCommand(args[1], args[2], args[3], args[4], args[5]);
+                    //CopyCommand(args[1], args[2], args[3], args[4], args[5]);
                     break;
 
                 case "dump":
                     LaunchProcess(args[1]);
-                    statusTextBox.Text += (string)execute(new DumpCommand(), args);
+                    statusTextBox.Text += (string)execute(new DumpCommand(), line);
                     //DumpCommand(args[1]);
                     break;
 
                 case "exescript":
                     LaunchProcess(args[1]);
                     //ExecScriptCommand(args[1], args[2]);
-                    new Thread(() => execute(new ExeScriptCommand(), args)).Start();
+                    new Thread(() => execute(new ExeScriptCommand(), line)).Start();
                     break;
 
                 default:
@@ -1031,8 +1040,9 @@ namespace padiFS
             }
         }
 
-        public object execute(ICommand command, string[] args)
+        public object execute(ICommand command, string line)
         {
+            string[] args = line.Split(' ');
             string process = args[1];
             char code = process[0];
 
@@ -1042,17 +1052,17 @@ namespace padiFS
             {
                 case 'm':
                     IMetadataServer ms_server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), processes[process]);
-                    result = command.execute(ms_server, args);
+                    result = command.execute(ms_server, line);
                     break;
 
                 case 'd':
                     IDataServer ds_server = (IDataServer)Activator.GetObject(typeof(IDataServer), processes[process]);
-                    result = command.execute(ds_server, args);
+                    result = command.execute(ds_server, line);
                     break;
 
                 case 'c':
                     IClient client = (IClient)Activator.GetObject(typeof(IClient), processes[process]);
-                    result = command.execute(client, args);
+                    result = command.execute(client, line);
                     break;
             }
 

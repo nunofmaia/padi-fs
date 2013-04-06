@@ -60,7 +60,12 @@ namespace padiFS
 
         public static string ConvertByteArrayToString(byte[] s)
         {
-            return System.Text.Encoding.UTF8.GetString(s);
+            if (s != null)
+            {
+                return System.Text.Encoding.UTF8.GetString(s);
+            }
+
+            return "";
         }
 
         public static Dictionary<string, int> SortServerLoad(Dictionary<string, int> dic)

@@ -2,24 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace padiFS
 {
     public interface ICommand
     {
-        object execute(IClient client, string[] args);
-        object execute(IMetadataServer metadata, string[] args);
-        object execute(IDataServer data, string[] args);
+        object execute(IClient client, string command);
+        object execute(IMetadataServer metadata, string command);
+        object execute(IDataServer data, string command);
     }
 
     public interface ICommander
     {
-        object execute(ICommand command, string[] args);
+        object execute(ICommand command, string command_string);
     }
 
     public class DumpCommand : ICommand
     {
-        public object execute(IClient client, string[] args)
+        public object execute(IClient client, string command)
         {
             if (client != null)
             {
@@ -29,7 +30,7 @@ namespace padiFS
             return null;
         }
 
-        public object execute(IMetadataServer metadata, string[] args)
+        public object execute(IMetadataServer metadata, string command)
         {
             if (metadata != null)
             {
@@ -39,7 +40,7 @@ namespace padiFS
             return null;
         }
 
-        public object execute(IDataServer data, string[] args)
+        public object execute(IDataServer data, string command)
         {
             if (data != null)
             {
@@ -52,12 +53,12 @@ namespace padiFS
 
     public class FailCommand : ICommand
     {
-        public object execute(IClient client, string[] args)
+        public object execute(IClient client, string command)
         {
             throw new NotImplementedException();
         }
 
-        public object execute(IMetadataServer metadata, string[] args)
+        public object execute(IMetadataServer metadata, string command)
         {
             if (metadata != null)
             {
@@ -67,7 +68,7 @@ namespace padiFS
             return null;
         }
 
-        public object execute(IDataServer data, string[] args)
+        public object execute(IDataServer data, string command)
         {
             if (data != null)
             {
@@ -80,12 +81,12 @@ namespace padiFS
 
     public class RecoverCommand : ICommand
     {
-        public object execute(IClient client, string[] args)
+        public object execute(IClient client, string command)
         {
             throw new NotImplementedException();
         }
 
-        public object execute(IMetadataServer metadata, string[] args)
+        public object execute(IMetadataServer metadata, string command)
         {
             if (metadata != null)
             {
@@ -95,7 +96,7 @@ namespace padiFS
             return null;
         }
 
-        public object execute(IDataServer data, string[] args)
+        public object execute(IDataServer data, string command)
         {
             if (data != null)
             {
@@ -108,17 +109,17 @@ namespace padiFS
 
     public class FreezeCommand : ICommand
     {
-        public object execute(IClient client, string[] args)
+        public object execute(IClient client, string command)
         {
             throw new NotImplementedException();
         }
 
-        public object execute(IMetadataServer metadata, string[] args)
+        public object execute(IMetadataServer metadata, string command)
         {
             throw new NotImplementedException();
         }
 
-        public object execute(IDataServer data, string[] args)
+        public object execute(IDataServer data, string command)
         {
             if (data != null)
             {
@@ -131,17 +132,17 @@ namespace padiFS
 
     public class UnfreezeCommand : ICommand
     {
-        public object execute(IClient client, string[] args)
+        public object execute(IClient client, string command)
         {
             throw new NotImplementedException();
         }
 
-        public object execute(IMetadataServer metadata, string[] args)
+        public object execute(IMetadataServer metadata, string command)
         {
             throw new NotImplementedException();
         }
 
-        public object execute(IDataServer data, string[] args)
+        public object execute(IDataServer data, string command)
         {
             if (data != null)
             {
@@ -154,10 +155,11 @@ namespace padiFS
 
     public class CreateCommand : ICommand
     {
-        public object execute(IClient client, string[] args)
+        public object execute(IClient client, string command)
         {
             if (client != null)
             {
+                string[] args = command.Replace(",", "").Split(' ');
                 string filename = args[2];
                 int nServers = int.Parse(args[3]);
                 int rQuorum = int.Parse(args[4]);
@@ -169,12 +171,12 @@ namespace padiFS
             return null;
         }
 
-        public object execute(IMetadataServer metadata, string[] args)
+        public object execute(IMetadataServer metadata, string command)
         {
             throw new NotImplementedException();
         }
 
-        public object execute(IDataServer data, string[] args)
+        public object execute(IDataServer data, string command)
         {
             throw new NotImplementedException();
         }
@@ -182,10 +184,11 @@ namespace padiFS
 
     public class OpenCommand : ICommand
     {
-        public object execute(IClient client, string[] args)
+        public object execute(IClient client, string command)
         {
             if (client != null)
             {
+                string[] args = command.Replace(",", "").Split(' ');
                 string filename = args[2];
 
                 client.Open(filename);
@@ -194,12 +197,12 @@ namespace padiFS
             return null;
         }
 
-        public object execute(IMetadataServer metadata, string[] args)
+        public object execute(IMetadataServer metadata, string command)
         {
             throw new NotImplementedException();
         }
 
-        public object execute(IDataServer data, string[] args)
+        public object execute(IDataServer data, string command)
         {
             throw new NotImplementedException();
         }
@@ -207,10 +210,11 @@ namespace padiFS
 
     public class ReadCommand : ICommand
     {
-        public object execute(IClient client, string[] args)
+        public object execute(IClient client, string command)
         {
             if (client != null)
             {
+                string[] args = command.Replace(",", "").Split(' ');
                 string fileRegister = args[2];
                 string semantics = args[3];
                 string register = args[4];
@@ -221,12 +225,12 @@ namespace padiFS
             return null;
         }
 
-        public object execute(IMetadataServer metadata, string[] args)
+        public object execute(IMetadataServer metadata, string command)
         {
             throw new NotImplementedException();
         }
 
-        public object execute(IDataServer data, string[] args)
+        public object execute(IDataServer data, string command)
         {
             throw new NotImplementedException();
         }
@@ -234,12 +238,23 @@ namespace padiFS
 
     public class WriteCommand : ICommand
     {
-        public object execute(IClient client, string[] args)
+        public object execute(IClient client, string command)
         {
             if (client != null)
             {
+                string source = "";
+                Match match = Regex.Match(command, "\"(.*)\"", RegexOptions.IgnoreCase);
+                string[] args = command.Replace(",", "").Split(' ');
+                if (match.Success)
+                {
+                    source = match.Groups[1].Value;
+                }
+                else
+                {
+                    source = args[3];
+                }
                 string fileRegister = args[2];
-                string source = Util.MakeStringFromArray(args, 3);
+                //string source = Util.MakeStringFromArray(command, 3);
 
                 int register = -1;
 
@@ -259,12 +274,12 @@ namespace padiFS
             return null;
         }
 
-        public object execute(IMetadataServer metadata, string[] args)
+        public object execute(IMetadataServer metadata, string command)
         {
             throw new NotImplementedException();
         }
 
-        public object execute(IDataServer data, string[] args)
+        public object execute(IDataServer data, string command)
         {
             throw new NotImplementedException();
         }
@@ -272,10 +287,11 @@ namespace padiFS
 
     public class CloseCommand : ICommand
     {
-        public object execute(IClient client, string[] args)
+        public object execute(IClient client, string command)
         {
             if (client != null)
             {
+                string[] args = command.Replace(",", "").Split(' ');
                 string filename = args[2];
 
                 client.Close(filename);
@@ -284,12 +300,12 @@ namespace padiFS
             return null;
         }
 
-        public object execute(IMetadataServer metadata, string[] args)
+        public object execute(IMetadataServer metadata, string command)
         {
             throw new NotImplementedException();
         }
 
-        public object execute(IDataServer data, string[] args)
+        public object execute(IDataServer data, string command)
         {
             throw new NotImplementedException();
         }
@@ -297,10 +313,11 @@ namespace padiFS
 
     public class DeleteCommand : ICommand
     {
-        public object execute(IClient client, string[] args)
+        public object execute(IClient client, string command)
         {
             if (client != null)
             {
+                string[] args = command.Replace(",", "").Split(' ');
                 string filename = args[2];
 
                 client.Delete(filename);
@@ -309,12 +326,12 @@ namespace padiFS
             return null;
         }
 
-        public object execute(IMetadataServer metadata, string[] args)
+        public object execute(IMetadataServer metadata, string command)
         {
             throw new NotImplementedException();
         }
 
-        public object execute(IDataServer data, string[] args)
+        public object execute(IDataServer data, string command)
         {
             throw new NotImplementedException();
         }
@@ -322,17 +339,17 @@ namespace padiFS
 
     public class CopyCommand : ICommand
     {
-        public object execute(IClient client, string[] args)
+        public object execute(IClient client, string command)
         {
             throw new NotImplementedException();
         }
 
-        public object execute(IMetadataServer metadata, string[] args)
+        public object execute(IMetadataServer metadata, string command)
         {
             throw new NotImplementedException();
         }
 
-        public object execute(IDataServer data, string[] args)
+        public object execute(IDataServer data, string command)
         {
             throw new NotImplementedException();
         }
@@ -340,10 +357,11 @@ namespace padiFS
 
     public class ExeScriptCommand : ICommand
     {
-        public object execute(IClient client, string[] args)
+        public object execute(IClient client, string command)
         {
             if (client != null)
             {
+                string[] args = command.Replace(",", "").Split(' ');
                 string filename = args[2];
                 string path = Environment.CurrentDirectory + @"\Scripts\" + filename;
 
@@ -353,12 +371,12 @@ namespace padiFS
             return null;
         }
 
-        public object execute(IMetadataServer metadata, string[] args)
+        public object execute(IMetadataServer metadata, string command)
         {
             throw new NotImplementedException();
         }
 
-        public object execute(IDataServer data, string[] args)
+        public object execute(IDataServer data, string command)
         {
             throw new NotImplementedException();
         }

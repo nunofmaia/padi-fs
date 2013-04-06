@@ -8,6 +8,7 @@ using System.Runtime.Remoting;
 using System.Threading;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace padiFS
 {
@@ -560,10 +561,16 @@ namespace padiFS
                 {
                     string command = script.ReadLine();
 
-
-                    while (command != null && command[0] == '#')
+                    while (command != null)
                     {
-                        command.Trim();
+                        if (!string.IsNullOrWhiteSpace(command))
+                        {
+                            command.Trim();
+                            if (!(command.Length > 0 && command[0] == '#'))
+                            {
+                                break;
+                            }
+                        }
                         command = script.ReadLine();
                     }
 
@@ -582,36 +589,42 @@ namespace padiFS
             script.Close();
             script = null;
         }
-        private void HandleCommand(string command)
+        private void HandleCommand(string line)
         {
-            string lower_command = command.ToLower();
-            string[] args = lower_command.Split(new char[] { ' ' });
-            int length = args.Length;
+            //string lower_command = command.ToLower();
+            string command = "null";
 
-            switch (args[0])
+            Match match = Regex.Match(line, @"^(\w+)\s.*$", RegexOptions.IgnoreCase);
+
+            if (match.Success)
+            {
+                command = match.Groups[1].Value.ToLower();
+            }
+
+            switch (command)
             {
                 case "create":
-                    execute(new CreateCommand(), args);
+                    execute(new CreateCommand(), line);
                     break;
 
                 case "open":
-                    execute(new OpenCommand(), args);
+                    execute(new OpenCommand(), line);
                     break;
 
                 case "close":
-                    execute(new CloseCommand(), args);
+                    execute(new CloseCommand(), line);
                     break;
 
                 case "read":
-                    execute(new ReadCommand(), args);
+                    execute(new ReadCommand(), line);
                     break;
 
                 case "write":
-                    execute(new WriteCommand(), args);
+                    execute(new WriteCommand(), line);
                     break;
 
                 case "delete":
-                    execute(new DeleteCommand(), args);
+                    execute(new DeleteCommand(), line);
                     break;
 
                 case "copy":
@@ -619,7 +632,7 @@ namespace padiFS
                     break;
 
                 case "dump":
-                    Console.WriteLine((string)execute(new DumpCommand(), args));
+                    Console.WriteLine((string)execute(new DumpCommand(), line));
                     break;
 
                 default:
@@ -630,11 +643,11 @@ namespace padiFS
 
         }
 
-        public object execute(padiFS.ICommand command, string[] args)
+        public object execute(padiFS.ICommand command, string line)
         {
             object result;
             
-            result = command.execute(this, args);
+            result = command.execute(this, line);
 
             return result;
         }
