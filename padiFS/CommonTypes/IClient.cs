@@ -18,6 +18,7 @@ namespace padiFS
         void Delete(string filename);
         string Dump();
         void ExeScript(string path);
+        void Copy(int file1, string semantics, int file2, string salt);
 
         void UpdateServers(Dictionary<string, string> servers);
     }

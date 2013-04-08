@@ -398,7 +398,7 @@ namespace padiFS
                     }
                     else
                     {
-                        stringRegister[register] = selected.Content;
+                        stringRegister[register] = h.Content;
                         Console.WriteLine("Read file " + filename + ": " + Util.ConvertByteArrayToString(h.Content));
                     }
                 }
@@ -589,6 +589,70 @@ namespace padiFS
             script.Close();
             script = null;
         }
+
+        public void Copy(int file1, string semantics, int file2, string salt)
+        {
+            //Read file from file1 with given semantics
+            Metadata m = fileRegister[file1];
+            string filename = m.FileName;
+            List<string> servers = m.DataServers;
+            int readQuorum = m.ReadQuorum;
+            readFiles = new ConcurrentBag<File>();
+
+            // Call all the data servers that have the file and wait for a majority
+            // Launch threads and wait for it. Compare the answers and return it.
+            ReadCallDataServers(filename, semantics, servers);
+
+            Dictionary<DateTime, File> received = null;
+            Dictionary<DateTime, int> votes = null;
+            int winner = -1;
+
+            while (!ReadVoting(readQuorum, ref received, ref votes, ref winner))
+            {
+                ReadCallDataServers(filename, semantics, servers);
+                readFiles = new ConcurrentBag<File>();
+                received = null;
+                votes = null;
+            }
+
+            File selected = received[votes.Keys.Last()];
+            string fileRead = "";
+
+            if (semantics.Equals("default", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (!historic.ContainsKey(filename))
+                {
+                    historic.TryAdd(filename, selected);
+                }
+                fileRead = Util.ConvertByteArrayToString(selected.Content);
+            }
+            else
+            {
+                if (historic.ContainsKey(filename))
+                {
+                    File h = historic[filename];
+                    if (selected.Version > h.Version)
+                    {
+                        fileRead = Util.ConvertByteArrayToString(selected.Content);
+                    }
+                    else
+                    {
+                        fileRead = Util.ConvertByteArrayToString(h.Content);
+                    }
+                }
+                else
+                {
+                    historic.TryAdd(filename, selected);
+                    fileRead = Util.ConvertByteArrayToString(selected.Content);
+                }
+            }
+            
+            fileRead += salt;
+
+            //Write file to file2 with previous read plus salt
+            ExecuteWrite(fileRegister[file2].FileName, Util.ConvertStringToByteArray(fileRead));
+        }
+
         private void HandleCommand(string line)
         {
             //string lower_command = command.ToLower();

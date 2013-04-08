@@ -761,12 +761,9 @@ namespace padiFS
             {
                 command = match.Groups[1].Value.ToLower();
             }
-
-            string[] args = line.Split(' ');
-
+            string[] args = line.Replace(",", "").Split(' ');
 
             statusTextBox.Text += "command: " + line + "\r\n";
-
             switch (command)
             {
                 case "fail":
@@ -839,7 +836,7 @@ namespace padiFS
 
                 case "copy":
                     LaunchProcess(args[1]);
-                    //CopyCommand(args[1], args[2], args[3], args[4], args[5]);
+                    execute(new CopyCommand(), line);
                     break;
 
                 case "dump":
@@ -1042,7 +1039,7 @@ namespace padiFS
 
         public object execute(ICommand command, string line)
         {
-            string[] args = line.Split(' ');
+            string[] args = line.Replace(",", "").Split(' ');
             string process = args[1];
             char code = process[0];
 

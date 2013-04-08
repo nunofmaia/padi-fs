@@ -300,6 +300,16 @@ namespace padiFS
                     liveDataServers.Remove(name);
                 }
             }
+            catch (System.IO.IOException)
+            {
+                //Console.WriteLine(e.Message);
+                Console.WriteLine(name + ": Desligado");
+                if (!deadDataServers.ContainsKey(name))
+                {
+                    deadDataServers.Add(name, address);
+                    liveDataServers.Remove(name);
+                }
+            }
         }
 
 
@@ -451,6 +461,7 @@ namespace padiFS
         {
             if (eventType == 2)
             {
+                channel.StopListening(null);
                 Console.WriteLine("Exit");
             }
             return false;
@@ -474,8 +485,8 @@ namespace padiFS
 
             // TEST AREA
             handler = new ConsoleEventDelegate(ConsoleEventCallback);
-            SetConsoleCtrlHandler(handler, true);
-            Console.CancelKeyPress += new ConsoleCancelEventHandler(Exit);
+            //SetConsoleCtrlHandler(handler, true);
+            //Console.CancelKeyPress += new ConsoleCancelEventHandler(Exit);
             //
             Console.ReadLine();
         }

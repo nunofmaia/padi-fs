@@ -341,7 +341,30 @@ namespace padiFS
     {
         public object execute(IClient client, string command)
         {
-            throw new NotImplementedException();
+            if (client != null)
+            {
+                string source = "";
+                Match match = Regex.Match(command, "\"(.*)\"", RegexOptions.IgnoreCase);
+                string[] args = command.Replace(",", "").Split(' ');
+                if (match.Success)
+                {
+                    source = match.Groups[1].Value;
+                }
+                else
+                {
+                    source = args[3];
+                }
+                
+                int fileRegister1;
+                Int32.TryParse(args[2], out fileRegister1);
+                string semantics = args[3];
+                int fileRegister2;
+                Int32.TryParse(args[4], out fileRegister2);
+                string salt = source;
+
+                client.Copy(fileRegister1, semantics, fileRegister2, salt);
+            }
+            return null;
         }
 
         public object execute(IMetadataServer metadata, string command)
