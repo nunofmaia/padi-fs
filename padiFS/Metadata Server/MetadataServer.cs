@@ -235,11 +235,11 @@ namespace padiFS
             serversLoad.Add(name, 0);
         }
 
-        public void RegisterClient(string name, string address)
-        {
-            Console.WriteLine("Client " + name + " : " + address);
-            clients.Add(name, address);
-        }
+        //public void RegisterClient(string name, string address)
+        //{
+        //    Console.WriteLine("Client " + name + " : " + address);
+        //    clients.Add(name, address);
+        //}
 
 
         public void RegisterMetadataServer(string name, string address)
