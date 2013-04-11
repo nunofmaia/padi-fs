@@ -27,7 +27,7 @@ namespace padiFS
         private Dictionary<string, int> serversLoad;
         private Dictionary<string, Metadata> files;
         private Dictionary<string, List<string>> tempOpenFiles;
-        private Dictionary<string, Dictionary<string, int>> pendingFiles;
+        private Dictionary<string, int> pendingFiles;
         private System.Timers.Timer pingDataServersTimer;
         private System.Timers.Timer pingPrimaryReplicaTimer;
 
@@ -46,7 +46,7 @@ namespace padiFS
             this.serversLoad = new Dictionary<string, int>();
             this.files = new Dictionary<string, Metadata>();
             this.tempOpenFiles = new Dictionary<string, List<string>>();
-            this.pendingFiles = new Dictionary<string, Dictionary<string, int>>();
+            this.pendingFiles = new Dictionary<string, int>();
             this.pingDataServersTimer = new System.Timers.Timer();
             pingDataServersTimer.Elapsed += new System.Timers.ElapsedEventHandler(pingDataServers);
             pingDataServersTimer.Interval = 1000 * pingInterval;
@@ -64,6 +64,11 @@ namespace padiFS
         public Dictionary<string, List<string>> TempOpenFiles
         {
             get { return this.tempOpenFiles; }
+        }
+
+        public Dictionary<string, int> PendingFiles
+        {
+            get { return this.pendingFiles; }
         }
 
         public Dictionary<string, int> ServersLoad
@@ -229,6 +234,13 @@ namespace padiFS
             liveDataServers.Add(name, address);
             serversLoad.Add(name, 0);
         }
+
+        public void RegisterClient(string name, string address)
+        {
+            Console.WriteLine("Client " + name + " : " + address);
+            clients.Add(name, address);
+        }
+
 
         public void RegisterMetadataServer(string name, string address)
         {
@@ -445,6 +457,11 @@ namespace padiFS
                     s += "\t" + c + "\r\n";
                 }
             }
+            s += "Pending Files:\r\n";
+            foreach (string m in pendingFiles.Keys)
+            {
+                s += files[m].ToString() + "\r\n";
+            }
             // files open in metadata server
             s += "Replicas:\r\n";
             foreach (string m in replicas.Keys)
@@ -456,13 +473,35 @@ namespace padiFS
             return s;
         }
 
-        //private void UpdateFileMetada()
-        //{
-        //    foreach (string c in pendingFiles.Keys)
-        //    {
-        //        IClient client = (IClient)Activator.GetObject(typeof(IClient), 
-        //    }
-        //}
+        public void UpdateFileMetada(string address)
+        {
+            Dictionary<string, int> updated = new Dictionary<string, int>();
+
+            foreach (string f in pendingFiles.Keys)
+            {
+                Metadata meta = files[f];
+                meta.AddDataServers(address);
+
+                string input = DateTime.Now.ToString("o") + (char)0x7f + meta.FileName;
+
+                //IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), address);
+
+                //if (server != null)
+                //{
+                //    server.Create(input);
+                //}
+
+                int n = pendingFiles[f] - 1;
+
+                if (n > 0)
+                {
+                    updated.Add(f, n);
+                }
+
+            }
+
+            pendingFiles = new Dictionary<string, int>(updated);
+        }
 
         // TEST AREA
         private static void Exit(object sender, ConsoleCancelEventArgs e)

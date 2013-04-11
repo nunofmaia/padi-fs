@@ -1,9 +1,16 @@
 RECOVER m-1
 UNFREEZE d-1
-CREATE c-0, p, 1, 1, 1
+CREATE c-0, p, 2, 1, 1
 DUMP c-0
-WRITE c-0, 0, "Ola jaquina"
-READ c-0, 0, default, 0
-CREATE c-0, f, 1, 1, 1
-COPY c-0, 0, default, 1, ". Tudo bem?"
-READ c-0 1, default, 1
+UNFREEZE d-2
+UNFREEZE d-3
+CLOSE c-0, p
+OPEN c-0, p
+DUMP c-0
+#CREATE c-0, p, 1, 1, 1
+#DUMP c-0
+#WRITE c-0, 0, "Ola jaquina"
+#READ c-0, 0, default, 0
+#CREATE c-0, f, 1, 1, 1
+#COPY c-0, 0, default, 1, ". Tudo bem?"
+#READ c-0 1, default, 1

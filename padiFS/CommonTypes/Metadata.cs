@@ -48,6 +48,11 @@ namespace padiFS
             get { return dataServers; }
         }
 
+        public void AddDataServers(string address)
+        {
+            this.dataServers.Add(address);
+        }
+
         public override string ToString()
         {
             return "File: " + filename + " #Servers: " + serversNumber + " RQ: " + readQuorum + " WQ: " + writeQuorum;

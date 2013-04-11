@@ -721,13 +721,13 @@ namespace padiFS
             return result;
         }
 
-        public void UpdateFileMetadata(string filename, Metadata metadata)
-        {
-            if (myFiles.ContainsKey(filename))
-            {
-                myFiles[filename] = metadata;
-            }
-        }
+        //public void UpdateFileMetadata(string filename, Metadata metadata)
+        //{
+        //    if (myFiles.ContainsKey(filename))
+        //    {
+        //        myFiles[filename] = metadata;
+        //    }
+        //}
 
         static void Main(string[] args)
         {

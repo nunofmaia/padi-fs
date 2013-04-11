@@ -179,6 +179,7 @@ namespace padiFS
                             dscounter++;
                             registerDataServer(name, address);
                             processes.Add(name, address);
+                            UpdateFileMetadata(address);
                         }
                         else
                         {
@@ -193,6 +194,7 @@ namespace padiFS
                     {
                         LaunchClient(name, port);
                         clients.Add(name, address);
+                        //registerClients(name, address);
                         activeClients.Add(name);
                         UpdateClientServer(name);
                         if (metadataServers.Count > 0 && dataServers.Count > 0)
@@ -269,6 +271,19 @@ namespace padiFS
             }
         }
 
+        private void registerClients(string name, string address)
+        {
+            foreach (string key in metadataServers.Keys)
+            {
+                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
+
+                if (server != null)
+                {
+                    server.RegisterClient(name, address);
+                }
+            }
+        }
+
         private void registerMetadataServer(string name, string address)
         {
 
@@ -317,6 +332,18 @@ namespace padiFS
                 server.SetPrimary(name);
             }
             
+        }
+
+        private void UpdateFileMetadata(string address)
+        {
+            string primary = AskForPrimary();
+
+            IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), metadataServers[primary]);
+
+            if (server != null)
+            {
+                server.UpdateFileMetada(address);
+            }
         }
 
         // TODO: use the LaunchProcess method to launch each process instead of doing always the same thing
@@ -1075,6 +1102,35 @@ namespace padiFS
                     catch (System.Net.Sockets.SocketException)
                     {
                     }
+                }
+            }
+
+            return null;
+        }
+
+        private string AskForPrimary()
+        {
+            foreach (string address in metadataServers.Values)
+            {
+                try
+                {
+                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
+                    if (server != null)
+                    {
+                        if (server.Ping())
+                        {
+                            return server.GetPrimary();
+                        }
+                    }
+                }
+                catch (ServerNotAvailableException)
+                {
+                }
+                catch (System.IO.IOException)
+                {
+                }
+                catch (System.Net.Sockets.SocketException)
+                {
                 }
             }
 
