@@ -343,11 +343,13 @@ namespace padiFS
         // Read for Puppet Master Scripts
         public void Read(string file, string semantic, string register)
         {
+
             int f, r;
             if (Int32.TryParse(file, out f) && Int32.TryParse(register, out r))
             {
-                Thread t = new Thread(() => ExecutePMRead(f, semantic, r));
-                t.Start();
+                //Thread t = new Thread(() => ExecutePMRead(f, semantic, r));
+                //t.Start();
+                ExecutePMRead(f, semantic, r);
             }
         }
 
@@ -481,17 +483,20 @@ namespace padiFS
 
         public void Write(string filename, byte[] bytearray)
         {
-            new Thread(() => ExecuteWrite(filename, bytearray)).Start();
+            //new Thread(() => ExecuteWrite(filename, bytearray)).Start();
+            ExecuteWrite(filename, bytearray);
         }
 
         public void Write(string file, int register)
         {
-            new Thread(() => ExecutePMWriteRegister(file, register)).Start();
+            //new Thread(() => ExecutePMWriteRegister(file, register)).Start();
+            ExecutePMWriteRegister(file, register);
         }
 
         public void Write(string file, string content)
         {
-            new Thread(() => ExecutePMWriteContent(file, content)).Start();
+            //new Thread(() => ExecutePMWriteContent(file, content)).Start();
+            ExecutePMWriteContent(file, content);
         }
 
         // Method to get the file from the file register and write the content
@@ -692,7 +697,7 @@ namespace padiFS
                     break;
 
                 case "copy":
-                    //CopyCommand(args[1], args[2], args[3], args[4], args[5]);
+                    execute(new CopyCommand(), line);
                     break;
 
                 case "dump":
@@ -716,6 +721,14 @@ namespace padiFS
             return result;
         }
 
+        public void UpdateFileMetadata(string filename, Metadata metadata)
+        {
+            if (myFiles.ContainsKey(filename))
+            {
+                myFiles[filename] = metadata;
+            }
+        }
+
         static void Main(string[] args)
         {
             string[] arguments = Util.SplitArguments(args[0]);
@@ -728,6 +741,5 @@ namespace padiFS
             Console.ReadLine();
         }
 
-        
     }
 }

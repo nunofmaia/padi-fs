@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.IO;
 
 namespace padiFS
 {
@@ -386,7 +387,8 @@ namespace padiFS
             {
                 string[] args = command.Replace(",", "").Split(' ');
                 string filename = args[2];
-                string path = Environment.CurrentDirectory + @"\Scripts\" + filename;
+                DirectoryInfo dir = Directory.GetParent(Environment.CurrentDirectory);
+                string path = dir.FullName + @"\Scripts\" + filename;
 
                 client.ExeScript(path);
             }

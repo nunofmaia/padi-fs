@@ -27,6 +27,7 @@ namespace padiFS
         private Dictionary<string, int> serversLoad;
         private Dictionary<string, Metadata> files;
         private Dictionary<string, List<string>> tempOpenFiles;
+        private Dictionary<string, Dictionary<string, int>> pendingFiles;
         private System.Timers.Timer pingDataServersTimer;
         private System.Timers.Timer pingPrimaryReplicaTimer;
 
@@ -45,6 +46,7 @@ namespace padiFS
             this.serversLoad = new Dictionary<string, int>();
             this.files = new Dictionary<string, Metadata>();
             this.tempOpenFiles = new Dictionary<string, List<string>>();
+            this.pendingFiles = new Dictionary<string, Dictionary<string, int>>();
             this.pingDataServersTimer = new System.Timers.Timer();
             pingDataServersTimer.Elapsed += new System.Timers.ElapsedEventHandler(pingDataServers);
             pingDataServersTimer.Interval = 1000 * pingInterval;
@@ -438,6 +440,10 @@ namespace padiFS
             foreach (string m in tempOpenFiles.Keys)
             {
                 s += files[m].ToString() + "\r\n";
+                foreach (string c in tempOpenFiles[m])
+                {
+                    s += "\t" + c + "\r\n";
+                }
             }
             // files open in metadata server
             s += "Replicas:\r\n";
@@ -449,6 +455,14 @@ namespace padiFS
 
             return s;
         }
+
+        //private void UpdateFileMetada()
+        //{
+        //    foreach (string c in pendingFiles.Keys)
+        //    {
+        //        IClient client = (IClient)Activator.GetObject(typeof(IClient), 
+        //    }
+        //}
 
         // TEST AREA
         private static void Exit(object sender, ConsoleCancelEventArgs e)

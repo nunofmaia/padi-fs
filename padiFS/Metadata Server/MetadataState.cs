@@ -154,10 +154,10 @@ namespace padiFS
                 throw new FileAlreadyExists("File already exists.");
             }
 
-            if (md.LiveDataServers.Count < serversNumber)
-            {
-                throw new NotEnoughServersException("There are not enough servers to create the file.");
-            }
+            //if (md.LiveDataServers.Count < serversNumber)
+            //{
+            //    throw new NotEnoughServersException("There are not enough servers to create the file.");
+            //}
 
             List<string> servers = new List<string>();
             List<string> chosen = ChooseBestServers(serversNumber, md);

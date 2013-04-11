@@ -547,19 +547,33 @@ namespace padiFS
 
         private void writeFileButton_Click(object sender, EventArgs e)
         {
-            string c_name = writeClientTextBox.Text;
-            string filename = writeFileTextBox.Text;
-            byte[] bytearray = Util.ConvertStringToByteArray(writeTextBox.Text);
-
-            IClient client = (IClient)Activator.GetObject(typeof(IClient), (string)clients[c_name]);
-
-            if (client != null)
+            string command = "WRITE ";
+            if (string.IsNullOrEmpty(writeByteRegisterTextBox.Text))
             {
-                client.Write(filename, bytearray);
+                command += writeClientTextBox.Text + ", " + writeFileRegisterTextBox.Text + ", " + "\"" + writeTextBox.Text + "\"";
             }
-            writeFileTextBox.Clear();
-            writeClientTextBox.Clear();
-            writeTextBox.Clear();
+            else
+            {
+                command += writeClientTextBox.Text + ", " + writeFileRegisterTextBox.Text + ", " + writeByteRegisterTextBox.Text;
+            }
+
+            HandleCommand(command);
+
+
+            //string c_name = writeClientTextBox.Text;
+            //string fileRegister = writeFileRegisterTextBox.Text;
+            //string 
+            //byte[] bytearray = Util.ConvertStringToByteArray(writeTextBox.Text);
+
+            //IClient client = (IClient)Activator.GetObject(typeof(IClient), (string)clients[c_name]);
+
+            //if (client != null)
+            //{
+            //    client.Write(fileRegister, bytearray);
+            //}
+            //writeFileRegisterTextBox.Clear();
+            //writeClientTextBox.Clear();
+            //writeTextBox.Clear();
         }
 
         private void loadScriptButton_Click(object sender, EventArgs e)
@@ -634,6 +648,12 @@ namespace padiFS
                 {
                 }
             }
+
+            script.Close();
+            script = null;
+            stopScriptButton.Enabled = false;
+            runScriptButton.Enabled = false;
+            loadScriptButton.Enabled = true;
         }
 
         private void nextStepScriptButton_Click(object sender, EventArgs e)
@@ -648,9 +668,11 @@ namespace padiFS
 
             try
             {
+                
+
                 string command = script.ReadLine();
 
-
+                
 
                 while (command != null)
                 {
@@ -675,10 +697,21 @@ namespace padiFS
                     HandleCommand(command);
                 }
 
+                if (script.EndOfStream)
+                {
+                    script.Close();
+                    script = null;
+                    stopScriptButton.Enabled = false;
+                    stepScriptButton.Enabled = false;
+                    loadScriptButton.Enabled = true;
+                    return;
+                }
+
             }
             catch (IOException)
             {
             }
+
         }
 
         private void stopScriptButton_Click(object sender, EventArgs e)
@@ -694,58 +727,8 @@ namespace padiFS
 
         private void dumpButton_Click(object sender, EventArgs e)
         {
-            string process = dumpTextBox.Text;
-            string ms_address = null;
-            string ds_address = null;
-            string c_address = null;
-
-            //Oh noooooo, the horror!!
-            if (metadataServers.ContainsKey(process))
-            {
-                ms_address = metadataServers[process];
-            }
-            else if (dataServers.ContainsKey(process))
-            {
-                ds_address = dataServers[process];
-            }
-            else if (clients.ContainsKey(process))
-            {
-                c_address = clients[process];
-            }
-
-
-            IMetadataServer ms_server = null;
-            IDataServer ds_server = null;
-            IClient client = null;
-
-            if (ms_address != null)
-            {
-                ms_server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), ms_address);
-            }
-            else if (ds_address != null)
-            {
-                ds_server = (IDataServer)Activator.GetObject(typeof(IDataServer), ds_address);
-            }
-            else if (c_address != null)
-            {
-                client = (IClient)Activator.GetObject(typeof(IClient), c_address);
-            }
-
-            string dump = "";
-
-            if (ms_server != null)
-            {
-                dump = ms_server.Dump();
-            }
-            else if (ds_server != null)
-            {
-                dump = ds_server.Dump();
-            }
-            else if (client != null)
-            {
-                dump = client.Dump();
-            }
-            statusTextBox.Text += dump + "\r\n";
+            string command = "DUMP " + dumpTextBox.Text;
+            HandleCommand(command);
             dumpTextBox.Clear();
         }
 
@@ -841,7 +824,7 @@ namespace padiFS
 
                 case "dump":
                     LaunchProcess(args[1]);
-                    statusTextBox.Text += (string)execute(new DumpCommand(), line);
+                    statusTextBox.AppendText((string)execute(new DumpCommand(), line));
                     //DumpCommand(args[1]);
                     break;
 
@@ -1096,6 +1079,13 @@ namespace padiFS
             }
 
             return null;
+        }
+
+        private void statusTextBox_TextChanged(object sender, EventArgs e)
+        {
+            statusTextBox.SelectionStart = statusTextBox.Text.Length;
+            statusTextBox.ScrollToCaret();
+            statusTextBox.Refresh();
         }
     }
 }

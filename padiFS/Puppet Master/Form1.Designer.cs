@@ -80,8 +80,8 @@
             this.writeClientTextBox = new System.Windows.Forms.TextBox();
             this.writeClientLabel = new System.Windows.Forms.Label();
             this.writeFileButton = new System.Windows.Forms.Button();
-            this.writeFileTextBox = new System.Windows.Forms.TextBox();
-            this.writeFileLabel = new System.Windows.Forms.Label();
+            this.writeFileRegisterTextBox = new System.Windows.Forms.TextBox();
+            this.writeFileRegisterLabel = new System.Windows.Forms.Label();
             this.groupBox9 = new System.Windows.Forms.GroupBox();
             this.statusTextBox = new System.Windows.Forms.TextBox();
             this.groupBox10 = new System.Windows.Forms.GroupBox();
@@ -95,6 +95,8 @@
             this.dumpTextBox = new System.Windows.Forms.TextBox();
             this.dumpProcessLabel = new System.Windows.Forms.Label();
             this.dumpButton = new System.Windows.Forms.Button();
+            this.writeByteRegisterLabel = new System.Windows.Forms.Label();
+            this.writeByteRegisterTextBox = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -547,16 +549,18 @@
             // 
             // groupBox8
             // 
+            this.groupBox8.Controls.Add(this.writeByteRegisterTextBox);
+            this.groupBox8.Controls.Add(this.writeByteRegisterLabel);
             this.groupBox8.Controls.Add(this.textWriteFile);
             this.groupBox8.Controls.Add(this.writeTextBox);
             this.groupBox8.Controls.Add(this.writeClientTextBox);
             this.groupBox8.Controls.Add(this.writeClientLabel);
             this.groupBox8.Controls.Add(this.writeFileButton);
-            this.groupBox8.Controls.Add(this.writeFileTextBox);
-            this.groupBox8.Controls.Add(this.writeFileLabel);
+            this.groupBox8.Controls.Add(this.writeFileRegisterTextBox);
+            this.groupBox8.Controls.Add(this.writeFileRegisterLabel);
             this.groupBox8.Location = new System.Drawing.Point(400, 432);
             this.groupBox8.Name = "groupBox8";
-            this.groupBox8.Size = new System.Drawing.Size(381, 148);
+            this.groupBox8.Size = new System.Drawing.Size(381, 192);
             this.groupBox8.TabIndex = 8;
             this.groupBox8.TabStop = false;
             this.groupBox8.Text = "Write file";
@@ -564,7 +568,7 @@
             // textWriteFile
             // 
             this.textWriteFile.AutoSize = true;
-            this.textWriteFile.Location = new System.Drawing.Point(14, 55);
+            this.textWriteFile.Location = new System.Drawing.Point(10, 96);
             this.textWriteFile.Name = "textWriteFile";
             this.textWriteFile.Size = new System.Drawing.Size(31, 13);
             this.textWriteFile.TabIndex = 7;
@@ -572,10 +576,10 @@
             // 
             // writeTextBox
             // 
-            this.writeTextBox.Location = new System.Drawing.Point(51, 55);
+            this.writeTextBox.Location = new System.Drawing.Point(47, 57);
             this.writeTextBox.Multiline = true;
             this.writeTextBox.Name = "writeTextBox";
-            this.writeTextBox.Size = new System.Drawing.Size(324, 87);
+            this.writeTextBox.Size = new System.Drawing.Size(324, 97);
             this.writeTextBox.TabIndex = 26;
             // 
             // writeClientTextBox
@@ -597,7 +601,7 @@
             // writeFileButton
             // 
             this.writeFileButton.Enabled = false;
-            this.writeFileButton.Location = new System.Drawing.Point(296, 26);
+            this.writeFileButton.Location = new System.Drawing.Point(296, 160);
             this.writeFileButton.Name = "writeFileButton";
             this.writeFileButton.Size = new System.Drawing.Size(75, 23);
             this.writeFileButton.TabIndex = 27;
@@ -605,21 +609,21 @@
             this.writeFileButton.UseVisualStyleBackColor = true;
             this.writeFileButton.Click += new System.EventHandler(this.writeFileButton_Click);
             // 
-            // writeFileTextBox
+            // writeFileRegisterTextBox
             // 
-            this.writeFileTextBox.Location = new System.Drawing.Point(189, 28);
-            this.writeFileTextBox.Name = "writeFileTextBox";
-            this.writeFileTextBox.Size = new System.Drawing.Size(100, 20);
-            this.writeFileTextBox.TabIndex = 25;
+            this.writeFileRegisterTextBox.Location = new System.Drawing.Point(234, 28);
+            this.writeFileRegisterTextBox.Name = "writeFileRegisterTextBox";
+            this.writeFileRegisterTextBox.Size = new System.Drawing.Size(25, 20);
+            this.writeFileRegisterTextBox.TabIndex = 25;
             // 
-            // writeFileLabel
+            // writeFileRegisterLabel
             // 
-            this.writeFileLabel.AutoSize = true;
-            this.writeFileLabel.Location = new System.Drawing.Point(160, 31);
-            this.writeFileLabel.Name = "writeFileLabel";
-            this.writeFileLabel.Size = new System.Drawing.Size(26, 13);
-            this.writeFileLabel.TabIndex = 0;
-            this.writeFileLabel.Text = "File:";
+            this.writeFileRegisterLabel.AutoSize = true;
+            this.writeFileRegisterLabel.Location = new System.Drawing.Point(160, 31);
+            this.writeFileRegisterLabel.Name = "writeFileRegisterLabel";
+            this.writeFileRegisterLabel.Size = new System.Drawing.Size(68, 13);
+            this.writeFileRegisterLabel.TabIndex = 0;
+            this.writeFileRegisterLabel.Text = "File Register:";
             // 
             // groupBox9
             // 
@@ -640,6 +644,7 @@
             this.statusTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.statusTextBox.Size = new System.Drawing.Size(369, 283);
             this.statusTextBox.TabIndex = 6;
+            this.statusTextBox.TextChanged += new System.EventHandler(this.statusTextBox_TextChanged);
             // 
             // groupBox10
             // 
@@ -748,6 +753,22 @@
             this.dumpButton.UseVisualStyleBackColor = true;
             this.dumpButton.Click += new System.EventHandler(this.dumpButton_Click);
             // 
+            // writeByteRegisterLabel
+            // 
+            this.writeByteRegisterLabel.AutoSize = true;
+            this.writeByteRegisterLabel.Location = new System.Drawing.Point(265, 31);
+            this.writeByteRegisterLabel.Name = "writeByteRegisterLabel";
+            this.writeByteRegisterLabel.Size = new System.Drawing.Size(73, 13);
+            this.writeByteRegisterLabel.TabIndex = 28;
+            this.writeByteRegisterLabel.Text = "Byte Register:";
+            // 
+            // writeByteRegisterTextBox
+            // 
+            this.writeByteRegisterTextBox.Location = new System.Drawing.Point(344, 28);
+            this.writeByteRegisterTextBox.Name = "writeByteRegisterTextBox";
+            this.writeByteRegisterTextBox.Size = new System.Drawing.Size(25, 20);
+            this.writeByteRegisterTextBox.TabIndex = 29;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -842,8 +863,8 @@
         private System.Windows.Forms.TextBox writeClientTextBox;
         private System.Windows.Forms.Label writeClientLabel;
         private System.Windows.Forms.Button writeFileButton;
-        private System.Windows.Forms.TextBox writeFileTextBox;
-        private System.Windows.Forms.Label writeFileLabel;
+        private System.Windows.Forms.TextBox writeFileRegisterTextBox;
+        private System.Windows.Forms.Label writeFileRegisterLabel;
         private System.Windows.Forms.GroupBox groupBox9;
         private System.Windows.Forms.TextBox statusTextBox;
         private System.Windows.Forms.Label textWriteFile;
@@ -860,6 +881,8 @@
         private System.Windows.Forms.TextBox dumpTextBox;
         private System.Windows.Forms.Label dumpProcessLabel;
         private System.Windows.Forms.Button dumpButton;
+        private System.Windows.Forms.TextBox writeByteRegisterTextBox;
+        private System.Windows.Forms.Label writeByteRegisterLabel;
 
     }
 }
