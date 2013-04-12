@@ -2,6 +2,7 @@ RECOVER m-1
 UNFREEZE d-1
 UNFREEZE d-2
 CREATE c-0, p, 3, 2, 1
+CREATE c-0, q, 2, 2, 1
 DUMP c-0
 WRITE c-0, 0, "Ola jaquina"
 UNFREEZE d-3
