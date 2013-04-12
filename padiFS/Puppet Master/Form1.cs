@@ -194,7 +194,7 @@ namespace padiFS
                     {
                         LaunchClient(name, port);
                         clients.Add(name, address);
-                        //registerClients(name, address);
+                        registerClients(name, address);
                         activeClients.Add(name);
                         UpdateClientServer(name);
                         if (metadataServers.Count > 0 && dataServers.Count > 0)

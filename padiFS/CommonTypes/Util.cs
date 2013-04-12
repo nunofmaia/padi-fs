@@ -80,13 +80,36 @@ namespace padiFS
             return res;
         }
 
-        public static Dictionary<DateTime, int> SortVotes(Dictionary<DateTime, int> dic)
+        public static Dictionary<int, DateTime> SortVotes(Dictionary<DateTime, int> dic)
         {
-            Dictionary<DateTime, int> res = new Dictionary<DateTime, int>();
+            //Dictionary<DateTime, int> res = new Dictionary<DateTime, int>();
+
+            //foreach (var item in dic.OrderBy(i => i.Value))
+            //{
+            //    res.Add(item.Key, item.Value);
+            //}
+            Dictionary<int, DateTime> res = new Dictionary<int, DateTime>();
 
             foreach (var item in dic.OrderBy(i => i.Value))
             {
-                res.Add(item.Key, item.Value);
+                if (!res.ContainsKey(item.Value))
+                {
+                    res.Add(item.Value, item.Key);
+                }
+                else
+                {
+                    if (item.Key > res[item.Value])
+                    {
+                        res[item.Value] = item.Key;
+                    }
+                }
+            }
+
+            // Print resulting Dictionary
+            Console.WriteLine("SORTED VOTES:");
+            foreach (int i in res.Keys)
+            {
+                Console.WriteLine(i + " => " + res[i]);
             }
 
             return res;

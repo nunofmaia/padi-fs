@@ -87,20 +87,21 @@ namespace padiFS
                 ds.CurrentDir = Environment.CurrentDirectory;
                 string readPath = ds.CurrentDir + @"\" + ds.Name + @"\" + localFile + @".txt";
 
-                if (System.IO.File.Exists(readPath))
-                {
+                //if (System.IO.File.Exists(readPath))
+                //{
                     Console.WriteLine(readPath);
                     TextWriter tw = new StreamWriter(readPath);
                     System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(newFile.GetType());
                     x.Serialize(tw, newFile);
                     Console.WriteLine("object written to file");
                     tw.Close();
-                }
-                else
-                {
-                    //isto TEM DE SER MUDADO
-                    Console.WriteLine("O ficheiro não existe");
-                }
+                //}
+                //else
+                //{
+                //    //isto TEM DE SER MUDADO
+                    
+                //    Console.WriteLine("O ficheiro não existe");
+                //}
             }
             //success
             return 0;

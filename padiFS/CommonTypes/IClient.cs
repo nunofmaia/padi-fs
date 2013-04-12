@@ -21,6 +21,6 @@ namespace padiFS
         void Copy(int file1, string semantics, int file2, string salt);
 
         void UpdateServers(Dictionary<string, string> servers);
-        //void UpdateFileMetadata(string filename, Metadata metadata);
+        void UpdateFileMetadata(string filename, Metadata metadata);
     }
 }

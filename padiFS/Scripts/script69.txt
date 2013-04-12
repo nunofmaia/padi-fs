@@ -1,12 +1,18 @@
 RECOVER m-1
 UNFREEZE d-1
-CREATE c-0, p, 2, 1, 1
-DUMP c-0
 UNFREEZE d-2
-UNFREEZE d-3
-CLOSE c-0, p
-OPEN c-0, p
+CREATE c-0, p, 3, 2, 1
 DUMP c-0
+WRITE c-0, 0, "Ola jaquina"
+UNFREEZE d-3
+DUMP c-0
+READ c-0, 0, default, 0
+READ c-0, 0, monotonic, 0
+#CLOSE c-0, p
+#OPEN c-0, p
+#COPY c-0, 0, default, 1, ". Tudo bem?"
+#READ c-0, 0, default, 0
+#DUMP c-0
 #CREATE c-0, p, 1, 1, 1
 #DUMP c-0
 #WRITE c-0, 0, "Ola jaquina"

@@ -26,6 +26,7 @@ namespace padiFS
         private byte[][] stringRegister;
         private Metadata[] fileRegister;
         private int registersLimit;
+        private int nextRegister;
 
         public Client(string name, string port)
         {
@@ -38,6 +39,7 @@ namespace padiFS
             this.stringRegister = new byte[10][];
             this.fileRegister = new Metadata[10];
             registersLimit = 10;
+            nextRegister = 0;
         }
 
         public void Create(string filename, int nServers, int rQuorum, int wQuorum)
@@ -171,13 +173,8 @@ namespace padiFS
         // Limit - 10
         private void AddToFileRegister(Metadata meta)
         {
-            for (int i = 0; i < registersLimit; i++)
-            {
-                if (fileRegister[i] == null)
-                {
-                    fileRegister[i] = meta;
-                }
-            }
+            fileRegister[nextRegister] = meta;
+            nextRegister = (nextRegister + 1) % registersLimit;
         }
 
         // Method used by one thread to perform the call to the data servers
@@ -223,7 +220,7 @@ namespace padiFS
 
                 Dictionary<DateTime, File> received = null;
                 Dictionary<DateTime, int> votes = null;
-                int winner = -1;
+                DateTime winner = new DateTime();
 
                 while (!ReadVoting(readQuorum, ref received, ref votes, ref winner))
                 {
@@ -232,7 +229,7 @@ namespace padiFS
                     votes = null;
                 }
 
-                File selected = received[votes.Keys.Last()];
+                File selected = received[winner];
 
                 if (semantic.Equals("default", StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -266,10 +263,11 @@ namespace padiFS
         }
 
         // Method that performs the voting count of answers from data servers
-        private bool ReadVoting(int readQuorum, ref Dictionary<DateTime, File> received, ref Dictionary<DateTime, int> votes, ref int winner)
+        private bool ReadVoting(int readQuorum, ref Dictionary<DateTime, File> received, ref Dictionary<DateTime, int> votes, ref DateTime winner)
         {
             int votingTimer = 0;
-            while (winner < readQuorum)
+            int bestVote = 0;
+            while (bestVote < readQuorum)
             {
                 // Tries 5 times to reach a quorum before trying to read again
                 votingTimer++;
@@ -309,10 +307,10 @@ namespace padiFS
                 }
 
                 // Sort votes and show the most voted
-                votes = Util.SortVotes(votes);
+                Dictionary<int, DateTime> sortedVotes = Util.SortVotes(votes);
 
-
-                winner = votes.Values.Last();
+                bestVote = sortedVotes.Keys.Last();
+                winner = sortedVotes.Values.Last();
                 Thread.Sleep(1000);
             }
             return true;
@@ -324,6 +322,7 @@ namespace padiFS
             int i = 0;
             foreach (string s in servers)
             {
+                Console.WriteLine("Reading from " + s);
                 List<object> arguments = new List<object>();
                 arguments.Add(servers[i]);
                 arguments.Add(filename);
@@ -367,7 +366,7 @@ namespace padiFS
 
             Dictionary<DateTime, File> received = null;
             Dictionary<DateTime, int> votes = null;
-            int winner = -1;
+            DateTime winner = new DateTime();
 
             while (!ReadVoting(readQuorum, ref received, ref votes, ref winner))
             {
@@ -377,7 +376,7 @@ namespace padiFS
                 votes = null;
             }
 
-            File selected = received[votes.Keys.Last()];
+            File selected = received[winner];
 
             if (semantic.Equals("default", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -610,7 +609,7 @@ namespace padiFS
 
             Dictionary<DateTime, File> received = null;
             Dictionary<DateTime, int> votes = null;
-            int winner = -1;
+            DateTime winner = new DateTime();
 
             while (!ReadVoting(readQuorum, ref received, ref votes, ref winner))
             {
@@ -620,7 +619,7 @@ namespace padiFS
                 votes = null;
             }
 
-            File selected = received[votes.Keys.Last()];
+            File selected = received[winner];
             string fileRead = "";
 
             if (semantics.Equals("default", StringComparison.InvariantCultureIgnoreCase))
@@ -653,7 +652,6 @@ namespace padiFS
             }
             
             fileRead += salt;
-
             //Write file to file2 with previous read plus salt
             ExecuteWrite(fileRegister[file2].FileName, Util.ConvertStringToByteArray(fileRead));
         }
@@ -721,13 +719,23 @@ namespace padiFS
             return result;
         }
 
-        //public void UpdateFileMetadata(string filename, Metadata metadata)
-        //{
-        //    if (myFiles.ContainsKey(filename))
-        //    {
-        //        myFiles[filename] = metadata;
-        //    }
-        //}
+        public void UpdateFileMetadata(string filename, Metadata metadata)
+        {
+            if (myFiles.ContainsKey(filename))
+            {
+                myFiles[filename] = metadata;
+                openFiles[filename] = metadata;
+
+                for (int i = 0; i < registersLimit; i++)
+                {
+                    if (fileRegister[i] != null && fileRegister[i].FileName == filename)
+                    {
+                        fileRegister[i] = metadata;
+                        break;
+                    }
+                }
+            }
+        }
 
         static void Main(string[] args)
         {

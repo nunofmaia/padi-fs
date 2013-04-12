@@ -24,7 +24,10 @@ namespace padiFS
             set { version = value; }
         }
 
-        public File() { }
+        public File()
+        {
+            this.version = new DateTime();
+        }
         public File(DateTime version, byte[] content)
         {
             this.version = version;

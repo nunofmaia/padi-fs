@@ -328,12 +328,17 @@ namespace padiFS
             MetadataServer md = (MetadataServer)threadcontext; 
             foreach (string r in md.Replicas.Keys)
             {
-                IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), md.Replicas[r]);
-                if (replica != null)
+                try
                 {
-                    MetadataInfo info = new MetadataInfo(md.Primary, md.Address, md.Replicas, md.LiveDataServers, md.DeadDataServers, md.ServersLoad, md.Files, md.TempOpenFiles);
-                    replica.UpdateReplica(info);
+                    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), md.Replicas[r]);
+                    if (replica != null)
+                    {
+                        replica.Ping();
+                        MetadataInfo info = new MetadataInfo(md.Primary, md.Address, md.Replicas, md.LiveDataServers, md.DeadDataServers, md.ServersLoad, md.Files, md.TempOpenFiles);
+                        replica.UpdateReplica(info);
+                    }
                 }
+                catch (ServerNotAvailableException) { }
             }
         }
     

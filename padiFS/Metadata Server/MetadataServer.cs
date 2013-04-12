@@ -21,6 +21,7 @@ namespace padiFS
         private int pingInterval = 5;
         private string primary;
         private Dictionary<string, string> replicas;
+        private Dictionary<string, string> clients;
         private List<string> deadReplicas;
         private Dictionary<string, string> liveDataServers;
         private Dictionary<string, string> deadDataServers;
@@ -40,6 +41,7 @@ namespace padiFS
             this.address = "tcp://localhost:" + this.port + "/" + this.name;
             this.primary = null;
             this.replicas = new Dictionary<string, string>();
+            this.clients = new Dictionary<string, string>();
             this.deadReplicas = new List<string>();
             this.liveDataServers = new Dictionary<string, string>();
             this.deadDataServers = new Dictionary<string, string>();
@@ -56,7 +58,7 @@ namespace padiFS
 
             Console.WriteLine("ID: {0}", Util.MetadataServerId(name));
         }
-        public Dictionary<string, Metadata> Files 
+        public Dictionary<string, Metadata> Files
         {
             get { return this.files; }
         }
@@ -85,6 +87,11 @@ namespace padiFS
         public Dictionary<string, string> Replicas
         {
             get { return this.replicas; }
+        }
+
+        public Dictionary<string, string> Clients
+        {
+            get { return this.clients; }
         }
 
         public Dictionary<string, string> DeadDataServers
@@ -235,11 +242,11 @@ namespace padiFS
             serversLoad.Add(name, 0);
         }
 
-        //public void RegisterClient(string name, string address)
-        //{
-        //    Console.WriteLine("Client " + name + " : " + address);
-        //    clients.Add(name, address);
-        //}
+        public void RegisterClient(string name, string address)
+        {
+            Console.WriteLine("Client " + name + " : " + address);
+            clients.Add(name, address);
+        }
 
 
         public void RegisterMetadataServer(string name, string address)
@@ -481,6 +488,21 @@ namespace padiFS
             {
                 Metadata meta = files[f];
                 meta.AddDataServers(address);
+
+                if (tempOpenFiles.ContainsKey(f))
+                {
+                    List<string> clients = tempOpenFiles[f];
+
+                    foreach (string c in clients)
+                    {
+                        IClient client = (IClient)Activator.GetObject(typeof(IClient), this.clients[c]);
+
+                        if (client != null)
+                        {
+                            client.UpdateFileMetadata(f, meta);
+                        }
+                    }
+                }
 
                 string input = DateTime.Now.ToString("o") + (char)0x7f + meta.FileName;
 
