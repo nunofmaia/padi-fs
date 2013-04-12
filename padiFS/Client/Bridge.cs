@@ -105,5 +105,21 @@ namespace padiFS
 
             return null;
         }
+
+        public DateTime GetTimestamp()
+        {
+            string primary = AskForPrimary();
+            if (primary != null)
+            {
+                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
+
+                if (server != null)
+                {
+                    return server.GetTimestamp();
+                }
+            }
+
+            return DateTime.MinValue;
+        }
     }
 }

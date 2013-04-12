@@ -21,6 +21,7 @@ namespace padiFS
         void RegisterMetadataServer(string name, string address);
         void RegisterDataServer(string name, string address);
         void RegisterClient(string name, string address);
+        DateTime GetTimestamp();
         MetadataInfo GetMetadataInfo();
         void UpdateFileMetada(string address);
         void UpdateReplica(MetadataInfo info);

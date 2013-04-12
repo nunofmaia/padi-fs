@@ -525,6 +525,11 @@ namespace padiFS
             pendingFiles = new Dictionary<string, int>(updated);
         }
 
+        public DateTime GetTimestamp()
+        {
+            return DateTime.Now;
+        }
+
         // TEST AREA
         private static void Exit(object sender, ConsoleCancelEventArgs e)
         {

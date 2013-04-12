@@ -448,7 +448,7 @@ namespace padiFS
                 int writeQuorum = file.WriteQuorum;
                 writeFiles = new ConcurrentBag<int>();
                 string bytes = Util.ConvertByteArrayToString(bytearray);
-                byte[] content = Util.ConvertStringToByteArray(DateTime.Now.ToString("o") + (char)0x7f + bytes);
+                byte[] content = Util.ConvertStringToByteArray(TimeStamp().ToString("o") + (char)0x7f + bytes);
 
                 WriteCallDataServers(filename, servers, content);
 
@@ -735,6 +735,11 @@ namespace padiFS
                     }
                 }
             }
+        }
+
+        private DateTime TimeStamp()
+        {
+            return bridge.GetTimestamp();
         }
 
         static void Main(string[] args)
