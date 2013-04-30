@@ -203,12 +203,13 @@ namespace padiFS
                 throw new FileNotFoundException("File does not exist.");
             }
 
-            if (md.TempOpenFiles.ContainsKey(filename))
-            {
-                throw new FileIsOpenedException("Can't delete an open file.");
-            }
+            //if (md.TempOpenFiles.ContainsKey(filename))
+            //{
+            //    throw new FileIsOpenedException("Can't delete an open file.");
+            //}
 
             md.Files.Remove(filename);
+            md.TempOpenFiles.Remove(filename);
             // Update other replicas. CHANGE THIS IN THE FUTURE
             ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
             Console.WriteLine("File " + filename + " deleted");

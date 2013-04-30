@@ -368,11 +368,15 @@ namespace padiFS
             }
             catch (System.IO.IOException)
             {
+                Console.WriteLine("IOException");
                 deadReplicas.Add(replica);
                 //Console.WriteLine(e.Message);
                 //Console.WriteLine("EXCEP: esta é a primary: {0}", replica);
                 //Console.WriteLine(replica + ": MORTO");
                 NextPrimaryReplica();
+            }
+            catch (System.Net.Sockets.SocketException)
+            {
             }
         }
 
@@ -552,6 +556,11 @@ namespace padiFS
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
         //
+
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
 
         static void Main(string[] args)
         {

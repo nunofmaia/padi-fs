@@ -18,6 +18,7 @@ namespace padiFS
         private DataState state;
 
         private string currentDir;
+        private List<string> files;
         private ManualResetEvent freeze;
 
         public DataServer(string name, string port)
@@ -26,6 +27,7 @@ namespace padiFS
             this.port = int.Parse(port);
             this.state = new NormalState();
             this.freeze = new ManualResetEvent(false);
+            this.files = new List<string>();
             freeze.Set();
 
             //create new directory
@@ -35,6 +37,19 @@ namespace padiFS
             {
                 Directory.CreateDirectory(path);
             }
+        }
+
+        public void AddFile(string s)
+        {
+            if (!files.Contains(s))
+            {
+                files.Add(s);
+            }
+        }
+
+        public void RemoveFile(string s)
+        {
+            files.Remove(s);
         }
         
         protected void setStateFail()
@@ -115,7 +130,16 @@ namespace padiFS
 
         public string Dump()
         {
-            return "Data Server " + name + " dump:";
+            string s = "Data Server " + name + " dump:\r\nFiles:\r\n";
+            foreach(string file in files){
+                s += "\t" + file + "\r\n";
+            }
+            return s;
+        }
+
+        public override object InitializeLifetimeService()
+        {
+            return null;
         }
 
         static void Main(string[] args)
@@ -142,7 +166,7 @@ namespace padiFS
             //        master.test(ds.name);
             //    }
             //    catch (RemotingException e)
-            //    { Console.WriteLine(e.StackTrace); }
+            ////    { Console.WriteLine(e.StackTrace); }
             //}
             //else
             //{

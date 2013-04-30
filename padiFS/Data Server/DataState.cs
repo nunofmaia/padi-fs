@@ -36,6 +36,7 @@ namespace padiFS
             TextWriter tw = new StreamWriter(path);
             System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
             x.Serialize(tw, file);
+            ds.AddFile(args[1]);
             Console.WriteLine("object written to file");
             tw.Close();
         }
@@ -93,6 +94,7 @@ namespace padiFS
                     TextWriter tw = new StreamWriter(readPath);
                     System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(newFile.GetType());
                     x.Serialize(tw, newFile);
+                    ds.AddFile(localFile);
                     Console.WriteLine("object written to file");
                     tw.Close();
                 //}

@@ -742,6 +742,11 @@ namespace padiFS
             return bridge.GetTimestamp();
         }
 
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
+
         static void Main(string[] args)
         {
             string[] arguments = Util.SplitArguments(args[0]);

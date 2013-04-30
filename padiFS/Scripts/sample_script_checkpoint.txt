@@ -28,6 +28,7 @@ FREEZE d-2
 COPY c-1, 0, default, 1, " salt example"
 UNFREEZE d-2
 DUMP d-2
+READ c-1, 1, monotonic, 1
 CLOSE c-1, f1
 OPEN c-2, f2
 DUMP c-2
@@ -36,5 +37,4 @@ DUMP m-2
 DELETE c-2, f2
 CLOSE c-1, f2
 # script1 below would exist in the local puppet master disk
-FREEZE d-1
 EXESCRIPT c-1 script1.txt
