@@ -28,7 +28,7 @@ namespace padiFS
         private Dictionary<string, int> serversLoad;
         private Dictionary<string, Metadata> files;
         private Dictionary<string, List<string>> tempOpenFiles;
-        private SerializableDictionary<string, int> pendingFiles;
+        private Dictionary<string, int> pendingFiles;
         private System.Timers.Timer pingDataServersTimer;
         private System.Timers.Timer pingPrimaryReplicaTimer;
 
@@ -48,7 +48,7 @@ namespace padiFS
             this.serversLoad = new Dictionary<string, int>();
             this.files = new Dictionary<string, Metadata>();
             this.tempOpenFiles = new Dictionary<string, List<string>>();
-            this.pendingFiles = new SerializableDictionary<string, int>();
+            this.pendingFiles = new Dictionary<string, int>();
             this.pingDataServersTimer = new System.Timers.Timer();
             pingDataServersTimer.Elapsed += new System.Timers.ElapsedEventHandler(pingDataServers);
             pingDataServersTimer.Interval = 1000 * pingInterval;
@@ -526,7 +526,7 @@ namespace padiFS
 
             }
 
-            pendingFiles = new SerializableDictionary<string, int>(updated);
+            pendingFiles = new Dictionary<string, int>(updated);
         }
 
         public DateTime GetTimestamp()
