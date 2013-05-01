@@ -314,17 +314,24 @@ namespace padiFS
                 }
 
                 string primary_name = AskForPrimary(name);
-                IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[name]);
-                IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary_name]);
-                if (primary != null)
+                if (primary_name != null)
                 {
-                    MetadataInfo info = primary.GetMetadataInfo();
-                    if (replica != null)
+                    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[name]);
+                    IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary_name]);
+                    if (primary != null)
                     {
-                        replica.UpdateReplica(info);
+                        MetadataInfo info = primary.GetMetadataInfo();
+                        if (replica != null)
+                        {
+                            replica.UpdateReplica(info);
+                        }
                     }
                 }
-
+                else
+                {
+                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
+                    server.SetPrimary(name);
+                }
             }
             else
             {

@@ -45,6 +45,7 @@
     <Compile Include="Commands.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="MetadataInfo.cs" />
+    <Compile Include="SerializableDictionary.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="File.cs" />
     <Compile Include="IClient.cs" />
