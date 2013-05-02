@@ -1,22 +1,7 @@
 ﻿DUMP m-0
-DUMP m-1
 DUMP d-0
-#open inexistent file
-OPEN c-0 p
-#create
-CREATE c-0 p 1 1 1
-#close
-CLOSE c-0 p
-#open again
-OPEN c-0 p
-#open once more !!!!
-OPEN c-0 p
-#close it
-CLOSE c-1 p
-CLOSE c-0 p
-#close again !!!!
-CLOSE c-0 p
-DUMP m-0
-DUMP m-1
+DUMP d-1
 DUMP c-0
-DUMP c-1
+CREATE c-0, p, 2, 2, 2
+FREEZE d-0
+WRITE c-0, 0, "Text contents of the file. Contents are a string delimited by double quotes as this one"

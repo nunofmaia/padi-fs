@@ -28,6 +28,9 @@ namespace padiFS
         private int registersLimit;
         private int nextRegister;
 
+        private bool[] readsArray;
+        private bool[] writesArray;
+
         public Client(string name, string port)
         {
             this.name = name;
@@ -184,6 +187,7 @@ namespace padiFS
             string server = (string)args[0];
             string filename = (string)args[1];
             string semantic = (string)args[2];
+            int i = (int)args[3];
             File file = null;
 
             IDataServer dataServer = (IDataServer)Activator.GetObject(typeof(IDataServer), server);
@@ -196,6 +200,7 @@ namespace padiFS
                     if (file != null)
                     {
                         readFiles.Add(file);
+                        readsArray[i] = true;
                     }               
                 }
                 catch (SystemException)
@@ -216,6 +221,7 @@ namespace padiFS
 
                 // Call all the data servers that have the file and wait for a majority
                 // Launch threads and wait for it. Compare the answers and return it.
+                readsArray = new bool[servers.Count];
                 ReadCallDataServers(filename, semantic, servers);
 
                 Dictionary<DateTime, File> received = null;
@@ -322,33 +328,17 @@ namespace padiFS
             int i = 0;
             foreach (string s in servers)
             {
-                Console.WriteLine("Reading from " + s);
-                List<object> arguments = new List<object>();
-                arguments.Add(servers[i]);
-                arguments.Add(filename);
-                arguments.Add(semantic);
-                ThreadPool.QueueUserWorkItem(ReadCallback, arguments);
-                i++;
-            }
-        }
-
-        // Read for Puppet Master GUI 
-        public void Read(string filename, string semantic)
-        {
-            Thread t = new Thread(() => ExecuteRead(filename, semantic));
-            t.Start();
-        }
-
-        // Read for Puppet Master Scripts
-        public void Read(string file, string semantic, string register)
-        {
-
-            int f, r;
-            if (Int32.TryParse(file, out f) && Int32.TryParse(register, out r))
-            {
-                //Thread t = new Thread(() => ExecutePMRead(f, semantic, r));
-                //t.Start();
-                ExecutePMRead(f, semantic, r);
+                if (!readsArray[i])
+                {
+                    Console.WriteLine("Reading from " + s);
+                    List<object> arguments = new List<object>();
+                    arguments.Add(servers[i]);
+                    arguments.Add(filename);
+                    arguments.Add(semantic);
+                    arguments.Add(i);
+                    ThreadPool.QueueUserWorkItem(ReadCallback, arguments);
+                    i++;
+                }
             }
         }
 
@@ -362,6 +352,7 @@ namespace padiFS
 
             // Call all the data servers that have the file and wait for a majority
             // Launch threads and wait for it. Compare the answers and return it.
+            readsArray = new bool[servers.Count];
             ReadCallDataServers(filename, semantic, servers);
 
             Dictionary<DateTime, File> received = null;
@@ -418,6 +409,7 @@ namespace padiFS
             string server = (string)args[0];
             string filename = (string)args[1];
             byte[] bytearray = (byte[])args[2];
+            int i = (int)args[3];
 
             IDataServer dataServer = (IDataServer)Activator.GetObject(typeof(IDataServer), server);
 
@@ -431,6 +423,7 @@ namespace padiFS
                     if (intTest == 0)
                     {
                         writeFiles.Add(intTest);
+                        writesArray[i] = true;
                     }
                 }
                 catch (SystemException)
@@ -450,6 +443,7 @@ namespace padiFS
                 string bytes = Util.ConvertByteArrayToString(bytearray);
                 byte[] content = Util.ConvertStringToByteArray(TimeStamp().ToString("o") + (char)0x7f + bytes);
 
+                writesArray = new bool[servers.Count];
                 WriteCallDataServers(filename, servers, content);
 
                 // Tries 5 times to reach a quorum before trying to write again
@@ -459,8 +453,11 @@ namespace padiFS
                     timer++;
                     if (timer > 5)
                     {
-                        writeFiles = new ConcurrentBag<int>();
+                        Console.WriteLine("novo pedido");
+                        //writeFiles = new ConcurrentBag<int>();
                         WriteCallDataServers(filename, servers, content);
+                        timer = 0;
+
                     }
                     Thread.Sleep(1000);
                 }
@@ -470,13 +467,39 @@ namespace padiFS
 
         private void WriteCallDataServers(string filename, List<string> servers, byte[] content)
         {
+            int i = 0;
             foreach (string s in servers)
             {
-                List<object> arguments = new List<object>();
-                arguments.Add(s);
-                arguments.Add(filename);
-                arguments.Add(content);
-                ThreadPool.QueueUserWorkItem(WriteCallback, arguments);
+                if (!writesArray[i])
+                {
+                    List<object> arguments = new List<object>();
+                    arguments.Add(s);
+                    arguments.Add(filename);
+                    arguments.Add(content);
+                    arguments.Add(i);
+                    ThreadPool.QueueUserWorkItem(WriteCallback, arguments);
+                    i++;
+                }
+            }
+        }
+
+        // Read for Puppet Master GUI 
+        public void Read(string filename, string semantic)
+        {
+            //new Thread(() => ExecuteRead(filename, semantic)).Start();
+            ExecuteRead(filename, semantic);
+        }
+
+        // Read for Puppet Master Scripts
+        public void Read(string file, string semantic, string register)
+        {
+
+            int f, r;
+            if (Int32.TryParse(file, out f) && Int32.TryParse(register, out r))
+            {
+                //Thread t = new Thread(() => ExecutePMRead(f, semantic, r));
+                //t.Start();
+                ExecutePMRead(f, semantic, r);
             }
         }
 
@@ -605,6 +628,7 @@ namespace padiFS
 
             // Call all the data servers that have the file and wait for a majority
             // Launch threads and wait for it. Compare the answers and return it.
+            readsArray = new bool[servers.Count];
             ReadCallDataServers(filename, semantics, servers);
 
             Dictionary<DateTime, File> received = null;
