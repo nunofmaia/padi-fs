@@ -8,6 +8,7 @@ using System.Runtime.Remoting.Channels.Tcp;
 using System.Threading;
 using System.Timers;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace padiFS
 {
@@ -18,7 +19,8 @@ namespace padiFS
         private string name;
         private string address;
         private int port;
-        private int pingInterval = 5;
+        private int pingDataServerInterval = 20;
+        private int pingMetadataServerInterval = 5;
         private string primary;
         private Dictionary<string, string> replicas;
         private Dictionary<string, string> clients;
@@ -29,6 +31,7 @@ namespace padiFS
         private Dictionary<string, Metadata> files;
         private Dictionary<string, List<string>> tempOpenFiles;
         private Dictionary<string, int> pendingFiles;
+        private Dictionary<string, DataInfo> dataServersInfo;
         private System.Timers.Timer pingDataServersTimer;
         private System.Timers.Timer pingPrimaryReplicaTimer;
 
@@ -49,15 +52,22 @@ namespace padiFS
             this.files = new Dictionary<string, Metadata>();
             this.tempOpenFiles = new Dictionary<string, List<string>>();
             this.pendingFiles = new Dictionary<string, int>();
+            this.dataServersInfo = new Dictionary<string, DataInfo>();
             this.pingDataServersTimer = new System.Timers.Timer();
             pingDataServersTimer.Elapsed += new System.Timers.ElapsedEventHandler(pingDataServers);
-            pingDataServersTimer.Interval = 1000 * pingInterval;
+            pingDataServersTimer.Interval = 1000 * pingDataServerInterval;
             this.pingPrimaryReplicaTimer = new System.Timers.Timer();
             pingPrimaryReplicaTimer.Elapsed += new System.Timers.ElapsedEventHandler(PingPrimaryReplica);
-            pingPrimaryReplicaTimer.Interval = 1000 * pingInterval;
+            pingPrimaryReplicaTimer.Interval = 1000 * pingMetadataServerInterval;
 
             Console.WriteLine("ID: {0}", Util.MetadataServerId(name));
         }
+
+        public Dictionary<string, DataInfo> DataServersInfo
+        {
+            get { return this.dataServersInfo; }
+        }
+
         public Dictionary<string, Metadata> Files
         {
             get { return this.files; }
@@ -239,6 +249,7 @@ namespace padiFS
         {
             Console.WriteLine("Data Server " + name + " : " + address);
             liveDataServers.Add(name, address);
+            dataServersInfo.Add(name, null);
             serversLoad.Add(name, 0);
         }
 
@@ -292,15 +303,24 @@ namespace padiFS
 
             try
             {
-                if (server.Ping())
+                //if (server.Ping())
+                //{
+                //    Console.WriteLine(name + ": VIVO");
+                //    if (!liveDataServers.ContainsKey(name))
+                //    {
+                //        liveDataServers.Add(name, address);
+                //        deadDataServers.Remove(name);
+                //    }
+                //}
+
+                dataServersInfo[name] = server.Ping();
+                Console.WriteLine(name + ": VIVO");
+                if (!liveDataServers.ContainsKey(name))
                 {
-                    Console.WriteLine(name + ": VIVO");
-                    if (!liveDataServers.ContainsKey(name))
-                    {
-                        liveDataServers.Add(name, address);
-                        deadDataServers.Remove(name);
-                    }
+                    liveDataServers.Add(name, address);
+                    deadDataServers.Remove(name);
                 }
+
                 //else
                 //{
                 //    Console.WriteLine(name + ": MORTO");
@@ -577,6 +597,10 @@ namespace padiFS
             //SetConsoleCtrlHandler(handler, true);
             //Console.CancelKeyPress += new ConsoleCancelEventHandler(Exit);
             //
+            //if (!Debugger.IsAttached)
+            //{
+            //    Debugger.Launch();
+            //}
             Console.ReadLine();
         }
     }

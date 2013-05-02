@@ -5,13 +5,14 @@ using System.Text;
 
 namespace padiFS
 {
+    [Serializable]
     public class DataInfo
     {
         private Dictionary<string, int> numberAcesses;
 
-        public DataInfo(Dictionary<string, int> numberAcesses) 
+        public DataInfo() 
         {
-            this.numberAcesses = new Dictionary<string, int>(numberAcesses);
+            this.numberAcesses = new Dictionary<string, int>();
         }
 
         public void addFile(string fileName)

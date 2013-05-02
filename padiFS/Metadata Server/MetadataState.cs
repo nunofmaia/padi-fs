@@ -272,6 +272,16 @@ namespace padiFS
                 dataservers.Add(md.DeadDataServers[key]);
                 ThreadPool.QueueUserWorkItem(md.PingDataServer, dataservers);
             }
+
+            foreach (string key in md.DataServersInfo.Keys)
+            {
+                DataInfo dataInfo = md.DataServersInfo[key];
+
+                foreach (string file in dataInfo.getNumberAcesses().Keys)
+                {
+                    System.Windows.Forms.MessageBox.Show(file);
+                }
+            }
         }
         public override void PingPrimaryReplica(MetadataServer md, object source, ElapsedEventArgs e)
         {

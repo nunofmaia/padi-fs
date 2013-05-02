@@ -29,6 +29,7 @@ namespace padiFS
             this.state = new NormalState();
             this.freeze = new ManualResetEvent(false);
             this.files = new List<string>();
+            this.dataInfo = new DataInfo();
             freeze.Set();
 
             //create new directory
