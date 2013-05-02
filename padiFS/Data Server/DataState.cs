@@ -13,7 +13,7 @@ namespace padiFS
         public abstract void Create(DataServer ds, string fileName);
         public abstract File Read(DataServer ds, string localFile, string semantics);
         public abstract int Write(DataServer ds, string localFile, byte[] bytearray);
-        public abstract bool Ping(DataServer ds); 
+        public abstract DataInfo Ping(DataServer ds); 
     }
 
     class NormalState : DataState
@@ -108,12 +108,12 @@ namespace padiFS
             //success
             return 0;
         }
-        public override bool Ping(DataServer ds)
+        public override DataInfo Ping(DataServer ds)
         {
             ds.GetFreeze.WaitOne();
 
             Console.WriteLine("I'm Alive");
-            return true;
+            return ds.DataInfo;
         }
     }
 
@@ -130,7 +130,7 @@ namespace padiFS
             //failure
             return -1;
         }
-        public override bool Ping(DataServer ds)
+        public override DataInfo Ping(DataServer ds)
         {
             throw new ServerNotAvailableException("The server " + ds.Name + " is not available.");
         }

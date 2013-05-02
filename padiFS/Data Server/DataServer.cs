@@ -19,6 +19,7 @@ namespace padiFS
 
         private string currentDir;
         private List<string> files;
+        private DataInfo dataInfo;
         private ManualResetEvent freeze;
 
         public DataServer(string name, string port)
@@ -78,6 +79,11 @@ namespace padiFS
             get { return name; }
         }
 
+        public DataInfo DataInfo 
+        {
+            get { return dataInfo; }
+            set { dataInfo = value; }
+        }
 
         //Project API
         public void Create(string fileName)
@@ -123,7 +129,7 @@ namespace padiFS
 
         
         // Auxiliar API
-        public bool Ping()
+        public DataInfo Ping()
         {
             return this.state.Ping(this);
         }
