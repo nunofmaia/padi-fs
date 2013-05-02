@@ -39,6 +39,9 @@ namespace padiFS
             ds.AddFile(args[1]);
             Console.WriteLine("object written to file");
             tw.Close();
+
+            //add file to datainfo
+            ds.DataInfo.addFile(fileName);
         }
         public override File Read(DataServer ds, string localFile, string semantics)
         {
@@ -59,6 +62,9 @@ namespace padiFS
                 //isto TEM DE SER MUDADO
                 Console.WriteLine("O ficheiro não existe");
             }
+            //add access to this file
+            ds.DataInfo.addAcess(localFile);
+
             return file;
         }
         public override int Write(DataServer ds, string localFile, byte[] bytearray)
@@ -105,6 +111,9 @@ namespace padiFS
                 //    Console.WriteLine("O ficheiro não existe");
                 //}
             }
+            //add access to this file
+            ds.DataInfo.addAcess(localFile);
+
             //success
             return 0;
         }
