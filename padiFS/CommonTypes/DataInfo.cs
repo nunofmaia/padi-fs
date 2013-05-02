@@ -34,8 +34,15 @@ namespace padiFS
         {
             this.numberAcesses[fileName]++;
         }
-    //acabar os gets e sets
 
-        //get que conta os acessos totais de cada dataserver    
+        //count total acesses to data server
+        public int getTotalAcesses() {
+            int total = 0;
+            foreach (KeyValuePair<string, int> acesses in numberAcesses)
+            {
+                total = total + acesses.Value;
+            }
+            return total;
+        }
     }
 }
