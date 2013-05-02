@@ -20,7 +20,7 @@ namespace padiFS
         }
 
 
-        public int getNumberAcesses(string fileName) 
+        public int getAcesses(string fileName) 
         {
             return numberAcesses[fileName]; 
         }
