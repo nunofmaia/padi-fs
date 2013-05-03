@@ -63,7 +63,7 @@ namespace padiFS
                 Console.WriteLine("O ficheiro não existe");
             }
             //add access to this file
-            ds.DataInfo.addAcess(localFile);
+            ds.DataInfo.addAccess(localFile);
 
             return file;
         }
@@ -112,7 +112,7 @@ namespace padiFS
                 //}
             }
             //add access to this file
-            ds.DataInfo.addAcess(localFile);
+            ds.DataInfo.addAccess(localFile);
 
             //success
             return 0;

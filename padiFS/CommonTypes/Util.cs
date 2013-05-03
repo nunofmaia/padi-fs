@@ -209,5 +209,25 @@ namespace padiFS
 
             return port;
         }
+
+        //Calculates the average access to data servers 
+        public int AverageAccesses(Dictionary<string, DataInfo> dataServersInfo)
+        {
+            int count = 0;
+            int total = 0;
+            foreach (KeyValuePair<string, DataInfo> accesses in dataServersInfo)
+            {
+                count = count + 1;
+                total = total + accesses.Value.getTotalAccesses();
+            }
+            return total / count;
+        }
+
+        //calculates the value that alows make the interval
+        public int IntervalAccesses(double alfa, int value) 
+        {
+            return (int)(alfa * value);
+        }
+
     }
 }

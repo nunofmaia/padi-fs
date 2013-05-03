@@ -8,40 +8,46 @@ namespace padiFS
     [Serializable]
     public class DataInfo
     {
-        private Dictionary<string, int> numberAcesses;
+        private Dictionary<string, int> numberAccesses;
 
         public DataInfo() 
         {
-            this.numberAcesses = new Dictionary<string, int>();
+            this.numberAccesses = new Dictionary<string, int>();
         }
 
         public void addFile(string fileName)
         {
-            this.numberAcesses.Add(fileName, 0);   
+            this.numberAccesses.Add(fileName, 0);   
         }
 
-        public int getAcesses(string fileName) 
+        public int getAccesses(string fileName) 
         {
-            return numberAcesses[fileName]; 
+            return numberAccesses[fileName]; 
         }
 
-        public Dictionary<string, int> getNumberAcesses() 
+        public Dictionary<string, int> getNumberAccesses() 
         {
-            return this.numberAcesses;
+            return this.numberAccesses;
         }
 
-        public void addAcess(string fileName)
+        public void addAccess(string fileName)
         {
-
-            this.numberAcesses[fileName]++;
-        }
-
-        //count total acesses to data server
-        public int getTotalAcesses() {
-            int total = 0;
-            foreach (KeyValuePair<string, int> acesses in numberAcesses)
+            if (numberAccesses.ContainsKey(fileName))
             {
-                total = total + acesses.Value;
+                this.numberAccesses[fileName]++;
+            }
+            else 
+            {
+                this.numberAccesses.Add(fileName, 1);
+            }
+        }
+
+        //count total accesses to data server
+        public int getTotalAccesses() {
+            int total = 0;
+            foreach (KeyValuePair<string, int> accesses in numberAccesses)
+            {
+                total = total + accesses.Value;
             }
             return total;
         }
