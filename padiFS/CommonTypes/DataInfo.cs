@@ -15,22 +15,22 @@ namespace padiFS
             this.numberAccesses = new Dictionary<string, int>();
         }
 
-        public void addFile(string fileName)
+        public void AddFile(string fileName)
         {
             this.numberAccesses.Add(fileName, 0);   
         }
 
-        public int getAccesses(string fileName) 
+        public int GetAccesses(string fileName) 
         {
             return numberAccesses[fileName]; 
         }
 
-        public Dictionary<string, int> getNumberAccesses() 
+        public Dictionary<string, int> GetNumberAccesses() 
         {
             return this.numberAccesses;
         }
 
-        public void addAccess(string fileName)
+        public void AddAccess(string fileName)
         {
             if (numberAccesses.ContainsKey(fileName))
             {
@@ -43,7 +43,7 @@ namespace padiFS
         }
 
         //count total accesses to data server
-        public int getTotalAccesses() {
+        public int GetTotalAccesses() {
             int total = 0;
             foreach (KeyValuePair<string, int> accesses in numberAccesses)
             {

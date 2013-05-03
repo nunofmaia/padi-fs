@@ -218,16 +218,32 @@ namespace padiFS
             foreach (KeyValuePair<string, DataInfo> accesses in dataServersInfo)
             {
                 count = count + 1;
-                total = total + accesses.Value.getTotalAccesses();
+                total = total + accesses.Value.GetTotalAccesses();
             }
             return total / count;
         }
 
         //calculates the value that alows make the interval
-        public int IntervalAccesses(double alfa, int value) 
+        public int IntervalAccesses(double alfa, int average) 
         {
-            return (int)(alfa * value);
+            return (int)(alfa * average);
         }
 
+        //returns the sorted list with datainfo that are outside the range//ainda falta ordenar
+        public List<DataInfo> GetListDataInfo(int minInterval, int maxInterval, Dictionary<string, DataInfo> dataServersInfo) 
+        {
+            List<DataInfo> list = new List<DataInfo>();
+
+            foreach (KeyValuePair<string, DataInfo> accesses in dataServersInfo)
+            {
+                if(accesses.Value.GetTotalAccesses()< minInterval && accesses.Value.GetTotalAccesses() > maxInterval)
+                {
+                    list.Add(accesses.Value);
+                }
+            }
+            //flist.OrderBy(
+            return list;
+        }
+       
     }
 }

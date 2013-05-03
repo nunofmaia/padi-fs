@@ -41,7 +41,7 @@ namespace padiFS
             tw.Close();
 
             //add file to datainfo
-            ds.DataInfo.addFile(fileName);
+            ds.DataInfo.AddFile(fileName);
         }
         public override File Read(DataServer ds, string localFile, string semantics)
         {
@@ -63,7 +63,7 @@ namespace padiFS
                 Console.WriteLine("O ficheiro não existe");
             }
             //add access to this file
-            ds.DataInfo.addAccess(localFile);
+            ds.DataInfo.AddAccess(localFile);
 
             return file;
         }
@@ -112,7 +112,7 @@ namespace padiFS
                 //}
             }
             //add access to this file
-            ds.DataInfo.addAccess(localFile);
+            ds.DataInfo.AddAccess(localFile);
 
             //success
             return 0;
