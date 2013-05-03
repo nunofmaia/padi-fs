@@ -53,7 +53,7 @@ namespace padiFS
             throw new ServerNotAvailableException("The server is not available and can't register a new server.");
         }
 
-        public override void pingDataServers(MetadataServer md, object source, ElapsedEventArgs e) 
+        public override void pingDataServers(MetadataServer md, object source, ElapsedEventArgs e)
         {
             throw new ServerNotAvailableException("The server is not available and can't ping other replicas.");
         }
@@ -80,14 +80,6 @@ namespace padiFS
                 }
 
                 md.TempOpenFiles[filename].Add(clientName);
-                ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
-                return md.Files[filename];
-                //}
-                //else
-                //{
-                //    Console.WriteLine("File already open. It's ok!");
-                //    return null;
-                //}
             }
             else
             {
@@ -99,15 +91,19 @@ namespace padiFS
                 List<string> clientsList = new List<string>();
                 clientsList.Add(clientName);
                 md.TempOpenFiles.Add(filename, clientsList);
-                ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
-                return md.Files[filename];
-                //}
-                //else
-                //{
-                //    Console.WriteLine("File does not exists.");
-                //    return null;
-                //}
+                
             }
+
+            List<object> context = new List<object>();
+            string command = string.Format("OPEN {0} {1}", clientName, filename);
+            context.Add(md);
+            context.Add(command);
+            //ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
+            ThreadPool.QueueUserWorkItem(AppendToLog, context);
+
+            md.Log.Append(command);
+
+            return md.Files[filename];
         }
 
         public override void Close(MetadataServer md, string clientName, string filename)
@@ -134,17 +130,15 @@ namespace padiFS
             {
                 md.TempOpenFiles.Remove(filename);
             }
-            ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
-                //}
-                //else
-                //{
-                //    Console.WriteLine("This client " + clientName + " did not open this file " + filename + ".");
-                //}
-            //}
-            //else
-            //{
-            //    Console.WriteLine("File " + filename + " is not open by any client.");
-            //}
+
+            List<object> context = new List<object>();
+            string command = string.Format("CLOSE {0} {1}", clientName, filename);
+            context.Add(md);
+            context.Add(command);
+            ThreadPool.QueueUserWorkItem(AppendToLog, context);
+            //ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
+
+            md.Log.Append(command);
         }
 
         public override Metadata Create(MetadataServer md, string clientName, string filename, int serversNumber, int readQuorum, int writeQuorum)
@@ -183,17 +177,20 @@ namespace padiFS
             md.Files.Add(filename, meta);
             md.TempOpenFiles.Add(filename, clientsList);
             // Update other replicas. CHANGE THIS IN THE FUTURE
-            ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
+            //ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
+            List<object> context = new List<object>();
+            context.Add(md);
+            string command = string.Format("CREATE {0} {1} {2} {3} {4}", clientName, filename, serversNumber, readQuorum, writeQuorum);
+            foreach (string c in chosen)
+            {
+                command += string.Format(" {0}", c);
+            }
+            context.Add(command);
+            ThreadPool.QueueUserWorkItem(AppendToLog, context);
+
+            md.Log.Append(command);
 
             return meta;
-                
-            //}
-            //else
-            //{
-            //    // THROW EXCEPTION
-            //    Console.WriteLine("File already exists.");
-            //}
-            //return null;
         }
 
         public override void Delete(MetadataServer md, string clientName, string filename)
@@ -203,28 +200,18 @@ namespace padiFS
                 throw new FileNotFoundException("File does not exist.");
             }
 
-            //if (md.TempOpenFiles.ContainsKey(filename))
-            //{
-            //    throw new FileIsOpenedException("Can't delete an open file.");
-            //}
-
             md.Files.Remove(filename);
             md.TempOpenFiles.Remove(filename);
             // Update other replicas. CHANGE THIS IN THE FUTURE
-            ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
+            //ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
+            List<object> context = new List<object>();
+            string command = string.Format("DELETE {0} {1}", clientName, filename);
+            context.Add(md);
+            context.Add(command);
+            ThreadPool.QueueUserWorkItem(AppendToLog, context);
             Console.WriteLine("File " + filename + " deleted");
-                //}
-                //else
-                //{
-                //    // THROW EXCEPTION
-                //    Console.WriteLine("File " + filename + " is opened.");
-                //}
-            //}
-            //else
-            //{
-            //    // THROW EXCEPTION
-            //    Console.WriteLine("File " + filename + " does not exists.");
-            //}
+
+            md.Log.Append(command);
         }
 
         public override bool Ping()
@@ -241,6 +228,7 @@ namespace padiFS
             {
                 Console.WriteLine("Metadata Server " + name + " : " + address);
                 md.Replicas.Add(name, address);
+                md.Log.Append(string.Format("REGISTER metadata {0} {1}", name, address));
 
                 IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
                 if (server != null)
@@ -300,7 +288,7 @@ namespace padiFS
 
         private void LoadBalanceServers(object threadcontext)
         {
-            MetadataServer md = (MetadataServer)threadcontext; 
+            MetadataServer md = (MetadataServer)threadcontext;
             md.ServersLoad = Util.SortServerLoad(md.ServersLoad);
         }
 
@@ -327,7 +315,7 @@ namespace padiFS
 
         private void UpdateReplicas(object threadcontext)
         {
-            MetadataServer md = (MetadataServer)threadcontext; 
+            MetadataServer md = (MetadataServer)threadcontext;
             foreach (string r in md.Replicas.Keys)
             {
                 try
@@ -343,7 +331,28 @@ namespace padiFS
                 catch (ServerNotAvailableException) { }
             }
         }
-    
-    
+
+        private void AppendToLog(object threadcontext)
+        {
+            List<object> context = (List<object>)threadcontext;
+            MetadataServer md = (MetadataServer)context[0];
+            string command = (string)context[1];
+
+            foreach (string r in md.Replicas.Keys)
+            {
+                try
+                {
+                    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), md.Replicas[r]);
+                    if (replica != null)
+                    {
+                        replica.Ping();
+                        replica.AppendToLog(command);
+                    }
+                }
+                catch (ServerNotAvailableException) { }
+            }
+        }
+
+
     }
 }
