@@ -24,10 +24,13 @@ namespace padiFS
 
         public void Append(string command)
         {
-            using (StreamWriter sw = System.IO.File.AppendText(this.Path))
+            lock (this)
             {
-                sw.WriteLine(command);
-                this.Index = this.Index + 1;
+                using (StreamWriter sw = System.IO.File.AppendText(this.Path))
+                {
+                    sw.WriteLine(command);
+                    this.Index = this.Index + 1;
+                }
             }
         }
 

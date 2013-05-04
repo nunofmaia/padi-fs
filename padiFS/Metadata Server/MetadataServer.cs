@@ -648,207 +648,210 @@ namespace padiFS
 
         public void AppendToLog(string command)
         {
-            string[] args = command.Split(' ');
-            string code = args[0];
-
-            switch (code)
+            lock (this)
             {
-                case "CREATE":
-                    {
-                        string clientName = args[1];
-                        string filename = args[2];
-                        int serversNumber = int.Parse(args[3]);
-                        int readQuorum = int.Parse(args[4]);
-                        int writeQuorum = int.Parse(args[5]);
+                string[] args = command.Split(' ');
+                string code = args[0];
 
-                        if (!this.Files.ContainsKey(filename))
+                switch (code)
+                {
+                    case "CREATE":
                         {
-                            if (this.LiveDataServers.Count < serversNumber)
+                            string clientName = args[1];
+                            string filename = args[2];
+                            int serversNumber = int.Parse(args[3]);
+                            int readQuorum = int.Parse(args[4]);
+                            int writeQuorum = int.Parse(args[5]);
+
+                            if (!this.Files.ContainsKey(filename))
                             {
-                                if (!this.PendingFiles.ContainsKey(filename))
+                                if (this.LiveDataServers.Count < serversNumber)
                                 {
-                                    this.PendingFiles.Add(filename, serversNumber - this.LiveDataServers.Count);
+                                    if (!this.PendingFiles.ContainsKey(filename))
+                                    {
+                                        this.PendingFiles.Add(filename, serversNumber - this.LiveDataServers.Count);
+                                    }
                                 }
-                            }
 
-                            List<string> servers = new List<string>();
-                            string[] chosen = Util.SliceArray(args, 6, args.Length);
-                            
-                            // Before sending the requests, a time stamp is added to the filename
-                            string f = DateTime.Now.ToString("o") + (char)0x7f + filename;
-                            foreach (string v in chosen)
-                            {
-                                servers.Add(this.LiveDataServers[v]);
-                                this.ServersLoad[v]++;
-                            }
+                                List<string> servers = new List<string>();
+                                string[] chosen = Util.SliceArray(args, 6, args.Length);
 
-                            this.ServersLoad = Util.SortServerLoad(this.ServersLoad);
-                            Metadata meta = new Metadata(filename, serversNumber, readQuorum, writeQuorum, servers);
-                            List<string> clientsList = new List<string>();
-                            clientsList.Add(clientName);
-                            this.Files.Add(filename, meta);
-                            this.TempOpenFiles.Add(filename, clientsList);
-                        } 
-                    }
-                    break;
-                case "OPEN":
-                    {
-                        string clientName = args[1];
-                        string filename = args[2];
+                                // Before sending the requests, a time stamp is added to the filename
+                                string f = DateTime.Now.ToString("o") + (char)0x7f + filename;
+                                foreach (string v in chosen)
+                                {
+                                    servers.Add(this.LiveDataServers[v]);
+                                    this.ServersLoad[v]++;
+                                }
 
-                        if (this.TempOpenFiles.ContainsKey(filename))
-                        {
-                            List<string> clientsList = this.TempOpenFiles[filename];
-                            if (!clientsList.Contains(clientName))
-                            {
-                                this.TempOpenFiles[filename].Add(clientName);
-                            }
-                        }
-                        else
-                        {
-                            if (this.Files.ContainsKey(filename))
-                            {
+                                this.ServersLoad = Util.SortServerLoad(this.ServersLoad);
+                                Metadata meta = new Metadata(filename, serversNumber, readQuorum, writeQuorum, servers);
                                 List<string> clientsList = new List<string>();
                                 clientsList.Add(clientName);
+                                this.Files.Add(filename, meta);
                                 this.TempOpenFiles.Add(filename, clientsList);
                             }
                         }
-                    }
-                    break;
-                case "CLOSE":
-                    {
-                        string clientName = args[1];
-                        string filename = args[2];
-
-                        if (this.Files.ContainsKey(filename))
+                        break;
+                    case "OPEN":
                         {
+                            string clientName = args[1];
+                            string filename = args[2];
+
                             if (this.TempOpenFiles.ContainsKey(filename))
                             {
                                 List<string> clientsList = this.TempOpenFiles[filename];
-
-                                if (clientsList.Contains(clientName))
+                                if (!clientsList.Contains(clientName))
                                 {
-                                    clientsList.Remove(clientName);
+                                    this.TempOpenFiles[filename].Add(clientName);
+                                }
+                            }
+                            else
+                            {
+                                if (this.Files.ContainsKey(filename))
+                                {
+                                    List<string> clientsList = new List<string>();
+                                    clientsList.Add(clientName);
+                                    this.TempOpenFiles.Add(filename, clientsList);
+                                }
+                            }
+                        }
+                        break;
+                    case "CLOSE":
+                        {
+                            string clientName = args[1];
+                            string filename = args[2];
 
-                                    if (clientsList.Count == 0)
+                            if (this.Files.ContainsKey(filename))
+                            {
+                                if (this.TempOpenFiles.ContainsKey(filename))
+                                {
+                                    List<string> clientsList = this.TempOpenFiles[filename];
+
+                                    if (clientsList.Contains(clientName))
                                     {
-                                        this.TempOpenFiles.Remove(filename);
+                                        clientsList.Remove(clientName);
+
+                                        if (clientsList.Count == 0)
+                                        {
+                                            this.TempOpenFiles.Remove(filename);
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    break;
-                case "DELETE":
-                    {
-                        string clientName = args[1];
-                        string filename = args[2];
-
-                        if (this.Files.ContainsKey(filename))
+                        break;
+                    case "DELETE":
                         {
-                            this.Files.Remove(filename);
-                            this.TempOpenFiles.Remove(filename);
-                        }
-                    }
-                    break;
-                case "REGISTER":
-                    {
-                        string server = args[1];
-                        string name = args[2];
-                        string address = args[3];
+                            string clientName = args[1];
+                            string filename = args[2];
 
-                        switch (server)
-                        {
-                            case "data":
-                                if (!this.DataServersInfo.ContainsKey(name))
-                                {
-                                    this.LiveDataServers.Add(name, address);
-                                    this.DataServersInfo.Add(name, null);
-                                    this.ServersLoad.Add(name, 0);
-                                }
-                                break;
-                            case "metadata":
-                                if (!this.Replicas.ContainsKey(name) && name != this.Name)
-                                {
-                                    this.Replicas.Add(name, address);
-                                }
-                                break;
-                            case "client":
-                                if (!this.Clients.ContainsKey(name))
-                                {
-                                    this.Clients.Add(name, address);
-                                }
-                                break;
-                        }
-                    }
-                    break;
-                case "UPDATE":
-                    {
-                        string address = args[1];
-                        string[] files = Util.SliceArray(args, 2, args.Length);
-                        Dictionary<string, int> updated = new Dictionary<string, int>();
-                        foreach (string f in files)
-                        {
-                            Metadata meta = this.Files[f];
-                            meta.AddDataServers(address);
-
-                            //if (this.TempOpenFiles.ContainsKey(f))
-                            //{
-                            //    List<string> clients = this.TempOpenFiles[f];
-
-                            //    foreach (string c in clients)
-                            //    {
-                            //        IClient client = (IClient)Activator.GetObject(typeof(IClient), this.clients[c]);
-
-                            //        if (client != null)
-                            //        {
-                            //            client.UpdateFileMetadata(f, meta);
-                            //        }
-                            //    }
-                            //}
-
-                            //string input = DateTime.Now.ToString("o") + (char)0x7f + meta.FileName;
-
-                            //IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), address);
-
-                            //if (server != null)
-                            //{
-                            //    server.Create(input);
-                            //}
-
-                            int n = pendingFiles[f] - 1;
-
-                            if (n > 0)
+                            if (this.Files.ContainsKey(filename))
                             {
-                                updated.Add(f, n);
+                                this.Files.Remove(filename);
+                                this.TempOpenFiles.Remove(filename);
+                            }
+                        }
+                        break;
+                    case "REGISTER":
+                        {
+                            string server = args[1];
+                            string name = args[2];
+                            string address = args[3];
+
+                            switch (server)
+                            {
+                                case "data":
+                                    if (!this.DataServersInfo.ContainsKey(name))
+                                    {
+                                        this.LiveDataServers.Add(name, address);
+                                        this.DataServersInfo.Add(name, null);
+                                        this.ServersLoad.Add(name, 0);
+                                    }
+                                    break;
+                                case "metadata":
+                                    if (!this.Replicas.ContainsKey(name) && name != this.Name)
+                                    {
+                                        this.Replicas.Add(name, address);
+                                    }
+                                    break;
+                                case "client":
+                                    if (!this.Clients.ContainsKey(name))
+                                    {
+                                        this.Clients.Add(name, address);
+                                    }
+                                    break;
+                            }
+                        }
+                        break;
+                    case "UPDATE":
+                        {
+                            string address = args[1];
+                            string[] files = Util.SliceArray(args, 2, args.Length);
+                            Dictionary<string, int> updated = new Dictionary<string, int>();
+                            foreach (string f in files)
+                            {
+                                Metadata meta = this.Files[f];
+                                meta.AddDataServers(address);
+
+                                //if (this.TempOpenFiles.ContainsKey(f))
+                                //{
+                                //    List<string> clients = this.TempOpenFiles[f];
+
+                                //    foreach (string c in clients)
+                                //    {
+                                //        IClient client = (IClient)Activator.GetObject(typeof(IClient), this.clients[c]);
+
+                                //        if (client != null)
+                                //        {
+                                //            client.UpdateFileMetadata(f, meta);
+                                //        }
+                                //    }
+                                //}
+
+                                //string input = DateTime.Now.ToString("o") + (char)0x7f + meta.FileName;
+
+                                //IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), address);
+
+                                //if (server != null)
+                                //{
+                                //    server.Create(input);
+                                //}
+
+                                int n = pendingFiles[f] - 1;
+
+                                if (n > 0)
+                                {
+                                    updated.Add(f, n);
+                                }
+
+                            }
+
+                            this.PendingFiles = new Dictionary<string, int>(updated);
+                        }
+                        break;
+                    case "SET-PRIMARY":
+                        {
+                            string primary = args[1];
+                            this.Primary = primary;
+
+                            if (this.primary == this.name)
+                            {
+                                pingDataServersTimer.Enabled = true;
+                                pingPrimaryReplicaTimer.Enabled = false;
+                            }
+                            else
+                            {
+                                pingPrimaryReplicaTimer.Enabled = true;
+                                pingDataServersTimer.Enabled = false;
                             }
 
                         }
+                        break;
+                }
 
-                        this.PendingFiles = new Dictionary<string, int>(updated);
-                    }
-                    break;
-                case "SET-PRIMARY":
-                    {
-                        string primary = args[1];
-                        this.Primary = primary;
-
-                        if (this.primary == this.name)
-                        {
-                            pingDataServersTimer.Enabled = true;
-                            pingPrimaryReplicaTimer.Enabled = false;
-                        }
-                        else
-                        {
-                            pingPrimaryReplicaTimer.Enabled = true;
-                            pingDataServersTimer.Enabled = false;
-                        }
-            
-                    }
-                    break;
+                this.Log.Append(command);
             }
-
-            this.Log.Append(command);
         }
 
 
