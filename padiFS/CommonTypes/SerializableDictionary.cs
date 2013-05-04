@@ -1,124 +1,161 @@
 ﻿using System;
+using System.Runtime.Serialization;
+using System.Xml;
+using System.Xml.Serialization;
 using System.Collections.Generic;
 using System.Text;
-using System.Xml.Serialization;
-using System.Runtime.Serialization;
 
-namespace padiFS
+namespace teste
 {
-    [XmlRoot("dictionary")]
-    public class SerializableDictionary<TKey, TValue>
-        : Dictionary<TKey, TValue>, IXmlSerializable
+    [Serializable()]
+    public class SerializableDictionary<TKey, TVal> : Dictionary<TKey, TVal>, IXmlSerializable, ISerializable
     {
-
+        #region Constants
+        private const string DictionaryNodeName = "Dictionary";
+        private const string ItemNodeName = "Item";
+        private const string KeyNodeName = "Key";
+        private const string ValueNodeName = "Value";
+        #endregion
+        #region Constructors
         public SerializableDictionary()
-
-            : base()
         {
-
         }
 
-        public SerializableDictionary(IDictionary<TKey, TValue> dictionary)
-
+        public SerializableDictionary(IDictionary<TKey, TVal> dictionary)
             : base(dictionary)
         {
-
         }
 
         public SerializableDictionary(IEqualityComparer<TKey> comparer)
-
             : base(comparer)
         {
-
         }
 
         public SerializableDictionary(int capacity)
-
             : base(capacity)
         {
-
         }
 
-        public SerializableDictionary(IDictionary<TKey, TValue> dictionary, IEqualityComparer<TKey> comparer)
-
+        public SerializableDictionary(IDictionary<TKey, TVal> dictionary, IEqualityComparer<TKey> comparer)
             : base(dictionary, comparer)
         {
-
         }
 
         public SerializableDictionary(int capacity, IEqualityComparer<TKey> comparer)
-
             : base(capacity, comparer)
         {
-
         }
+
+        #endregion
+        #region ISerializable Members
 
         protected SerializableDictionary(SerializationInfo info, StreamingContext context)
-
-            : base(info, context)
         {
-
+            int itemCount = info.GetInt32("ItemCount");
+            for (int i = 0; i < itemCount; i++)
+            {
+                KeyValuePair<TKey, TVal> kvp = (KeyValuePair<TKey, TVal>)info.GetValue(String.Format("Item{0}", i), typeof(KeyValuePair<TKey, TVal>));
+                this.Add(kvp.Key, kvp.Value);
+            }
         }
 
+        void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("ItemCount", this.Count);
+            int itemIdx = 0;
+            foreach (KeyValuePair<TKey, TVal> kvp in this)
+            {
+                info.AddValue(String.Format("Item{0}", itemIdx), kvp, typeof(KeyValuePair<TKey, TVal>));
+                itemIdx++;
+            }
+        }
 
+        #endregion
         #region IXmlSerializable Members
-        public System.Xml.Schema.XmlSchema GetSchema()
+
+        void IXmlSerializable.WriteXml(System.Xml.XmlWriter writer)
+        {
+            //writer.WriteStartElement(DictionaryNodeName);
+            foreach (KeyValuePair<TKey, TVal> kvp in this)
+            {
+                writer.WriteStartElement(ItemNodeName);
+                writer.WriteStartElement(KeyNodeName);
+                KeySerializer.Serialize(writer, kvp.Key);
+                writer.WriteEndElement();
+                writer.WriteStartElement(ValueNodeName);
+                ValueSerializer.Serialize(writer, kvp.Value);
+                writer.WriteEndElement();
+                writer.WriteEndElement();
+            }
+            //writer.WriteEndElement();
+        }
+
+        void IXmlSerializable.ReadXml(System.Xml.XmlReader reader)
+        {
+            if (reader.IsEmptyElement)
+            {
+                return;
+            }
+
+            // Move past container
+            if (!reader.Read())
+            {
+                throw new XmlException("Error in Deserialization of Dictionary");
+            }
+
+            //reader.ReadStartElement(DictionaryNodeName);
+            while (reader.NodeType != XmlNodeType.EndElement)
+            {
+                reader.ReadStartElement(ItemNodeName);
+                reader.ReadStartElement(KeyNodeName);
+                TKey key = (TKey)KeySerializer.Deserialize(reader);
+                reader.ReadEndElement();
+                reader.ReadStartElement(ValueNodeName);
+                TVal value = (TVal)ValueSerializer.Deserialize(reader);
+                reader.ReadEndElement();
+                reader.ReadEndElement();
+                this.Add(key, value);
+                reader.MoveToContent();
+            }
+            //reader.ReadEndElement();
+
+            reader.ReadEndElement(); // Read End Element to close Read of containing node
+        }
+
+        System.Xml.Schema.XmlSchema IXmlSerializable.GetSchema()
         {
             return null;
         }
 
-        public void ReadXml(System.Xml.XmlReader reader)
+        #endregion
+        #region Private Properties
+        protected XmlSerializer ValueSerializer
         {
-            XmlSerializer keySerializer = new XmlSerializer(typeof(TKey));
-            XmlSerializer valueSerializer = new XmlSerializer(typeof(TValue));
-
-            bool wasEmpty = reader.IsEmptyElement;
-            reader.Read();
-
-            if (wasEmpty)
-                return;
-
-            while (reader.NodeType != System.Xml.XmlNodeType.EndElement)
+            get
             {
-                reader.ReadStartElement("item");
-
-                reader.ReadStartElement("key");
-                TKey key = (TKey)keySerializer.Deserialize(reader);
-                reader.ReadEndElement();
-
-                reader.ReadStartElement("value");
-                TValue value = (TValue)valueSerializer.Deserialize(reader);
-                reader.ReadEndElement();
-
-                this.Add(key, value);
-
-                reader.ReadEndElement();
-                reader.MoveToContent();
-            }
-            reader.ReadEndElement();
-        }
-
-        public void WriteXml(System.Xml.XmlWriter writer)
-        {
-            XmlSerializer keySerializer = new XmlSerializer(typeof(TKey));
-            XmlSerializer valueSerializer = new XmlSerializer(typeof(TValue));
-
-            foreach (TKey key in this.Keys)
-            {
-                writer.WriteStartElement("item");
-
-                writer.WriteStartElement("key");
-                keySerializer.Serialize(writer, key);
-                writer.WriteEndElement();
-
-                writer.WriteStartElement("value");
-                TValue value = this[key];
-                valueSerializer.Serialize(writer, value);
-                writer.WriteEndElement();
-
-                writer.WriteEndElement();
+                if (valueSerializer == null)
+                {
+                    valueSerializer = new XmlSerializer(typeof(TVal));
+                }
+                return valueSerializer;
             }
         }
+
+        private XmlSerializer KeySerializer
+        {
+            get
+            {
+                if (keySerializer == null)
+                {
+                    keySerializer = new XmlSerializer(typeof(TKey));
+                }
+                return keySerializer;
+            }
+        }
+        #endregion
+        #region Private Members
+        private XmlSerializer keySerializer = null;
+        private XmlSerializer valueSerializer = null;
         #endregion
     }
 }

@@ -165,37 +165,25 @@ namespace padiFS
             return res;
         }
 
-        public static void SerializeObject(Object md, string currentDir, string name)
+        public static void SerializeObject(Object ob, string currentDir, string name)
         {
-            var serializer = new DataContractSerializer(md.GetType());
-
-
             string path = currentDir + @"\" + name;
             Console.WriteLine(path);
-            using (var sw = new StreamWriter(path))
-            {
-                using (var writer = new XmlTextWriter(sw))
-                {
-                    writer.Formatting = Formatting.Indented; // indent the Xml so it's human readable
-                    serializer.WriteObject(writer, md);
-                    writer.Flush();
-                    //xmlString = sw.ToString();
-                    //Console.WriteLine(xmlString);
-                    sw.Close();
-                }
-            }
+            TextWriter tw = new StreamWriter(path);
+            System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(ob.GetType());
+            x.Serialize(tw, ob);
+            Console.WriteLine("object written to file");
+            tw.Close();
         }
+
         public static Object DeserializeObject(Object ob, string currentDir, string name)
         {
-            var serializer = new DataContractSerializer(ob.GetType());
             string path = currentDir + @"\" + name;
-            using (var tw = new StreamReader(path))
-            {
-                using (var reader = new XmlTextReader(tw))
-                {
-                    return serializer.ReadObject(reader);
-                }
-            }
+            TextReader tr = new StreamReader(path);
+            System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(ob.GetType());
+            Object obj = x.Deserialize(tr);
+            tr.Close();
+            return obj;
         }
 
         public static File DeserializeFile(string path, File file)
