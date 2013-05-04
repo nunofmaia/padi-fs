@@ -129,6 +129,7 @@ namespace padiFS
         public string Primary
         {
             get { return this.primary; }
+            set { this.primary = value; }
         }
 
         public string Address
@@ -449,6 +450,8 @@ namespace padiFS
                 pingPrimaryReplicaTimer.Enabled = true;
                 pingDataServersTimer.Enabled = false;
             }
+
+            this.Log.Append(string.Format("SET-PRIMARY {0}", name));
             
         }
 
@@ -669,10 +672,8 @@ namespace padiFS
                             }
 
                             List<string> servers = new List<string>();
-                            Console.WriteLine("ANTES DO SLICE");
                             string[] chosen = Util.SliceArray(args, 6, args.Length);
-                            Console.WriteLine("PASSEI O SLICE");
-
+                            
                             // Before sending the requests, a time stamp is added to the filename
                             string f = DateTime.Now.ToString("o") + (char)0x7f + filename;
                             foreach (string v in chosen)
@@ -825,6 +826,24 @@ namespace padiFS
                         }
 
                         this.PendingFiles = new Dictionary<string, int>(updated);
+                    }
+                    break;
+                case "SET-PRIMARY":
+                    {
+                        string primary = args[1];
+                        this.Primary = primary;
+
+                        if (this.primary == this.name)
+                        {
+                            pingDataServersTimer.Enabled = true;
+                            pingPrimaryReplicaTimer.Enabled = false;
+                        }
+                        else
+                        {
+                            pingPrimaryReplicaTimer.Enabled = true;
+                            pingDataServersTimer.Enabled = false;
+                        }
+            
                     }
                     break;
             }
