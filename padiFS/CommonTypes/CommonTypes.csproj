@@ -45,6 +45,7 @@
     <Compile Include="Commands.cs" />
     <Compile Include="DataInfo.cs" />
     <Compile Include="Exceptions.cs" />
+    <Compile Include="Log.cs" />
     <Compile Include="MetadataInfo.cs" />
     <Compile Include="SerializableDictionary.cs" />
     <Compile Include="Util.cs" />

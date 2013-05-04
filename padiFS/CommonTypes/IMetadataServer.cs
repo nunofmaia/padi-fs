@@ -29,5 +29,9 @@ namespace padiFS
         void SetPrimary(string name);
         string GetPrimary();
         void Recovered(string name);
+
+        void AppendToLog(string command);
+        void UpdateLog(Log log);
+        Log GetLog();
     }
 }

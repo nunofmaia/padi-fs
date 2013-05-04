@@ -9,6 +9,7 @@ using System.Threading;
 using System.Timers;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.IO;
 
 namespace padiFS
 {
@@ -35,6 +36,8 @@ namespace padiFS
         private System.Timers.Timer pingDataServersTimer;
         private System.Timers.Timer pingPrimaryReplicaTimer;
 
+        public Log Log { private set; get; }
+
 
         public MetadataServer(string name, string port)
         {
@@ -60,6 +63,14 @@ namespace padiFS
             pingPrimaryReplicaTimer.Elapsed += new System.Timers.ElapsedEventHandler(PingPrimaryReplica);
             pingPrimaryReplicaTimer.Interval = 1000 * pingMetadataServerInterval;
 
+            string dir = Environment.CurrentDirectory + string.Format(@"\{0}", this.Name);
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            this.Log = new padiFS.Log(dir + @"\Log.txt");
+
             Console.WriteLine("ID: {0}", Util.MetadataServerId(name));
         }
 
@@ -81,6 +92,7 @@ namespace padiFS
         public Dictionary<string, int> PendingFiles
         {
             get { return this.pendingFiles; }
+            set { this.pendingFiles = value; }
         }
 
         public Dictionary<string, int> ServersLoad
@@ -189,8 +201,10 @@ namespace padiFS
                             Console.WriteLine("REPLICA " + replica);
                             if (this.primary == replica)
                             {
-                                MetadataInfo info = server.GetMetadataInfo();
-                                UpdateReplica(info);
+                                //MetadataInfo info = server.GetMetadataInfo();
+                                //UpdateReplica(info);
+                                Log log = server.GetLog();
+                                UpdateLog(log);
                             }
                             else
                             {
@@ -200,8 +214,10 @@ namespace padiFS
                                     IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[this.primary]);
                                     if (primary != null)
                                     {
-                                        MetadataInfo info = primary.GetMetadataInfo();
-                                        UpdateReplica(info);
+                                        //MetadataInfo info = primary.GetMetadataInfo();
+                                        //UpdateReplica(info);
+                                        Log log = primary.GetLog();
+                                        UpdateLog(log);
                                     }
                                 }
                             }
@@ -251,12 +267,16 @@ namespace padiFS
             liveDataServers.Add(name, address);
             dataServersInfo.Add(name, null);
             serversLoad.Add(name, 0);
+
+            this.Log.Append(string.Format("REGISTER data {0} {1}", name, address));
         }
 
         public void RegisterClient(string name, string address)
         {
             Console.WriteLine("Client " + name + " : " + address);
             clients.Add(name, address);
+
+            this.Log.Append(string.Format("REGISTER client {0} {1}", name, address));
         }
 
 
@@ -506,47 +526,65 @@ namespace padiFS
 
         public void UpdateFileMetada(string address)
         {
-            Dictionary<string, int> updated = new Dictionary<string, int>();
-
-            foreach (string f in pendingFiles.Keys)
+            if (this.PendingFiles.Count > 0)
             {
-                Metadata meta = files[f];
-                meta.AddDataServers(address);
+                Dictionary<string, int> updated = new Dictionary<string, int>();
+                string command = string.Format("UPDATE {0}", address);
 
-                if (tempOpenFiles.ContainsKey(f))
+                foreach (string f in pendingFiles.Keys)
                 {
-                    List<string> clients = tempOpenFiles[f];
+                    Metadata meta = files[f];
+                    meta.AddDataServers(address);
 
-                    foreach (string c in clients)
+                    command += string.Format(" {0}", f);
+
+                    if (tempOpenFiles.ContainsKey(f))
                     {
-                        IClient client = (IClient)Activator.GetObject(typeof(IClient), this.clients[c]);
+                        List<string> clients = tempOpenFiles[f];
 
-                        if (client != null)
+                        foreach (string c in clients)
                         {
-                            client.UpdateFileMetadata(f, meta);
+                            IClient client = (IClient)Activator.GetObject(typeof(IClient), this.clients[c]);
+
+                            if (client != null)
+                            {
+                                client.UpdateFileMetadata(f, meta);
+                            }
                         }
                     }
+
+                    string input = DateTime.Now.ToString("o") + (char)0x7f + meta.FileName;
+
+                    //IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), address);
+
+                    //if (server != null)
+                    //{
+                    //    server.Create(input);
+                    //}
+
+                    int n = pendingFiles[f] - 1;
+
+                    if (n > 0)
+                    {
+                        updated.Add(f, n);
+                    }
+
                 }
 
-                string input = DateTime.Now.ToString("o") + (char)0x7f + meta.FileName;
+                pendingFiles = new Dictionary<string, int>(updated);
 
-                //IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), address);
+                this.Log.Append(command);
 
-                //if (server != null)
-                //{
-                //    server.Create(input);
-                //}
-
-                int n = pendingFiles[f] - 1;
-
-                if (n > 0)
+                foreach (string s in this.Replicas.Keys)
                 {
-                    updated.Add(f, n);
+                    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), this.Replicas[s]);
+
+                    if (replica != null)
+                    {
+                        replica.AppendToLog(command);
+                    }
                 }
-
             }
-
-            pendingFiles = new Dictionary<string, int>(updated);
         }
 
         public DateTime GetTimestamp()
@@ -602,6 +640,218 @@ namespace padiFS
             //    Debugger.Launch();
             //}
             Console.ReadLine();
+        }
+
+
+        public void AppendToLog(string command)
+        {
+            string[] args = command.Split(' ');
+            string code = args[0];
+
+            switch (code)
+            {
+                case "CREATE":
+                    {
+                        string clientName = args[1];
+                        string filename = args[2];
+                        int serversNumber = int.Parse(args[3]);
+                        int readQuorum = int.Parse(args[4]);
+                        int writeQuorum = int.Parse(args[5]);
+
+                        if (!this.Files.ContainsKey(filename))
+                        {
+                            if (this.LiveDataServers.Count < serversNumber)
+                            {
+                                if (!this.PendingFiles.ContainsKey(filename))
+                                {
+                                    this.PendingFiles.Add(filename, serversNumber - this.LiveDataServers.Count);
+                                }
+                            }
+
+                            List<string> servers = new List<string>();
+                            Console.WriteLine("ANTES DO SLICE");
+                            string[] chosen = Util.SliceArray(args, 6, args.Length);
+                            Console.WriteLine("PASSEI O SLICE");
+
+                            // Before sending the requests, a time stamp is added to the filename
+                            string f = DateTime.Now.ToString("o") + (char)0x7f + filename;
+                            foreach (string v in chosen)
+                            {
+                                servers.Add(this.LiveDataServers[v]);
+                                this.ServersLoad[v]++;
+                            }
+
+                            this.ServersLoad = Util.SortServerLoad(this.ServersLoad);
+                            Metadata meta = new Metadata(filename, serversNumber, readQuorum, writeQuorum, servers);
+                            List<string> clientsList = new List<string>();
+                            clientsList.Add(clientName);
+                            this.Files.Add(filename, meta);
+                            this.TempOpenFiles.Add(filename, clientsList);
+                        } 
+                    }
+                    break;
+                case "OPEN":
+                    {
+                        string clientName = args[1];
+                        string filename = args[2];
+
+                        if (this.TempOpenFiles.ContainsKey(filename))
+                        {
+                            List<string> clientsList = this.TempOpenFiles[filename];
+                            if (!clientsList.Contains(clientName))
+                            {
+                                this.TempOpenFiles[filename].Add(clientName);
+                            }
+                        }
+                        else
+                        {
+                            if (this.Files.ContainsKey(filename))
+                            {
+                                List<string> clientsList = new List<string>();
+                                clientsList.Add(clientName);
+                                this.TempOpenFiles.Add(filename, clientsList);
+                            }
+                        }
+                    }
+                    break;
+                case "CLOSE":
+                    {
+                        string clientName = args[1];
+                        string filename = args[2];
+
+                        if (this.Files.ContainsKey(filename))
+                        {
+                            if (this.TempOpenFiles.ContainsKey(filename))
+                            {
+                                List<string> clientsList = this.TempOpenFiles[filename];
+
+                                if (clientsList.Contains(clientName))
+                                {
+                                    clientsList.Remove(clientName);
+
+                                    if (clientsList.Count == 0)
+                                    {
+                                        this.TempOpenFiles.Remove(filename);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case "DELETE":
+                    {
+                        string clientName = args[1];
+                        string filename = args[2];
+
+                        if (this.Files.ContainsKey(filename))
+                        {
+                            this.Files.Remove(filename);
+                            this.TempOpenFiles.Remove(filename);
+                        }
+                    }
+                    break;
+                case "REGISTER":
+                    {
+                        string server = args[1];
+                        string name = args[2];
+                        string address = args[3];
+
+                        switch (server)
+                        {
+                            case "data":
+                                if (!this.DataServersInfo.ContainsKey(name))
+                                {
+                                    this.LiveDataServers.Add(name, address);
+                                    this.DataServersInfo.Add(name, null);
+                                    this.ServersLoad.Add(name, 0);
+                                }
+                                break;
+                            case "metadata":
+                                if (!this.Replicas.ContainsKey(name) && name != this.Name)
+                                {
+                                    this.Replicas.Add(name, address);
+                                }
+                                break;
+                            case "client":
+                                if (!this.Clients.ContainsKey(name))
+                                {
+                                    this.Clients.Add(name, address);
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case "UPDATE":
+                    {
+                        string address = args[1];
+                        string[] files = Util.SliceArray(args, 2, args.Length);
+                        Dictionary<string, int> updated = new Dictionary<string, int>();
+                        foreach (string f in files)
+                        {
+                            Metadata meta = this.Files[f];
+                            meta.AddDataServers(address);
+
+                            //if (this.TempOpenFiles.ContainsKey(f))
+                            //{
+                            //    List<string> clients = this.TempOpenFiles[f];
+
+                            //    foreach (string c in clients)
+                            //    {
+                            //        IClient client = (IClient)Activator.GetObject(typeof(IClient), this.clients[c]);
+
+                            //        if (client != null)
+                            //        {
+                            //            client.UpdateFileMetadata(f, meta);
+                            //        }
+                            //    }
+                            //}
+
+                            //string input = DateTime.Now.ToString("o") + (char)0x7f + meta.FileName;
+
+                            //IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), address);
+
+                            //if (server != null)
+                            //{
+                            //    server.Create(input);
+                            //}
+
+                            int n = pendingFiles[f] - 1;
+
+                            if (n > 0)
+                            {
+                                updated.Add(f, n);
+                            }
+
+                        }
+
+                        this.PendingFiles = new Dictionary<string, int>(updated);
+                    }
+                    break;
+            }
+
+            this.Log.Append(command);
+        }
+
+
+        public void UpdateLog(Log log)
+        {
+            int primaryIndex = log.Index;
+            int index = this.Log.Index;
+
+            if (primaryIndex > index)
+            {
+                string[] commands = log.Read(index + 1);
+
+                foreach (string command in commands)
+                {
+                    AppendToLog(command);
+                }
+            }
+        }
+
+        public Log GetLog()
+        {
+            return this.Log;
         }
     }
 }

@@ -132,18 +132,37 @@ namespace padiFS
             return result;
         }
 
-        public static string[] SliceArray(string[] args, int index)
-        {
-            List<string> result = new List<string>();
-            result.Capacity = args.Length - index;
+        //public static string[] SliceArray(string[] args, int index)
+        //{
+        //    List<string> result = new List<string>();
+        //    result.Capacity = args.Length - index;
 
-            for (int i = index; i < args.Length; index++)
+        //    for (int i = index; i < args.Length; index++)
+        //    {
+        //        string arg = args[i];
+        //        result.Add(arg);
+        //    }
+
+        //    return result.ToArray();
+        //}
+
+        public static string[] SliceArray(string[] source, int start, int end)
+        {
+            if (end < 0)
             {
-                string arg = args[i];
-                result.Add(arg);
+                end = source.Length + end;
             }
 
-            return result.ToArray();
+            int len = end - start;
+
+            string[] res = new string[len];
+
+            for (int i = 0; i < len; i++)
+            {
+                res[i] = source[i + start];
+            }
+
+            return res;
         }
 
         public static void SerializeObject(Object md, string currentDir, string name)

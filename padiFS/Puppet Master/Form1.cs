@@ -67,7 +67,7 @@ namespace padiFS
             activeMetadataServers = new List<string>();
             processes = new Dictionary<string, string>();
 
-            this.TopMost = true;
+            //this.TopMost = true;
 
             script = null;
             scripts_dir = Environment.CurrentDirectory + @"\Scripts"; 
@@ -289,6 +289,31 @@ namespace padiFS
 
             if (metadataServers.Count > 1)
             {
+                string primary_name = AskForPrimary(name);
+                if (primary_name != null)
+                {
+                    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[name]);
+                    IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary_name]);
+                    if (primary != null)
+                    {
+                        //MetadataInfo info = primary.GetMetadataInfo();
+                        //if (replica != null)
+                        //{
+                        //    replica.UpdateReplica(info);
+                        //}
+                        Log log = primary.GetLog();
+                        if (replica != null)
+                        {
+                            replica.UpdateLog(log);
+                        }
+                    }
+                }
+                else
+                {
+                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
+                    server.SetPrimary(name);
+                }
+
                 foreach (string key in metadataServers.Keys)
                 {
                     if (key != name)
@@ -313,25 +338,25 @@ namespace padiFS
                     }
                 }
 
-                string primary_name = AskForPrimary(name);
-                if (primary_name != null)
-                {
-                    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[name]);
-                    IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary_name]);
-                    if (primary != null)
-                    {
-                        MetadataInfo info = primary.GetMetadataInfo();
-                        if (replica != null)
-                        {
-                            replica.UpdateReplica(info);
-                        }
-                    }
-                }
-                else
-                {
-                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
-                    server.SetPrimary(name);
-                }
+                //string primary_name = AskForPrimary(name);
+                //if (primary_name != null)
+                //{
+                //    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[name]);
+                //    IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary_name]);
+                //    if (primary != null)
+                //    {
+                //        MetadataInfo info = primary.GetMetadataInfo();
+                //        if (replica != null)
+                //        {
+                //            replica.UpdateReplica(info);
+                //        }
+                //    }
+                //}
+                //else
+                //{
+                //    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
+                //    server.SetPrimary(name);
+                //}
             }
             else
             {
