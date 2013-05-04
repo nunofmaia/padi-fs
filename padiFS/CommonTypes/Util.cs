@@ -211,7 +211,7 @@ namespace padiFS
         }
 
         //Calculates the average access to data servers 
-        public int AverageAccesses(Dictionary<string, DataInfo> dataServersInfo)
+        public static int AverageAccesses(Dictionary<string, DataInfo> dataServersInfo)
         {
             int count = 0;
             int total = 0;
@@ -224,25 +224,27 @@ namespace padiFS
         }
 
         //calculates the value that alows make the interval
-        public int IntervalAccesses(double alfa, int average) 
+        public static int IntervalAccesses(double alfa, int average) 
         {
             return (int)(alfa * average);
         }
 
         //returns the sorted list with datainfo that are outside the range//ainda falta ordenar
-        public List<DataInfo> GetListDataInfo(int minInterval, int maxInterval, Dictionary<string, DataInfo> dataServersInfo) 
+        public static List<DataInfo> GetListDataInfo(int minInterval, int maxInterval, Dictionary<string, DataInfo> dataServersInfo)
         {
             List<DataInfo> list = new List<DataInfo>();
 
+            Console.WriteLine("listaDesordenada");
             foreach (KeyValuePair<string, DataInfo> accesses in dataServersInfo)
             {
-                if(accesses.Value.GetTotalAccesses()< minInterval && accesses.Value.GetTotalAccesses() > maxInterval)
+                if (accesses.Value.GetTotalAccesses() < minInterval || accesses.Value.GetTotalAccesses() > maxInterval)
                 {
+                    Console.WriteLine(accesses.Value.GetTotalAccesses());
                     list.Add(accesses.Value);
                 }
             }
-            //flist.OrderBy(
-            return list;
+            //Sort List
+            return list.OrderBy(a => a.GetTotalAccesses()).ToList();
         }
        
     }
