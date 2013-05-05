@@ -330,7 +330,6 @@ namespace padiFS
             {
                 if (!readsArray[i])
                 {
-                    Console.WriteLine("Reading from " + s);
                     List<object> arguments = new List<object>();
                     arguments.Add(servers[i]);
                     arguments.Add(filename);
@@ -362,7 +361,7 @@ namespace padiFS
             while (!ReadVoting(readQuorum, ref received, ref votes, ref winner))
             {
                 ReadCallDataServers(filename, semantic, servers);
-                readFiles = new ConcurrentBag<File>();
+                //readFiles = new ConcurrentBag<File>();
                 received = null;
                 votes = null;
             }
@@ -453,7 +452,6 @@ namespace padiFS
                     timer++;
                     if (timer > 5)
                     {
-                        Console.WriteLine("novo pedido");
                         //writeFiles = new ConcurrentBag<int>();
                         WriteCallDataServers(filename, servers, content);
                         timer = 0;

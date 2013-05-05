@@ -18,5 +18,6 @@ namespace padiFS
 
         // Auxiliar API
         DataInfo Ping();
+        void RemoveFromDataInfo(string file);
     }
 }

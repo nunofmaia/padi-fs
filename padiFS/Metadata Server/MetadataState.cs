@@ -91,7 +91,7 @@ namespace padiFS
                 List<string> clientsList = new List<string>();
                 clientsList.Add(clientName);
                 md.TempOpenFiles.Add(filename, clientsList);
-                
+
             }
 
             List<object> context = new List<object>();
@@ -170,7 +170,7 @@ namespace padiFS
                 ThreadPool.QueueUserWorkItem(CreateCallback, arguments);
                 md.ServersLoad[v]++;
             }
-            ThreadPool.QueueUserWorkItem(LoadBalanceServers, md);
+            LoadBalanceServers(md);
             Metadata meta = new Metadata(filename, serversNumber, readQuorum, writeQuorum, servers);
             List<string> clientsList = new List<string>();
             clientsList.Add(clientName);
@@ -261,7 +261,178 @@ namespace padiFS
                 ThreadPool.QueueUserWorkItem(md.PingDataServer, dataservers);
             }
 
+            Thread.Sleep(5000);
+            tryMigrate(md);
         }
+
+
+        // HUGE REFACTORING NEEDED
+        private void tryMigrate(MetadataServer md)
+        {
+            Dictionary<string, int> averageAccesses = new Dictionary<string, int>();
+            int averageAll = 0;
+
+            foreach (string di in md.DataServersInfo.Keys)
+            {
+                int dataAccess = 0;
+                if (md.DataServersInfo[di] != null)
+                {
+                    foreach (string file in md.DataServersInfo[di].GetNumberAccesses().Keys)
+                    {
+                        dataAccess += md.DataServersInfo[di].GetNumberAccesses()[file];
+                    }
+                    if (md.DataServersInfo[di].GetNumberAccesses().Count != 0)
+                    {
+                        averageAccesses.Add(di, (int)(dataAccess / md.DataServersInfo[di].GetNumberAccesses().Count));
+                    }
+                    else
+                    {
+                        averageAccesses.Add(di, 0);
+                    }
+                }
+            }
+
+            int aux = 0;
+            foreach (string di in averageAccesses.Keys)
+            {
+                aux += averageAccesses[di];
+            }
+            averageAll = (int)(aux / averageAccesses.Count);
+
+            int min = averageAll - Util.IntervalAccesses(md.Percentage, averageAll);
+            int max = averageAll + Util.IntervalAccesses(md.Percentage, averageAll);
+
+            List<string> OverloadServers = new List<string>();
+            List<string> UnderloadServers = new List<string>();
+
+            foreach (string s in averageAccesses.Keys)
+            {
+                if (averageAccesses[s] > max)
+                {
+                    OverloadServers.Add(s);
+                }
+                else if (averageAccesses[s] < min)
+                {
+                    UnderloadServers.Add(s);
+                }
+            }
+
+            if (OverloadServers.Count != 0 && UnderloadServers.Count != 0)
+            {
+                string mostOverloadedServer = "";
+                string mostUnderloadedServer = "";
+
+                long maxFiles = Int64.MinValue;
+                long minFiles = Int64.MaxValue;
+
+                foreach (string s in OverloadServers)
+                {
+                    if (md.DataServersInfo[s].GetTotalAccesses() > maxFiles && md.DataServersInfo[s].GetNumberAccesses().Count > 1)
+                    {
+                        maxFiles = md.DataServersInfo[s].GetTotalAccesses();
+                        mostOverloadedServer = s;
+                    }
+                }
+
+                string mostAccessedfile = "";
+                long maxAccesses = Int64.MinValue;
+                foreach (string f in md.DataServersInfo[mostOverloadedServer].GetNumberAccesses().Keys)
+                {
+                    if (md.DataServersInfo[mostOverloadedServer].GetNumberAccesses()[f] > maxAccesses)
+                    {
+                        maxAccesses = md.DataServersInfo[mostOverloadedServer].GetNumberAccesses()[f];
+                        mostAccessedfile = f;
+                    }
+                }
+
+                while (UnderloadServers.Count != 0)
+                {
+                    mostUnderloadedServer = "";
+                    minFiles = Int64.MaxValue;
+                    foreach (string s in UnderloadServers)
+                    {
+                        if (md.DataServersInfo[s].GetTotalAccesses() < minFiles)
+                        {
+                            minFiles = md.DataServersInfo[s].GetTotalAccesses();
+                            mostUnderloadedServer = s;
+                        }
+                    }
+
+                    string secondMostAccessedfile;
+                    maxAccesses = Int64.MinValue;
+
+                    List<string> previousFiles = new List<string>();
+                    int i = md.DataServersInfo[mostOverloadedServer].GetNumberAccesses().Count;
+
+                    while (i != 0)
+                    {
+                        secondMostAccessedfile = null;
+                        foreach (string f in md.DataServersInfo[mostOverloadedServer].GetNumberAccesses().Keys)
+                        {
+                            if (f != mostAccessedfile && !previousFiles.Contains(f))
+                            {
+                                if (md.DataServersInfo[mostOverloadedServer].GetNumberAccesses()[f] > maxAccesses &&
+                                    (!md.TempOpenFiles.ContainsKey(f)))
+                                {
+                                    maxAccesses = md.DataServersInfo[mostOverloadedServer].GetNumberAccesses()[f];
+                                    secondMostAccessedfile = f;
+                                }
+                            }
+                        }
+
+                        if (secondMostAccessedfile != null)
+                        {
+                            if (!md.DataServersInfo[mostUnderloadedServer].GetNumberAccesses().ContainsKey(secondMostAccessedfile))
+                            {
+                                Console.WriteLine("MIGRATION");
+                                string readServer = md.LiveDataServers[mostOverloadedServer];
+                                string writeServer = md.LiveDataServers[mostUnderloadedServer];
+                                IDataServer readDataServer = (IDataServer)Activator.GetObject(typeof(IDataServer), readServer);
+                                IDataServer writeDataServer = (IDataServer)Activator.GetObject(typeof(IDataServer), writeServer);
+
+                                File file = readDataServer.Read(secondMostAccessedfile, "default");
+
+                                string toWrite = Util.ConvertByteArrayToString(file.Content);
+                                byte[] content = Util.ConvertStringToByteArray(file.Version.ToString("o") + (char)0x7f + toWrite);
+
+                                writeDataServer.Write(secondMostAccessedfile, content);
+                                readDataServer.RemoveFromDataInfo(secondMostAccessedfile);
+
+                                string command = string.Format("UPDATE {0} {1}", writeServer, secondMostAccessedfile);
+                                Metadata meta = md.Files[secondMostAccessedfile];
+                                meta.AddDataServers(writeServer);
+                                meta.DataServers.Remove(readServer);
+
+                                md.Log.Append(command);
+
+                                foreach (string s in md.Replicas.Keys)
+                                {
+                                    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), md.Replicas[s]);
+
+                                    if (replica != null)
+                                    {
+                                        replica.AppendToLog(command);
+                                    }
+                                }
+                                return;
+                            }
+                            else
+                            {
+                                previousFiles.Add(secondMostAccessedfile);
+                                i--;
+                            }
+                        }
+                        else
+                        {
+                            UnderloadServers.Remove(mostUnderloadedServer);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+
         public override void PingPrimaryReplica(MetadataServer md, object source, ElapsedEventArgs e)
         {
             if (md.Primary != null)
@@ -286,9 +457,8 @@ namespace padiFS
             }
         }
 
-        private void LoadBalanceServers(object threadcontext)
+        private void LoadBalanceServers(MetadataServer md)
         {
-            MetadataServer md = (MetadataServer)threadcontext;
             md.ServersLoad = Util.SortServerLoad(md.ServersLoad);
         }
 
@@ -350,6 +520,8 @@ namespace padiFS
                     }
                 }
                 catch (ServerNotAvailableException) { }
+                catch (System.IO.IOException) { }
+                catch (System.Net.Sockets.SocketException) { }
             }
         }
 

@@ -51,5 +51,10 @@ namespace padiFS
             }
             return total;
         }
+
+        public void RemoveFile(string file)
+        {
+            this.numberAccesses.Remove(file);
+        }
     }
 }

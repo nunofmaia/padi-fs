@@ -20,8 +20,9 @@ namespace padiFS
         private string name;
         private string address;
         private int port;
-        private int pingDataServerInterval = 20;
+        private int pingDataServerInterval = 25;
         private int pingMetadataServerInterval = 5;
+        private double percentage = 0.2;
         private string primary;
         private Dictionary<string, string> replicas;
         private Dictionary<string, string> clients;
@@ -38,6 +39,8 @@ namespace padiFS
 
         public Log Log { private set; get; }
 
+        public double Percentage { get {
+            return this.percentage;}}
 
         public MetadataServer(string name, string port)
         {
@@ -479,7 +482,7 @@ namespace padiFS
                         }
                     }
                     catch (ServerNotAvailableException) { }
-                    catch (System.IO.IOException) { }
+                    catch (System.IO.IOException) {}
                     catch (System.Net.Sockets.SocketException) { }
                 }
             }
@@ -789,6 +792,7 @@ namespace padiFS
                             string address = args[1];
                             string[] files = Util.SliceArray(args, 2, args.Length);
                             Dictionary<string, int> updated = new Dictionary<string, int>();
+                            bool contains = false;
                             foreach (string f in files)
                             {
                                 Metadata meta = this.Files[f];
@@ -818,16 +822,21 @@ namespace padiFS
                                 //    server.Create(input);
                                 //}
 
-                                int n = pendingFiles[f] - 1;
-
-                                if (n > 0)
+                                if (pendingFiles.ContainsKey(f))
                                 {
-                                    updated.Add(f, n);
+                                    int n = pendingFiles[f] - 1;
+
+                                    if (n > 0)
+                                    {
+                                        updated.Add(f, n);
+                                    }
+                                    contains = true;
                                 }
-
                             }
-
-                            this.PendingFiles = new Dictionary<string, int>(updated);
+                            if (contains)
+                            {
+                                this.PendingFiles = new Dictionary<string, int>(updated);
+                            }
                         }
                         break;
                     case "SET-PRIMARY":

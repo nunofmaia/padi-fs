@@ -41,7 +41,7 @@ namespace padiFS
             tw.Close();
 
             //add file to datainfo
-            ds.DataInfo.AddFile(fileName);
+            ds.DataInfo.AddFile(args[1]);
         }
         public override File Read(DataServer ds, string localFile, string semantics)
         {

@@ -86,6 +86,11 @@ namespace padiFS
             set { dataInfo = value; }
         }
 
+        public void RemoveFromDataInfo(string file)
+        {
+            this.dataInfo.RemoveFile(file);
+        }
+
         //Project API
         public void Create(string fileName)
         {
