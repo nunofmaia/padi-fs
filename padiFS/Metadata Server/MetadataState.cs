@@ -387,7 +387,7 @@ namespace padiFS
                         {
                             if (!md.DataServersInfo[mostUnderloadedServer].GetNumberAccesses().ContainsKey(secondMostAccessedfile))
                             {
-                                Console.WriteLine("MIGRATION");
+                                Console.WriteLine("Migration");
                                 md.getMigratingList().Add(secondMostAccessedfile);
                                 md.getMigration().Reset();
 
@@ -408,6 +408,7 @@ namespace padiFS
                                 string command = string.Format("UPDATE {0} {1}", writeServer, secondMostAccessedfile);
                                 meta.AddDataServers(writeServer);
                                 meta.DataServers.Remove(readServer);
+                                md.ServersLoad[readServer]--;
 
                                 md.Log.Append(command);
 
