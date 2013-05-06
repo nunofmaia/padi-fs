@@ -1175,5 +1175,10 @@ namespace padiFS
             statusTextBox.ScrollToCaret();
             statusTextBox.Refresh();
         }
+
+        private void Clearbutton_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

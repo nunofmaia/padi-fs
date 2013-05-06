@@ -75,6 +75,8 @@
             this.readFileTextBox = new System.Windows.Forms.TextBox();
             this.readFileLabel = new System.Windows.Forms.Label();
             this.groupBox8 = new System.Windows.Forms.GroupBox();
+            this.writeByteRegisterTextBox = new System.Windows.Forms.TextBox();
+            this.writeByteRegisterLabel = new System.Windows.Forms.Label();
             this.textWriteFile = new System.Windows.Forms.Label();
             this.writeTextBox = new System.Windows.Forms.TextBox();
             this.writeClientTextBox = new System.Windows.Forms.TextBox();
@@ -95,8 +97,7 @@
             this.dumpTextBox = new System.Windows.Forms.TextBox();
             this.dumpProcessLabel = new System.Windows.Forms.Label();
             this.dumpButton = new System.Windows.Forms.Button();
-            this.writeByteRegisterLabel = new System.Windows.Forms.Label();
-            this.writeByteRegisterTextBox = new System.Windows.Forms.TextBox();
+            this.Clearbutton = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -112,6 +113,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.Clearbutton);
             this.groupBox1.Controls.Add(this.launchButton);
             this.groupBox1.Controls.Add(this.serversComboBox);
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
@@ -123,7 +125,7 @@
             // 
             // launchButton
             // 
-            this.launchButton.Location = new System.Drawing.Point(135, 20);
+            this.launchButton.Location = new System.Drawing.Point(134, 18);
             this.launchButton.Name = "launchButton";
             this.launchButton.Size = new System.Drawing.Size(75, 23);
             this.launchButton.TabIndex = 1;
@@ -155,7 +157,7 @@
             // 
             // executeButton
             // 
-            this.executeButton.Location = new System.Drawing.Point(297, 20);
+            this.executeButton.Location = new System.Drawing.Point(297, 18);
             this.executeButton.Name = "executeButton";
             this.executeButton.Size = new System.Drawing.Size(75, 23);
             this.executeButton.TabIndex = 10;
@@ -565,6 +567,22 @@
             this.groupBox8.TabStop = false;
             this.groupBox8.Text = "Write file";
             // 
+            // writeByteRegisterTextBox
+            // 
+            this.writeByteRegisterTextBox.Location = new System.Drawing.Point(344, 28);
+            this.writeByteRegisterTextBox.Name = "writeByteRegisterTextBox";
+            this.writeByteRegisterTextBox.Size = new System.Drawing.Size(25, 20);
+            this.writeByteRegisterTextBox.TabIndex = 29;
+            // 
+            // writeByteRegisterLabel
+            // 
+            this.writeByteRegisterLabel.AutoSize = true;
+            this.writeByteRegisterLabel.Location = new System.Drawing.Point(265, 31);
+            this.writeByteRegisterLabel.Name = "writeByteRegisterLabel";
+            this.writeByteRegisterLabel.Size = new System.Drawing.Size(73, 13);
+            this.writeByteRegisterLabel.TabIndex = 28;
+            this.writeByteRegisterLabel.Text = "Byte Register:";
+            // 
             // textWriteFile
             // 
             this.textWriteFile.AutoSize = true;
@@ -753,21 +771,15 @@
             this.dumpButton.UseVisualStyleBackColor = true;
             this.dumpButton.Click += new System.EventHandler(this.dumpButton_Click);
             // 
-            // writeByteRegisterLabel
+            // Clearbutton
             // 
-            this.writeByteRegisterLabel.AutoSize = true;
-            this.writeByteRegisterLabel.Location = new System.Drawing.Point(265, 31);
-            this.writeByteRegisterLabel.Name = "writeByteRegisterLabel";
-            this.writeByteRegisterLabel.Size = new System.Drawing.Size(73, 13);
-            this.writeByteRegisterLabel.TabIndex = 28;
-            this.writeByteRegisterLabel.Text = "Byte Register:";
-            // 
-            // writeByteRegisterTextBox
-            // 
-            this.writeByteRegisterTextBox.Location = new System.Drawing.Point(344, 28);
-            this.writeByteRegisterTextBox.Name = "writeByteRegisterTextBox";
-            this.writeByteRegisterTextBox.Size = new System.Drawing.Size(25, 20);
-            this.writeByteRegisterTextBox.TabIndex = 29;
+            this.Clearbutton.Location = new System.Drawing.Point(295, 18);
+            this.Clearbutton.Name = "Clearbutton";
+            this.Clearbutton.Size = new System.Drawing.Size(75, 23);
+            this.Clearbutton.TabIndex = 2;
+            this.Clearbutton.Text = "Clear Logs";
+            this.Clearbutton.UseVisualStyleBackColor = true;
+            this.Clearbutton.Click += new System.EventHandler(this.Clearbutton_Click);
             // 
             // Form1
             // 
@@ -883,6 +895,7 @@
         private System.Windows.Forms.Button dumpButton;
         private System.Windows.Forms.TextBox writeByteRegisterTextBox;
         private System.Windows.Forms.Label writeByteRegisterLabel;
+        private System.Windows.Forms.Button Clearbutton;
 
     }
 }
