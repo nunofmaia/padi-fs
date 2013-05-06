@@ -33,5 +33,7 @@ namespace padiFS
         void AppendToLog(string command);
         void UpdateLog(Log log);
         Log GetLog();
+
+        void DeserializeServer();
     }
 }

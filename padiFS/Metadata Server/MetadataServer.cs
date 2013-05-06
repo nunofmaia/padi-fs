@@ -163,6 +163,7 @@ namespace padiFS
         }
 
         public void Recover() {
+
             foreach (string replica in this.Replicas.Keys)
             {
                 try
@@ -420,6 +421,31 @@ namespace padiFS
             Util.SerializeObject(this, directory, filename);
         }
 
+        public void DeserializeServer()
+        {
+            string directory = Environment.CurrentDirectory + string.Format(@"\{0}", this.Name);
+            string filename = "Backup.txt";
+            string path = string.Format(@"{0}\{1}", directory, filename);
+
+            if (System.IO.File.Exists(path))
+            {
+                Console.WriteLine("VOU DESERIALIZAR");
+                MetadataServer oldServer = (MetadataServer)Util.DeserializeObject(this, directory, filename);
+                this.Primary = oldServer.Primary;
+                this.Replicas = oldServer.Replicas;
+                this.Clients = oldServer.Clients;
+                this.DeadReplicas = oldServer.DeadReplicas;
+                this.LiveDataServers = oldServer.LiveDataServers;
+                this.DeadDataServers = oldServer.DeadDataServers;
+                this.ServersLoad = oldServer.ServersLoad;
+                this.Files = oldServer.Files;
+                this.OpenFiles = oldServer.OpenFiles;
+                this.PendingFiles = oldServer.PendingFiles;
+                this.DataServersInfo = oldServer.DataServersInfo;
+                this.Log = oldServer.Log;
+            }
+        }
+
         public bool Ping()
         {
             return this.State.Ping();
@@ -549,7 +575,7 @@ namespace padiFS
                         }
                     }
 
-                    string input = DateTime.Now.ToString("o") + (char)0x7f + meta.FileName;
+                    string input = DateTime.Now.ToString("o") + (char)0x7f + meta.Filename;
 
                     //IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), address);
 
@@ -860,6 +886,9 @@ namespace padiFS
         {
             int primaryIndex = log.Index;
             int index = this.Log.Index;
+
+            Console.WriteLine("PRIMARY INDEX: " + primaryIndex);
+            Console.WriteLine("ACTUAL INDEX: " + index);
 
             if (primaryIndex > index)
             {

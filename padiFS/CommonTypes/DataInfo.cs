@@ -8,46 +8,46 @@ namespace padiFS
     [Serializable]
     public class DataInfo
     {
-        private Dictionary<string, int> numberAccesses;
+        public SerializableDictionary<string, int> NumberAccesses { set; get; }
 
         public DataInfo() 
         {
-            this.numberAccesses = new Dictionary<string, int>();
+            this.NumberAccesses = new SerializableDictionary<string, int>();
         }
 
         public void AddFile(string fileName)
         {
-            if(!numberAccesses.ContainsKey(fileName)) {
-               this.numberAccesses.Add(fileName, 0);
+            if(!this.NumberAccesses.ContainsKey(fileName)) {
+               this.NumberAccesses.Add(fileName, 0);
             }
         }
 
         public int GetAccesses(string fileName) 
         {
-            return numberAccesses[fileName]; 
+            return this.NumberAccesses[fileName]; 
         }
 
-        public Dictionary<string, int> GetNumberAccesses() 
+        public SerializableDictionary<string, int> GetNumberAccesses() 
         {
-            return this.numberAccesses;
+            return this.NumberAccesses;
         }
 
         public void AddAccess(string fileName)
         {
-            if (numberAccesses.ContainsKey(fileName))
+            if (this.NumberAccesses.ContainsKey(fileName))
             {
-                this.numberAccesses[fileName]++;
+                this.NumberAccesses[fileName]++;
             }
             else 
             {
-                this.numberAccesses.Add(fileName, 1);
+                this.NumberAccesses.Add(fileName, 1);
             }
         }
 
         //count total accesses to data server
         public int GetTotalAccesses() {
             int total = 0;
-            foreach (KeyValuePair<string, int> accesses in numberAccesses)
+            foreach (KeyValuePair<string, int> accesses in this.NumberAccesses)
             {
                 total = total + accesses.Value;
             }
@@ -56,7 +56,7 @@ namespace padiFS
 
         public void RemoveFile(string file)
         {
-            this.numberAccesses.Remove(file);
+            this.NumberAccesses.Remove(file);
         }
     }
 }
