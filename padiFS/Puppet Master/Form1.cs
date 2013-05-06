@@ -1178,7 +1178,13 @@ namespace padiFS
 
         private void Clearbutton_Click(object sender, EventArgs e)
         {
+            string path = @"..\Executables\";
+            DirectoryInfo dir = new DirectoryInfo(path);
 
+            foreach (DirectoryInfo subdir in dir.GetDirectories())
+            {
+                subdir.Delete(true);
+            }
         }
     }
 }
