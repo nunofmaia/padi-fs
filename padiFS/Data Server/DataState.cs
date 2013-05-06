@@ -53,8 +53,7 @@ namespace padiFS
             }
             else
             {
-                //isto TEM DE SER MUDADO
-                Console.WriteLine("O ficheiro não existe");
+                throw new FileNotFoundException("File: " + localFile + " not found in server " + ds.Name);
             }
             //add access to this file
             ds.DataInfo.AddAccess(localFile);
@@ -100,9 +99,7 @@ namespace padiFS
             ds.GetFreeze.WaitOne();
 
             Console.WriteLine("I'm Alive");
-            DataInfo di = ds.DataInfo;
-            ds.DataInfo = new DataInfo();
-            return di;
+            return ds.DataInfo;
         }
     }
 

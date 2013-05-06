@@ -37,6 +37,8 @@ namespace padiFS
         public SerializableDictionary<string, int> PendingFiles { set; get; }
         public SerializableDictionary<string, DataInfo> DataServersInfo { set; get; }
         public Log Log { set; get; }
+        private ManualResetEvent migration;
+        private List<string> migrating;
 
         private System.Timers.Timer pingDataServersTimer;
         private System.Timers.Timer pingPrimaryReplicaTimer;
@@ -63,6 +65,8 @@ namespace padiFS
             this.OpenFiles = new SerializableDictionary<string, List<string>>();
             this.PendingFiles = new SerializableDictionary<string, int>();
             this.DataServersInfo = new SerializableDictionary<string, DataInfo>();
+            this.migration = new ManualResetEvent(true);
+            this.migrating = new List<string>();
 
             this.pingDataServerInterval = 25;
             this.pingMetadataServerInterval = 5;
@@ -111,6 +115,17 @@ namespace padiFS
                 return this.percentage;
             }
         }
+
+        public ManualResetEvent getMigration()
+        {
+            return this.migration;
+        }
+
+        public List<string> getMigratingList()
+        {
+            return this.migrating;
+        }
+
         
         // Project API
         public Metadata Open(string clientName, string filename)

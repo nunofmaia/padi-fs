@@ -36,3 +36,4 @@ WRITE c-0 4 "Ola"
 WRITE c-0 4 "Ola"
 CLOSE c-0 f1
 DUMP d-2
+EXESCRIPT c-0 scripttestmigrationexec.txt

@@ -212,7 +212,11 @@ namespace padiFS
                                 readsArray[i] = true;
                             }
                         }
-                    }               
+                    }
+                }
+                catch (FileNotFoundException e)
+                {
+                    Console.WriteLine(e.Message);
                 }
                 catch (SystemException)
                 {
@@ -441,6 +445,10 @@ namespace padiFS
                             }
                         }
                     }
+                }
+                catch (FileNotFoundException e)
+                {
+                    Console.WriteLine(e.Message);
                 }
                 catch (SystemException)
                 {

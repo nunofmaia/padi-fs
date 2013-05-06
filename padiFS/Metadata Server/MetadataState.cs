@@ -70,6 +70,9 @@ namespace padiFS
         // Project API
         public override Metadata Open(MetadataServer md, string clientName, string filename)
         {
+            if(md.getMigratingList().Contains(filename))
+                md.getMigration().WaitOne();
+
             // If already opened by one client
             if (md.OpenFiles.ContainsKey(filename))
             {
@@ -385,6 +388,10 @@ namespace padiFS
                             if (!md.DataServersInfo[mostUnderloadedServer].GetNumberAccesses().ContainsKey(secondMostAccessedfile))
                             {
                                 Console.WriteLine("MIGRATION");
+                                md.getMigratingList().Add(secondMostAccessedfile);
+                                md.getMigration().Reset();
+
+                                Metadata meta = md.Files[secondMostAccessedfile];
                                 string readServer = md.LiveDataServers[mostOverloadedServer];
                                 string writeServer = md.LiveDataServers[mostUnderloadedServer];
                                 IDataServer readDataServer = (IDataServer)Activator.GetObject(typeof(IDataServer), readServer);
@@ -399,7 +406,6 @@ namespace padiFS
                                 readDataServer.RemoveFromDataInfo(secondMostAccessedfile);
 
                                 string command = string.Format("UPDATE {0} {1}", writeServer, secondMostAccessedfile);
-                                Metadata meta = md.Files[secondMostAccessedfile];
                                 meta.AddDataServers(writeServer);
                                 meta.DataServers.Remove(readServer);
 
@@ -414,6 +420,8 @@ namespace padiFS
                                         replica.AppendToLog(command);
                                     }
                                 }
+                                md.getMigration().Set();
+                                md.getMigratingList().Remove(secondMostAccessedfile);
                                 return;
                             }
                             else
