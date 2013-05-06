@@ -17,7 +17,9 @@ namespace padiFS
 
         public void AddFile(string fileName)
         {
-            this.numberAccesses.Add(fileName, 0);   
+            if(!numberAccesses.ContainsKey(fileName)) {
+               this.numberAccesses.Add(fileName, 0);
+            }
         }
 
         public int GetAccesses(string fileName) 
