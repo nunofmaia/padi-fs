@@ -101,7 +101,6 @@ namespace padiFS
             string command = string.Format("OPEN {0} {1}", clientName, filename);
             context.Add(md);
             context.Add(command);
-            //ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
             ThreadPool.QueueUserWorkItem(AppendToLog, context);
 
             md.Log.Append(command);
@@ -139,7 +138,6 @@ namespace padiFS
             context.Add(md);
             context.Add(command);
             ThreadPool.QueueUserWorkItem(AppendToLog, context);
-            //ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
 
             md.Log.Append(command);
         }
@@ -179,8 +177,6 @@ namespace padiFS
             clientsList.Add(clientName);
             md.Files.Add(filename, meta);
             md.OpenFiles.Add(filename, clientsList);
-            // Update other replicas. CHANGE THIS IN THE FUTURE
-            //ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
             List<object> context = new List<object>();
             context.Add(md);
             string command = string.Format("CREATE {0} {1} {2} {3} {4}", clientName, filename, serversNumber, readQuorum, writeQuorum);
@@ -205,8 +201,6 @@ namespace padiFS
 
             md.Files.Remove(filename);
             md.OpenFiles.Remove(filename);
-            // Update other replicas. CHANGE THIS IN THE FUTURE
-            //ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
             List<object> context = new List<object>();
             string command = string.Format("DELETE {0} {1}", clientName, filename);
             context.Add(md);
@@ -492,24 +486,24 @@ namespace padiFS
         }
 
 
-        private void UpdateReplicas(object threadcontext)
-        {
-            MetadataServer md = (MetadataServer)threadcontext;
-            foreach (string r in md.Replicas.Keys)
-            {
-                try
-                {
-                    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), md.Replicas[r]);
-                    if (replica != null)
-                    {
-                        replica.Ping();
-                        MetadataInfo info = new MetadataInfo(md.Primary, md.Address, md.Replicas, md.LiveDataServers, md.DeadDataServers, md.ServersLoad, md.Files, md.OpenFiles);
-                        replica.UpdateReplica(info);
-                    }
-                }
-                catch (ServerNotAvailableException) { }
-            }
-        }
+        //private void UpdateReplicas(object threadcontext)
+        //{
+        //    MetadataServer md = (MetadataServer)threadcontext;
+        //    foreach (string r in md.Replicas.Keys)
+        //    {
+        //        try
+        //        {
+        //            IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), md.Replicas[r]);
+        //            if (replica != null)
+        //            {
+        //                replica.Ping();
+        //                MetadataInfo info = new MetadataInfo(md.Primary, md.Address, md.Replicas, md.LiveDataServers, md.DeadDataServers, md.ServersLoad, md.Files, md.OpenFiles);
+        //                replica.UpdateReplica(info);
+        //            }
+        //        }
+        //        catch (ServerNotAvailableException) { }
+        //    }
+        //}
 
         private void AppendToLog(object threadcontext)
         {
@@ -533,7 +527,5 @@ namespace padiFS
                 catch (System.Net.Sockets.SocketException) { }
             }
         }
-
-
     }
 }

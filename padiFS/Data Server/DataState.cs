@@ -32,7 +32,7 @@ namespace padiFS
             string path = ds.CurrentDir + @"\" + ds.Name + @"\" + args[1] + @".txt";
 
 
-            Console.WriteLine(path);
+            Console.WriteLine("Create: " + path);
 
             Util.SerializeFile(path, file);
             ds.AddFile(args[1]);
@@ -46,7 +46,8 @@ namespace padiFS
 
             File file = new File();
             string path = ds.CurrentDir + @"\" + ds.Name + @"\" + localFile + ".txt";
-            Console.WriteLine(path);
+            Console.WriteLine("Read: " + path);
+
             if (System.IO.File.Exists(path))
             {
                 file = Util.DeserializeFile(path, file);
@@ -84,16 +85,18 @@ namespace padiFS
                 ds.CurrentDir = Environment.CurrentDirectory;
                 string readPath = ds.CurrentDir + @"\" + ds.Name + @"\" + localFile + @".txt";
 
-                    Console.WriteLine(readPath);
-                    Util.SerializeFile(readPath, newFile);
-                    ds.AddFile(localFile);
+                Console.WriteLine("Write: " + readPath);
+                Util.SerializeFile(readPath, newFile);
+                ds.AddFile(localFile);
+
+                //add access to this file
+                ds.DataInfo.AddAccess(localFile);
             }
-            //add access to this file
-            ds.DataInfo.AddAccess(localFile);
 
             //success
             return 0;
         }
+
         public override DataInfo Ping(DataServer ds)
         {
             ds.GetFreeze.WaitOne();

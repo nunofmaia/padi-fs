@@ -56,24 +56,13 @@ namespace padiFS
             {
                 Metadata meta = bridge.Create(this.name, filename, nServers, rQuorum, wQuorum);
 
-                //if (meta != null)
-                //{
                 myFiles.Add(filename, meta);
                 openFiles.Add(filename, meta);
 
                 AddToFileRegister(meta);
                 Console.WriteLine("Create file " + filename);
-                //}
-                //else
-                //{
-                //    Console.WriteLine("Could not create the file " + filename);
-                //}
             }
             catch (FileAlreadyExists e)
-            {
-                Console.WriteLine(e.Message);
-            }
-            catch (NotEnoughServersException e)
             {
                 Console.WriteLine(e.Message);
             }
@@ -123,12 +112,8 @@ namespace padiFS
             try
             {
                 bridge.Close(this.name, filename);
-
-                //if (openFiles.ContainsKey(filename))
-                //{
                 openFiles.Remove(filename);
                 Console.WriteLine("Close file " + filename);
-                //}
             }
             catch (FileNotFoundException e)
             {
@@ -152,15 +137,8 @@ namespace padiFS
         {
             try
             {
-                //if (!openFiles.ContainsKey(filename))
-                //{
                 bridge.Delete(this.name, filename);
                 Console.WriteLine("Delete file " + filename);
-                //}
-                //else
-                //{
-                //    Console.WriteLine("File is opened.");
-                //}
             }
             catch (FileNotFoundException e)
             {
@@ -376,7 +354,6 @@ namespace padiFS
             while (!ReadVoting(readQuorum, ref received, ref votes, ref winner))
             {
                 ReadCallDataServers(filename, semantic, servers);
-                //readFiles = new ConcurrentBag<File>();
                 received = null;
                 votes = null;
             }
@@ -477,7 +454,6 @@ namespace padiFS
                     timer++;
                     if (timer > 5)
                     {
-                        //writeFiles = new ConcurrentBag<int>();
                         WriteCallDataServers(filename, servers, content);
                         timer = 0;
 
@@ -509,7 +485,6 @@ namespace padiFS
         // Read for Puppet Master GUI 
         public void Read(string filename, string semantic)
         {
-            //new Thread(() => ExecuteRead(filename, semantic)).Start();
             ExecuteRead(filename, semantic);
         }
 
@@ -520,27 +495,22 @@ namespace padiFS
             int f, r;
             if (Int32.TryParse(file, out f) && Int32.TryParse(register, out r))
             {
-                //Thread t = new Thread(() => ExecutePMRead(f, semantic, r));
-                //t.Start();
                 ExecutePMRead(f, semantic, r);
             }
         }
 
         public void Write(string filename, byte[] bytearray)
         {
-            //new Thread(() => ExecuteWrite(filename, bytearray)).Start();
             ExecuteWrite(filename, bytearray);
         }
 
         public void Write(string file, int register)
         {
-            //new Thread(() => ExecutePMWriteRegister(file, register)).Start();
             ExecutePMWriteRegister(file, register);
         }
 
         public void Write(string file, string content)
         {
-            //new Thread(() => ExecutePMWriteContent(file, content)).Start();
             ExecutePMWriteContent(file, content);
         }
 
@@ -705,7 +675,6 @@ namespace padiFS
 
         private void HandleCommand(string line)
         {
-            //string lower_command = command.ToLower();
             string command = "null";
 
             Match match = Regex.Match(line, @"^(\w+)\s.*$", RegexOptions.IgnoreCase);
@@ -805,6 +774,5 @@ namespace padiFS
             RemotingServices.Marshal(c, c.name, typeof(Client));
             Console.ReadLine();
         }
-
     }
 }

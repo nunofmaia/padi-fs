@@ -178,8 +178,6 @@ namespace padiFS
                             Console.WriteLine("REPLICA " + replica);
                             if (this.Primary == replica)
                             {
-                                //MetadataInfo info = server.GetMetadataInfo();
-                                //UpdateReplica(info);
                                 Log log = server.GetLog();
                                 UpdateLog(log);
                             }
@@ -191,8 +189,6 @@ namespace padiFS
                                     IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), this.Replicas[this.Primary]);
                                     if (primary != null)
                                     {
-                                        //MetadataInfo info = primary.GetMetadataInfo();
-                                        //UpdateReplica(info);
                                         Log log = primary.GetLog();
                                         UpdateLog(log);
                                     }
@@ -224,7 +220,6 @@ namespace padiFS
             {
                 this.setStateNormal();
             }
-
             Console.WriteLine("Uhf, recovered at last...");
         }
 
@@ -262,28 +257,28 @@ namespace padiFS
             this.State.RegisterMetadataServer(this, name, address);
         }
 
-        public void UpdateReplica(MetadataInfo info)
-        {
-            SetPrimary(info.Primary);
-            this.Replicas = info.Replicas;
+        //public void UpdateReplica(MetadataInfo info)
+        //{
+        //    SetPrimary(info.Primary);
+        //    this.Replicas = info.Replicas;
 
-            if (this.Replicas.ContainsKey(this.Name))
-            {
-                this.Replicas.Remove(this.Name);
-            }
+        //    if (this.Replicas.ContainsKey(this.Name))
+        //    {
+        //        this.Replicas.Remove(this.Name);
+        //    }
 
-            if (!this.Replicas.ContainsKey(this.Primary))
-            {
-                this.Replicas.Add(this.Primary, info.Address);
-            }
-            this.LiveDataServers = info.LiveDataServers;
-            this.DeadDataServers = info.DeadDataServers;
-            this.ServersLoad = info.ServersLoad;
-            this.Files = info.Files;
-            this.OpenFiles = info.OpenFiles;
+        //    if (!this.Replicas.ContainsKey(this.Primary))
+        //    {
+        //        this.Replicas.Add(this.Primary, info.Address);
+        //    }
+        //    this.LiveDataServers = info.LiveDataServers;
+        //    this.DeadDataServers = info.DeadDataServers;
+        //    this.ServersLoad = info.ServersLoad;
+        //    this.Files = info.Files;
+        //    this.OpenFiles = info.OpenFiles;
 
-            Console.WriteLine("Updated metadata info.");
-        }
+        //    Console.WriteLine("Updated metadata info.");
+        //}
 
         public MetadataInfo GetMetadataInfo()
         {
@@ -300,38 +295,18 @@ namespace padiFS
 
             try
             {
-                //if (server.Ping())
-                //{
-                //    Console.WriteLine(name + ": VIVO");
-                //    if (!liveDataServers.ContainsKey(name))
-                //    {
-                //        liveDataServers.Add(name, address);
-                //        deadDataServers.Remove(name);
-                //    }
-                //}
-
                 this.DataServersInfo[name] = server.Ping();
-                Console.WriteLine(name + ": VIVO");
+                Console.WriteLine(name + ": Alive");
                 if (!this.LiveDataServers.ContainsKey(name))
                 {
                     this.LiveDataServers.Add(name, address);
                     this.DeadDataServers.Remove(name);
                 }
-
-                //else
-                //{
-                //    Console.WriteLine(name + ": MORTO");
-                //    if (!deadDataServers.ContainsKey(name))
-                //    {
-                //        deadDataServers.Add(name, address);
-                //        liveDataServers.Remove(name);
-                //    }
-                //}
             }
             catch (ServerNotAvailableException e)
             {
                 Console.WriteLine(e.Message);
-                Console.WriteLine(name + ": MORTO");
+                Console.WriteLine(name + ": Down");
                 if (!this.DeadDataServers.ContainsKey(name))
                 {
                     this.DeadDataServers.Add(name, address);
@@ -340,8 +315,7 @@ namespace padiFS
             }
             catch (System.IO.IOException)
             {
-                //Console.WriteLine(e.Message);
-                Console.WriteLine(name + ": Desligado");
+                Console.WriteLine(name + ": Down");
                 if (!this.DeadDataServers.ContainsKey(name))
                 {
                     this.DeadDataServers.Add(name, address);
@@ -350,8 +324,7 @@ namespace padiFS
             }
             catch (System.Net.Sockets.SocketException)
             {
-                //Console.WriteLine(e.Message);
-                Console.WriteLine(name + ": Desligado");
+                Console.WriteLine(name + ": Down");
                 if (!this.DeadDataServers.ContainsKey(name))
                 {
                     this.DeadDataServers.Add(name, address);
@@ -377,29 +350,17 @@ namespace padiFS
                 {
                     Console.WriteLine(replica + ": VIVO");
                 }
-                //else
-                //{
-                //    deadReplicas.Add(replica);
-                //    Console.WriteLine("ELSE: esta é a primary: {0}", replica);
-                //    Console.WriteLine(replica + ": MORTO");
-                //    NextPrimaryReplica();
-                //}
             }
             catch (ServerNotAvailableException e)
             {
                 this.DeadReplicas.Add(replica);
                 Console.WriteLine(e.Message);
-                //Console.WriteLine("EXCEP: esta é a primary: {0}", replica);
-                //Console.WriteLine(replica + ": MORTO");
                 NextPrimaryReplica();
             }
             catch (System.IO.IOException)
             {
                 Console.WriteLine("IOException");
                 this.DeadReplicas.Add(replica);
-                //Console.WriteLine(e.Message);
-                //Console.WriteLine("EXCEP: esta é a primary: {0}", replica);
-                //Console.WriteLine(replica + ": MORTO");
                 NextPrimaryReplica();
             }
             catch (System.Net.Sockets.SocketException)
@@ -577,13 +538,6 @@ namespace padiFS
 
                     string input = DateTime.Now.ToString("o") + (char)0x7f + meta.Filename;
 
-                    //IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), address);
-
-                    //if (server != null)
-                    //{
-                    //    server.Create(input);
-                    //}
-
                     int n = this.PendingFiles[f] - 1;
 
                     if (n > 0)
@@ -635,7 +589,6 @@ namespace padiFS
         private delegate bool ConsoleEventDelegate(int eventType);
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
-        //
 
         public override object InitializeLifetimeService()
         {
@@ -654,15 +607,6 @@ namespace padiFS
 
             // TEST AREA
             handler = new ConsoleEventDelegate(ConsoleEventCallback);
-            //SetConsoleCtrlHandler(handler, true);
-            //Console.CancelKeyPress += new ConsoleCancelEventHandler(Exit);
-            //
-            //if (!Debugger.IsAttached)
-            //{
-            //    Debugger.Launch();
-            //}
-
-
             Console.ReadLine();
         }
 
@@ -815,30 +759,6 @@ namespace padiFS
                             {
                                 Metadata meta = this.Files[f];
                                 meta.AddDataServers(address);
-
-                                //if (this.OpenFiles.ContainsKey(f))
-                                //{
-                                //    List<string> clients = this.OpenFiles[f];
-
-                                //    foreach (string c in clients)
-                                //    {
-                                //        IClient client = (IClient)Activator.GetObject(typeof(IClient), this.clients[c]);
-
-                                //        if (client != null)
-                                //        {
-                                //            client.UpdateFileMetadata(f, meta);
-                                //        }
-                                //    }
-                                //}
-
-                                //string input = DateTime.Now.ToString("o") + (char)0x7f + meta.FileName;
-
-                                //IDataServer server = (IDataServer)Activator.GetObject(typeof(IDataServer), address);
-
-                                //if (server != null)
-                                //{
-                                //    server.Create(input);
-                                //}
 
                                 if (this.PendingFiles.ContainsKey(f))
                                 {

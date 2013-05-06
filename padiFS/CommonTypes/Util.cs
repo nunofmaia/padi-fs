@@ -82,12 +82,6 @@ namespace padiFS
 
         public static Dictionary<int, DateTime> SortVotes(Dictionary<DateTime, int> dic)
         {
-            //Dictionary<DateTime, int> res = new Dictionary<DateTime, int>();
-
-            //foreach (var item in dic.OrderBy(i => i.Value))
-            //{
-            //    res.Add(item.Key, item.Value);
-            //}
             Dictionary<int, DateTime> res = new Dictionary<int, DateTime>();
 
             foreach (var item in dic.OrderBy(i => i.Value))
@@ -132,20 +126,6 @@ namespace padiFS
             return result;
         }
 
-        //public static string[] SliceArray(string[] args, int index)
-        //{
-        //    List<string> result = new List<string>();
-        //    result.Capacity = args.Length - index;
-
-        //    for (int i = index; i < args.Length; index++)
-        //    {
-        //        string arg = args[i];
-        //        result.Add(arg);
-        //    }
-
-        //    return result.ToArray();
-        //}
-
         public static string[] SliceArray(string[] source, int start, int end)
         {
             if (end < 0)
@@ -174,7 +154,7 @@ namespace padiFS
                 TextWriter tw = new StreamWriter(path);
                 System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(ob.GetType());
                 x.Serialize(tw, ob);
-                Console.WriteLine("object written to file");
+                Console.WriteLine("Object written to file");
                 tw.Close();
             }
             catch (Exception ex)
@@ -207,7 +187,7 @@ namespace padiFS
             TextWriter tw = new StreamWriter(path);
             System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
             x.Serialize(tw, file);
-            Console.WriteLine("object written to file");
+            Console.WriteLine("Object written to file");
             tw.Close();
         }
 

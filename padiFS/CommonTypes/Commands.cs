@@ -255,7 +255,6 @@ namespace padiFS
                     source = args[3];
                 }
                 string fileRegister = args[2];
-                //string source = Util.MakeStringFromArray(command, 3);
 
                 int register = -1;
 

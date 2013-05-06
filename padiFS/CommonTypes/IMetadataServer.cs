@@ -24,7 +24,7 @@ namespace padiFS
         DateTime GetTimestamp();
         MetadataInfo GetMetadataInfo();
         void UpdateFileMetada(string address);
-        void UpdateReplica(MetadataInfo info);
+        //void UpdateReplica(MetadataInfo info);
         bool Ping();
         void SetPrimary(string name);
         string GetPrimary();

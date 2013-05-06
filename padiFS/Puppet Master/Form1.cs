@@ -25,7 +25,6 @@ namespace padiFS
         private int mscounter;
         private int dscounter;
         private int ccounter;
-        //private string ms_primary;
         private Dictionary<string, string> dataServers;
         private Dictionary<string, string> metadataServers;
         private Dictionary<string, string> clients;
@@ -67,9 +66,7 @@ namespace padiFS
             activeDataServers = new List<string>();
             activeMetadataServers = new List<string>();
             processes = new Dictionary<string, string>();
-
-            //this.TopMost = true;
-
+            
             script = null;
             scripts_dir = Environment.CurrentDirectory + @"\Scripts"; 
             if (!Directory.Exists(scripts_dir))
@@ -95,7 +92,6 @@ namespace padiFS
             {
                 port = Util.FreeTcpPort();
             }
-            //int port = Util.FreeTcpPort();
             string address = "tcp://localhost:" + port + "/" + name;
             char code = name[0];
 
@@ -135,36 +131,6 @@ namespace padiFS
                             LaunchMetadataServer(name, port);
                             registerMetadataServer(name, address);
                         }
-                            
-                        
-                        //IMetadataServer m = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), metadataServers[name]);
-                        //try
-                        //{
-                        //    if (m != null)
-                        //    {
-                        //        m.Ping();
-                        //    }
-                        //}
-                        //catch (ServerNotAvailableException)
-                        //{
-                        //    //IGNORE
-                        //}
-                        //catch (System.IO.IOException)
-                        //{
-                        //    LaunchMetadataServer(name, port);
-                        //    metadataServers[name] = address;
-                        //    mscounter++;
-                        //    registerMetadataServer(name, address);
-                        //    processes[name] = address;
-                        //}
-                        //catch (System.Net.Sockets.SocketException)
-                        //{
-                        //    LaunchMetadataServer(name, port);
-                        //    metadataServers[name] = address;
-                        //    mscounter++;
-                        //    registerMetadataServer(name, address);
-                        //    processes[name] = address;
-                        //}
                     }
 
                     break;
@@ -317,11 +283,6 @@ namespace padiFS
                     IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary_name]);
                     if (primary != null)
                     {
-                        //MetadataInfo info = primary.GetMetadataInfo();
-                        //if (replica != null)
-                        //{
-                        //    replica.UpdateReplica(info);
-                        //}
                         replica.DeserializeServer();
                         Log log = primary.GetLog();
                         if (replica != null)
@@ -359,33 +320,12 @@ namespace padiFS
                         }
                     }
                 }
-
-                //string primary_name = AskForPrimary(name);
-                //if (primary_name != null)
-                //{
-                //    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[name]);
-                //    IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary_name]);
-                //    if (primary != null)
-                //    {
-                //        MetadataInfo info = primary.GetMetadataInfo();
-                //        if (replica != null)
-                //        {
-                //            replica.UpdateReplica(info);
-                //        }
-                //    }
-                //}
-                //else
-                //{
-                //    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
-                //    server.SetPrimary(name);
-                //}
             }
             else
             {
                 IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
                 server.SetPrimary(name);
             }
-            
         }
 
         private void UpdateFileMetadata(string address)
@@ -409,10 +349,7 @@ namespace padiFS
                     string ms_name = "m-" + mscounter;
                     int ms_port = Util.FreeTcpPort();
                     string ms_address = "tcp://localhost:" + ms_port + "/" + ms_name;
-                    //if (mscounter == 0)
-                    //{
-                    //    ms_primary = ms_name;
-                    //}
+
                     LaunchMetadataServer(ms_name, ms_port);
                     metadataServers.Add(ms_name, ms_address);
                     mscounter++;
@@ -445,6 +382,7 @@ namespace padiFS
                     string c_name = "c-" + ccounter;
                     int c_port = Util.FreeTcpPort();
                     string c_address = "tcp://localhost:" + c_port + "/" + c_name;
+
                     LaunchClient(c_name, c_port);
                     clients.Add(c_name, c_address);
                     activeClients.Add(c_name);
@@ -639,22 +577,6 @@ namespace padiFS
             }
 
             HandleCommand(command);
-
-
-            //string c_name = writeClientTextBox.Text;
-            //string fileRegister = writeFileRegisterTextBox.Text;
-            //string 
-            //byte[] bytearray = Util.ConvertStringToByteArray(writeTextBox.Text);
-
-            //IClient client = (IClient)Activator.GetObject(typeof(IClient), (string)clients[c_name]);
-
-            //if (client != null)
-            //{
-            //    client.Write(fileRegister, bytearray);
-            //}
-            //writeFileRegisterTextBox.Clear();
-            //writeClientTextBox.Clear();
-            //writeTextBox.Clear();
         }
 
         private void loadScriptButton_Click(object sender, EventArgs e)
@@ -749,11 +671,7 @@ namespace padiFS
 
             try
             {
-                
-
                 string command = script.ReadLine();
-
-                
 
                 while (command != null)
                 {
@@ -813,10 +731,8 @@ namespace padiFS
             dumpTextBox.Clear();
         }
 
-        // TODO: Ask the professor if the commands are always well-formed so we can ditch the if conditions
         private void HandleCommand(string line)
         {
-            //string lower_line = line.ToLower();
             string command = "null";
 
             Match match = Regex.Match(line, @"^(\w+)\s.*$", RegexOptions.IgnoreCase);
@@ -833,63 +749,45 @@ namespace padiFS
                 case "fail":
                     LaunchProcess(args[1]);
                     execute(new FailCommand(), line);
-                    //FailCommand(args[1]);
                     break;
 
                 case "recover":
                     LaunchProcess(args[1]);
                     execute(new RecoverCommand(), line);
-                    //RecoverCommand(args[1]);
                     break;
 
                 case "freeze":
                     LaunchProcess(args[1]);
                     execute(new FreezeCommand(), line);
-                    //FreezeCommand(args[1]);
                     break;
 
                 case "unfreeze":
                     LaunchProcess(args[1]);
                     execute(new UnfreezeCommand(), line);
-                    //UnfreezeCommand(args[1]);
                     break;
 
                 case "create":
                     LaunchProcess(args[1]);
                     execute(new CreateCommand(), line);
-                    //CreateCommand(args[1], args[2], args[3], args[4], args[5]);
                     break;
 
                 case "open":
                     LaunchProcess(args[1]);
                     execute(new OpenCommand(), line);
-                    //OpenCommand(args[1], args[2]);
                     break;
 
                 case "close":
                     LaunchProcess(args[1]);
                     execute(new CloseCommand(), line);
-                    //CloseCommand(args[1], args[2]);
                     break;
 
                 case "read":
                     LaunchProcess(args[1]);
                     execute(new ReadCommand(), line);
-                    //ReadCommand(args[1], args[2], args[3], args[4]);
                     break;
 
                 case "write":
                     LaunchProcess(args[1]);
-                    //if (length > 4)
-                    //{
-                    //    string contents = Util.MakeStringFromArray(args, 3);
-
-                    //    WriteCommand(args[1], args[2], contents);
-                    //}
-                    //else
-                    //{
-                    //    WriteCommand(args[1], args[2], args[3]);
-                    //}
                     execute(new WriteCommand(), line);
                     break;
 
@@ -906,12 +804,10 @@ namespace padiFS
                 case "dump":
                     LaunchProcess(args[1]);
                     statusTextBox.AppendText((string)execute(new DumpCommand(), line));
-                    //DumpCommand(args[1]);
                     break;
 
                 case "exescript":
                     LaunchProcess(args[1]);
-                    //ExecScriptCommand(args[1], args[2]);
                     new Thread(() => execute(new ExeScriptCommand(), line)).Start();
                     break;
 
@@ -1205,13 +1101,6 @@ namespace padiFS
 
             foreach (DirectoryInfo subdir in dir.GetDirectories())
             {
-                //foreach (FileInfo fi in subdir.GetFiles())
-                //{
-                //    if (fi.Name.Contains("Log"))
-                //    {
-                //        fi.Delete();
-                //    }
-                //}
                 subdir.Delete(true);
             }
             System.Windows.Forms.MessageBox.Show("Logs Cleaned");

@@ -159,31 +159,12 @@ namespace padiFS
             string[] arguments = Util.SplitArguments(args[0]);
             DataServer ds = new DataServer(arguments[0], arguments[1]);
             Console.Title = "Iurie's Data Server: " + ds.name;
-
-            //teste
-            //ds.Create("Iuriesun");
-            //ds.Write("Iuriesun", new byte[4]);
-            //Console.WriteLine(ds.Read("iuriesun", "cena").version);
-            //Console.WriteLine(ds.Read("iuriesun", "cena").content);
             
             // Ficar esperar pedidos de Iurie
             channel = new TcpChannel(ds.port);
             ChannelServices.RegisterChannel(channel, true);
             RemotingServices.Marshal(ds, ds.name, typeof(DataServer));
-            //IPuppetMaster master = (IPuppetMaster)Activator.GetObject(typeof(IPuppetMaster), "tcp://localhost:8070/PuppetMaster");
-            //if (master != null)
-            //{
-            //    try
-            //    {
-            //        master.test(ds.name);
-            //    }
-            //    catch (RemotingException e)
-            ////    { Console.WriteLine(e.StackTrace); }
-            //}
-            //else
-            //{
-            //    Console.WriteLine(ds.name);
-            //}
+
             Console.ReadLine();
         }
     }
