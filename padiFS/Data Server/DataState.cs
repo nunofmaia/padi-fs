@@ -33,12 +33,9 @@ namespace padiFS
 
 
             Console.WriteLine(path);
-            TextWriter tw = new StreamWriter(path);
-            System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
-            x.Serialize(tw, file);
+
+            Util.SerializeFile(path, file);
             ds.AddFile(args[1]);
-            Console.WriteLine("object written to file");
-            tw.Close();
 
             //add file to datainfo
             ds.DataInfo.AddFile(args[1]);
@@ -52,10 +49,7 @@ namespace padiFS
             Console.WriteLine(path);
             if (System.IO.File.Exists(path))
             {
-                TextReader tr = new StreamReader(path);
-                System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
-                file = (File)x.Deserialize(tr);
-                tr.Close();
+                file = Util.DeserializeFile(path, file);
             }
             else
             {
@@ -81,10 +75,7 @@ namespace padiFS
             string path = ds.CurrentDir + @"\" + ds.Name + @"\" + localFile + ".txt";
             if (System.IO.File.Exists(path))
             {
-                TextReader tr = new StreamReader(path);
-                System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(oldFile.GetType());
-                oldFile = (File)x.Deserialize(tr);
-                tr.Close();
+                oldFile = Util.DeserializeFile(path, oldFile);
             }
 
             if (oldFile.Version < Convert.ToDateTime(date))
@@ -94,22 +85,9 @@ namespace padiFS
                 ds.CurrentDir = Environment.CurrentDirectory;
                 string readPath = ds.CurrentDir + @"\" + ds.Name + @"\" + localFile + @".txt";
 
-                //if (System.IO.File.Exists(readPath))
-                //{
                     Console.WriteLine(readPath);
-                    TextWriter tw = new StreamWriter(readPath);
-                    System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(newFile.GetType());
-                    x.Serialize(tw, newFile);
+                    Util.SerializeFile(readPath, newFile);
                     ds.AddFile(localFile);
-                    Console.WriteLine("object written to file");
-                    tw.Close();
-                //}
-                //else
-                //{
-                //    //isto TEM DE SER MUDADO
-                    
-                //    Console.WriteLine("O ficheiro não existe");
-                //}
             }
             //add access to this file
             ds.DataInfo.AddAccess(localFile);
