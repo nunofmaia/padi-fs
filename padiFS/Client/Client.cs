@@ -336,8 +336,8 @@ namespace padiFS
                     arguments.Add(semantic);
                     arguments.Add(i);
                     ThreadPool.QueueUserWorkItem(ReadCallback, arguments);
-                    i++;
                 }
+                i++;
             }
         }
 
@@ -476,8 +476,8 @@ namespace padiFS
                     arguments.Add(content);
                     arguments.Add(i);
                     ThreadPool.QueueUserWorkItem(WriteCallback, arguments);
-                    i++;
                 }
+                i++;
             }
         }
 

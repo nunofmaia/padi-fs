@@ -122,7 +122,9 @@ namespace padiFS
             ds.GetFreeze.WaitOne();
 
             Console.WriteLine("I'm Alive");
-            return ds.DataInfo;
+            DataInfo di = ds.DataInfo;
+            ds.DataInfo = new DataInfo();
+            return di;
         }
     }
 
