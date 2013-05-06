@@ -311,6 +311,7 @@ namespace padiFS
                         //{
                         //    replica.UpdateReplica(info);
                         //}
+                        replica.DeserializeServer();
                         Log log = primary.GetLog();
                         if (replica != null)
                         {

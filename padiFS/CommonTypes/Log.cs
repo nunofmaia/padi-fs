@@ -10,7 +10,7 @@ namespace padiFS
     public class Log
     {
         public int Index { set; get; }
-        private string Path { set; get; }
+        public string Path { set; get; }
 
         public Log()
         {

@@ -355,7 +355,7 @@ namespace padiFS
         private void ExecutePMRead(int file, string semantic, int register)
         {
             Metadata m = fileRegister[file];
-            string filename = m.FileName;
+            string filename = m.Filename;
             List<string> servers = m.DataServers;
             int readQuorum = m.ReadQuorum;
             readFiles = new ConcurrentBag<File>();
@@ -544,7 +544,7 @@ namespace padiFS
             if (Int32.TryParse(file, out f))
             {
                 Metadata m = fileRegister[f];
-                string filename = m.FileName;
+                string filename = m.Filename;
                 byte[] bytearray = Util.ConvertStringToByteArray(content);
                 ExecuteWrite(filename, bytearray);
             }
@@ -558,7 +558,7 @@ namespace padiFS
             if (Int32.TryParse(file, out f))
             {
                 Metadata m = fileRegister[f];
-                string filename = m.FileName;
+                string filename = m.Filename;
                 byte[] bytearray = stringRegister[register];
                 ExecuteWrite(filename, bytearray);
             }
@@ -636,7 +636,7 @@ namespace padiFS
         {
             //Read file from file1 with given semantics
             Metadata m = fileRegister[file1];
-            string filename = m.FileName;
+            string filename = m.Filename;
             List<string> servers = m.DataServers;
             int readQuorum = m.ReadQuorum;
             readFiles = new ConcurrentBag<File>();
@@ -692,7 +692,7 @@ namespace padiFS
             
             fileRead += salt;
             //Write file to file2 with previous read plus salt
-            ExecuteWrite(fileRegister[file2].FileName, Util.ConvertStringToByteArray(fileRead));
+            ExecuteWrite(fileRegister[file2].Filename, Util.ConvertStringToByteArray(fileRead));
         }
 
         private void HandleCommand(string line)
@@ -767,7 +767,7 @@ namespace padiFS
 
                 for (int i = 0; i < registersLimit; i++)
                 {
-                    if (fileRegister[i] != null && fileRegister[i].FileName == filename)
+                    if (fileRegister[i] != null && fileRegister[i].Filename == filename)
                     {
                         fileRegister[i] = metadata;
                         break;

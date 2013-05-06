@@ -8,11 +8,11 @@ namespace padiFS
     [Serializable]
     public class Metadata
     {
-        private string filename;
-        private int serversNumber;
-        private int readQuorum;
-        private int writeQuorum;
-        private List<string> dataServers;
+        public string Filename { set; get; }
+        public int ServersNumber { set; get; }
+        public int ReadQuorum { set; get; }
+        public int WriteQuorum { set; get; }
+        public List<string> DataServers { set; get; }
 
         public Metadata()
         {
@@ -20,46 +20,21 @@ namespace padiFS
 
         public Metadata(string filename, int serversNumber, int readQuorum, int writeQuorum, List<string> dataServers)
         {
-            this.filename = filename;
-            this.serversNumber = serversNumber;
-            this.readQuorum = readQuorum;
-            this.writeQuorum = writeQuorum;
-            this.dataServers = dataServers;
-        }
-
-        public string FileName
-        {
-            get { return filename; }
-        }
-
-        public int ServersNumber
-        {
-            get { return serversNumber; }
-        }
-
-        public int ReadQuorum
-        {
-            get { return readQuorum; }
-        }
-
-        public int WriteQuorum
-        {
-            get { return writeQuorum; }
-        }
-
-        public List<string> DataServers
-        {
-            get { return dataServers; }
+            this.Filename = filename;
+            this.ServersNumber = serversNumber;
+            this.ReadQuorum = readQuorum;
+            this.WriteQuorum = writeQuorum;
+            this.DataServers = dataServers;
         }
 
         public void AddDataServers(string address)
         {
-            this.dataServers.Add(address);
+            this.DataServers.Add(address);
         }
 
         public override string ToString()
         {
-            return "File: " + filename + " #Servers: " + serversNumber + " RQ: " + readQuorum + " WQ: " + writeQuorum;
+            return "File: " + this.Filename + " #Servers: " + this.ServersNumber + " RQ: " + this.ReadQuorum + " WQ: " + this.WriteQuorum;
         }
     }
 }
