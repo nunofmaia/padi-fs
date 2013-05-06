@@ -195,10 +195,11 @@ namespace padiFS
 
         public static File DeserializeFile(string path, File file)
         {
-             TextReader tr = new StreamReader(path);
-             System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
-             tr.Close();
-             return (File)x.Deserialize(tr); 
+            TextReader tr = new StreamReader(path);
+            System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
+            File f = (File)x.Deserialize(tr);
+            tr.Close();
+            return f;
         }
 
         public static void SerializeFile(string path, File file)
