@@ -395,6 +395,26 @@ namespace padiFS
             Util.SerializeObject(this, directory, filename);
         }
 
+        private void DeserializeServer()
+        {
+            string directory = Environment.CurrentDirectory + string.Format(@"\{0}", this.Name);
+            string filename = "Backup.txt";
+
+            MetadataServer oldServer = (MetadataServer)Util.DeserializeObject(this, directory, filename);
+            this.Primary = oldServer.Primary;
+            this.Replicas = oldServer.Replicas;
+            this.Clients = oldServer.Clients;
+            this.DeadReplicas = oldServer.DeadReplicas;
+            this.LiveDataServers = oldServer.LiveDataServers;
+            this.DeadDataServers = oldServer.DeadDataServers;
+            this.ServersLoad = oldServer.ServersLoad;
+            this.Files = oldServer.Files;
+            this.OpenFiles = oldServer.OpenFiles;
+            this.PendingFiles = oldServer.PendingFiles;
+            this.DataServersInfo = oldServer.DataServersInfo;
+            this.Log = oldServer.Log;
+        }
+
         public bool Ping()
         {
             return this.State.Ping();
