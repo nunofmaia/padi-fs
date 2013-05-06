@@ -408,7 +408,7 @@ namespace padiFS
                                 string command = string.Format("UPDATE {0} {1}", writeServer, secondMostAccessedfile);
                                 meta.AddDataServers(writeServer);
                                 meta.DataServers.Remove(readServer);
-                                md.ServersLoad[readServer]--;
+                                md.ServersLoad[mostOverloadedServer]--;
 
                                 md.Log.Append(command);
 
