@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.Clearbutton = new System.Windows.Forms.Button();
             this.launchButton = new System.Windows.Forms.Button();
             this.serversComboBox = new System.Windows.Forms.ComboBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -97,7 +98,6 @@
             this.dumpTextBox = new System.Windows.Forms.TextBox();
             this.dumpProcessLabel = new System.Windows.Forms.Label();
             this.dumpButton = new System.Windows.Forms.Button();
-            this.Clearbutton = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -122,6 +122,16 @@
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Launch server";
+            // 
+            // Clearbutton
+            // 
+            this.Clearbutton.Location = new System.Drawing.Point(284, 11);
+            this.Clearbutton.Name = "Clearbutton";
+            this.Clearbutton.Size = new System.Drawing.Size(86, 37);
+            this.Clearbutton.TabIndex = 2;
+            this.Clearbutton.Text = "Clear Logs";
+            this.Clearbutton.UseVisualStyleBackColor = true;
+            this.Clearbutton.Click += new System.EventHandler(this.Clearbutton_Click);
             // 
             // launchButton
             // 
@@ -770,16 +780,6 @@
             this.dumpButton.Text = "Dump";
             this.dumpButton.UseVisualStyleBackColor = true;
             this.dumpButton.Click += new System.EventHandler(this.dumpButton_Click);
-            // 
-            // Clearbutton
-            // 
-            this.Clearbutton.Location = new System.Drawing.Point(295, 18);
-            this.Clearbutton.Name = "Clearbutton";
-            this.Clearbutton.Size = new System.Drawing.Size(75, 23);
-            this.Clearbutton.TabIndex = 2;
-            this.Clearbutton.Text = "Clear Logs";
-            this.Clearbutton.UseVisualStyleBackColor = true;
-            this.Clearbutton.Click += new System.EventHandler(this.Clearbutton_Click);
             // 
             // Form1
             // 
