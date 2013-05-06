@@ -14,6 +14,7 @@ using System.Runtime.Remoting;
 using System.Threading;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Net.Sockets;
 
 namespace padiFS
 {
@@ -232,7 +233,16 @@ namespace padiFS
 
             if (client != null)
             {
-                client.UpdateServers(metadataServers);
+                try
+                {
+                    client.UpdateServers(metadataServers);
+                }
+                catch (SocketException)
+                {
+                }
+                catch (IOException)
+                {
+                }
             }
         }
 
@@ -1185,6 +1195,7 @@ namespace padiFS
             {
                 subdir.Delete(true);
             }
+            System.Windows.Forms.MessageBox.Show("Logs Cleaned");
         }
     }
 }
