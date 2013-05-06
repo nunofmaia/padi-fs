@@ -276,7 +276,12 @@ namespace padiFS
 
                 if (server != null)
                 {
-                    server.RegisterDataServer(name, address);
+                    try {
+                        server.RegisterDataServer(name, address);
+                    }
+                    catch (SystemException)
+                    {
+                    }
                 }
             }
         }
@@ -289,7 +294,13 @@ namespace padiFS
 
                 if (server != null)
                 {
-                    server.RegisterClient(name, address);
+                    try
+                    {
+                        server.RegisterClient(name, address);
+                    }
+                    catch (SystemException)
+                    {
+                    }
                 }
             }
         }
