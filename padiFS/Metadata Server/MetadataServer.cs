@@ -316,7 +316,7 @@ namespace padiFS
             catch (ServerNotAvailableException e)
             {
                 Console.WriteLine(e.Message);
-                //Console.WriteLine(name + ": MORTO");
+                Console.WriteLine(name + ": MORTO");
                 if (!this.DeadDataServers.ContainsKey(name))
                 {
                     this.DeadDataServers.Add(name, address);
@@ -324,6 +324,16 @@ namespace padiFS
                 }
             }
             catch (System.IO.IOException)
+            {
+                //Console.WriteLine(e.Message);
+                Console.WriteLine(name + ": Desligado");
+                if (!this.DeadDataServers.ContainsKey(name))
+                {
+                    this.DeadDataServers.Add(name, address);
+                    this.LiveDataServers.Remove(name);
+                }
+            }
+            catch (System.Net.Sockets.SocketException)
             {
                 //Console.WriteLine(e.Message);
                 Console.WriteLine(name + ": Desligado");

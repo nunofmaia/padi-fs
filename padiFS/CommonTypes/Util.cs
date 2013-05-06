@@ -195,10 +195,11 @@ namespace padiFS
 
         public static File DeserializeFile(string path, File file)
         {
-             TextReader tr = new StreamReader(path);
-             System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
-             tr.Close();
-             return (File)x.Deserialize(tr); 
+            TextReader tr = new StreamReader(path);
+            System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(file.GetType());
+            File f = (File)x.Deserialize(tr);
+            tr.Close();
+            return f;
         }
 
         public static void SerializeFile(string path, File file)
@@ -242,24 +243,5 @@ namespace padiFS
         {
             return (int)(alfa * average);
         }
-
-        //returns the sorted list with datainfo that are outside the range//ainda falta ordenar
-        public static List<DataInfo> GetListDataInfo(int minInterval, int maxInterval, Dictionary<string, DataInfo> dataServersInfo)
-        {
-            List<DataInfo> list = new List<DataInfo>();
-
-            Console.WriteLine("listaDesordenada");
-            foreach (KeyValuePair<string, DataInfo> accesses in dataServersInfo)
-            {
-                if (accesses.Value.GetTotalAccesses() < minInterval || accesses.Value.GetTotalAccesses() > maxInterval)
-                {
-                    Console.WriteLine(accesses.Value.GetTotalAccesses());
-                    list.Add(accesses.Value);
-                }
-            }
-            //Sort List
-            return list.OrderBy(a => a.GetTotalAccesses()).ToList();
-        }
-       
     }
 }

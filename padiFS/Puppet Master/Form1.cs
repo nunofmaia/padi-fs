@@ -1194,6 +1194,13 @@ namespace padiFS
 
             foreach (DirectoryInfo subdir in dir.GetDirectories())
             {
+                //foreach (FileInfo fi in subdir.GetFiles())
+                //{
+                //    if (fi.Name.Contains("Log"))
+                //    {
+                //        fi.Delete();
+                //    }
+                //}
                 subdir.Delete(true);
             }
             System.Windows.Forms.MessageBox.Show("Logs Cleaned");

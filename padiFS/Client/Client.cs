@@ -214,8 +214,9 @@ namespace padiFS
                         }
                     }               
                 }
-                catch (SystemException)
+                catch (SystemException e)
                 {
+                    Console.WriteLine(e.StackTrace);
                 }
             }
         }
