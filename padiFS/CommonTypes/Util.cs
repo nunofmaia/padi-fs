@@ -242,24 +242,5 @@ namespace padiFS
         {
             return (int)(alfa * average);
         }
-
-        //returns the sorted list with datainfo that are outside the range//ainda falta ordenar
-        public static List<DataInfo> GetListDataInfo(int minInterval, int maxInterval, Dictionary<string, DataInfo> dataServersInfo)
-        {
-            List<DataInfo> list = new List<DataInfo>();
-
-            Console.WriteLine("listaDesordenada");
-            foreach (KeyValuePair<string, DataInfo> accesses in dataServersInfo)
-            {
-                if (accesses.Value.GetTotalAccesses() < minInterval || accesses.Value.GetTotalAccesses() > maxInterval)
-                {
-                    Console.WriteLine(accesses.Value.GetTotalAccesses());
-                    list.Add(accesses.Value);
-                }
-            }
-            //Sort List
-            return list.OrderBy(a => a.GetTotalAccesses()).ToList();
-        }
-       
     }
 }
