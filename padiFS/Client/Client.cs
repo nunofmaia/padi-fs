@@ -31,6 +31,9 @@ namespace padiFS
         private bool[] readsArray;
         private bool[] writesArray;
 
+        ManualResetEvent read;
+        ManualResetEvent write;
+
         public Client(string name, string port)
         {
             this.name = name;
@@ -43,6 +46,8 @@ namespace padiFS
             this.fileRegister = new Metadata[10];
             registersLimit = 10;
             nextRegister = 0;
+            read = new ManualResetEvent(true);
+            write = new ManualResetEvent(true);
         }
 
         public void Create(string filename, int nServers, int rQuorum, int wQuorum)
@@ -199,8 +204,14 @@ namespace padiFS
 
                     if (file != null)
                     {
-                        readFiles.Add(file);
-                        readsArray[i] = true;
+                        lock (this)
+                        {
+                            if (!readsArray[i])
+                            {
+                                readFiles.Add(file);
+                                readsArray[i] = true;
+                            }
+                        }
                     }               
                 }
                 catch (SystemException)
@@ -421,8 +432,14 @@ namespace padiFS
 
                     if (intTest == 0)
                     {
-                        writeFiles.Add(intTest);
-                        writesArray[i] = true;
+                        lock (this)
+                        {
+                            if (!writesArray[i])
+                            {
+                                writeFiles.Add(intTest);
+                                writesArray[i] = true;
+                            }
+                        }
                     }
                 }
                 catch (SystemException)
