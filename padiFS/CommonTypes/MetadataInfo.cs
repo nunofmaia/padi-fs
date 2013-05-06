@@ -10,24 +10,24 @@ namespace padiFS
     {
         private string primary;
         private string address;
-        private Dictionary<string, string> replicas;
-        private Dictionary<string, string> liveDataServers;
-        private Dictionary<string, string> deadDataServers;
-        private Dictionary<string, int> serversLoad;
-        private Dictionary<string, Metadata> files;
-        private Dictionary<string, List<string>> openFiles;
+        private SerializableDictionary<string, string> replicas;
+        private SerializableDictionary<string, string> liveDataServers;
+        private SerializableDictionary<string, string> deadDataServers;
+        private SerializableDictionary<string, int> serversLoad;
+        private SerializableDictionary<string, Metadata> files;
+        private SerializableDictionary<string, List<string>> openFiles;
 
-        public MetadataInfo(string primary, string address, Dictionary<string, string>replicas, Dictionary<string, string> liveDataServers, Dictionary<string, string> deadDataServers,
-            Dictionary<string, int> serversLoad, Dictionary<string, Metadata> files, Dictionary<string, List<string>> openFiles)
+        public MetadataInfo(string primary, string address, SerializableDictionary<string, string>replicas, SerializableDictionary<string, string> liveDataServers, SerializableDictionary<string, string> deadDataServers,
+            SerializableDictionary<string, int> serversLoad, SerializableDictionary<string, Metadata> files, SerializableDictionary<string, List<string>> openFiles)
         {
             this.primary = primary;
             this.address = address;
-            this.replicas = new Dictionary<string,string>(replicas);
-            this.liveDataServers = new Dictionary<string,string>(liveDataServers);
-            this.deadDataServers = new Dictionary<string,string>(deadDataServers);
-            this.serversLoad = new Dictionary<string,int>(serversLoad);
-            this.files = new Dictionary<string,Metadata>(files);
-            this.openFiles = new Dictionary<string,List<string>>(openFiles);
+            this.replicas = new SerializableDictionary<string,string>(replicas);
+            this.liveDataServers = new SerializableDictionary<string,string>(liveDataServers);
+            this.deadDataServers = new SerializableDictionary<string,string>(deadDataServers);
+            this.serversLoad = new SerializableDictionary<string,int>(serversLoad);
+            this.files = new SerializableDictionary<string,Metadata>(files);
+            this.openFiles = new SerializableDictionary<string,List<string>>(openFiles);
         }
 
         public string Primary
@@ -46,7 +46,7 @@ namespace padiFS
             }
         }
 
-        public Dictionary<string, string> Replicas
+        public SerializableDictionary<string, string> Replicas
         {
             get
             {
@@ -54,7 +54,7 @@ namespace padiFS
             }
         }
 
-        public Dictionary<string, string> LiveDataServers
+        public SerializableDictionary<string, string> LiveDataServers
         {
             get
             {
@@ -62,7 +62,7 @@ namespace padiFS
             }
         }
 
-        public Dictionary<string, string> DeadDataServers
+        public SerializableDictionary<string, string> DeadDataServers
         {
             get
             {
@@ -70,7 +70,7 @@ namespace padiFS
             }
         }
 
-        public Dictionary<string, int> ServersLoad
+        public SerializableDictionary<string, int> ServersLoad
         {
             get
             {
@@ -78,7 +78,7 @@ namespace padiFS
             }
         }
 
-        public Dictionary<string, Metadata> Files
+        public SerializableDictionary<string, Metadata> Files
         {
             get
             {
@@ -86,7 +86,7 @@ namespace padiFS
             }
         }
 
-        public Dictionary<string, List<string>> OpenFiles
+        public SerializableDictionary<string, List<string>> OpenFiles
         {
             get
             {

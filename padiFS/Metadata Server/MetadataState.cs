@@ -71,15 +71,15 @@ namespace padiFS
         public override Metadata Open(MetadataServer md, string clientName, string filename)
         {
             // If already opened by one client
-            if (md.TempOpenFiles.ContainsKey(filename))
+            if (md.OpenFiles.ContainsKey(filename))
             {
-                List<string> clientsList = md.TempOpenFiles[filename];
+                List<string> clientsList = md.OpenFiles[filename];
                 if (clientsList.Contains(clientName))
                 {
                     throw new FileIsOpenedException("File already open.");
                 }
 
-                md.TempOpenFiles[filename].Add(clientName);
+                md.OpenFiles[filename].Add(clientName);
             }
             else
             {
@@ -90,7 +90,7 @@ namespace padiFS
 
                 List<string> clientsList = new List<string>();
                 clientsList.Add(clientName);
-                md.TempOpenFiles.Add(filename, clientsList);
+                md.OpenFiles.Add(filename, clientsList);
 
             }
 
@@ -113,12 +113,12 @@ namespace padiFS
                 throw new FileNotFoundException("File does not exist.");
             }
 
-            if (!md.TempOpenFiles.ContainsKey(filename))
+            if (!md.OpenFiles.ContainsKey(filename))
             {
                 throw new FileAlreadyClosedException("File already closed.");
             }
 
-            List<string> clientsList = md.TempOpenFiles[filename];
+            List<string> clientsList = md.OpenFiles[filename];
 
             if (!clientsList.Contains(clientName))
             {
@@ -128,7 +128,7 @@ namespace padiFS
             clientsList.Remove(clientName);
             if (clientsList.Count == 0)
             {
-                md.TempOpenFiles.Remove(filename);
+                md.OpenFiles.Remove(filename);
             }
 
             List<object> context = new List<object>();
@@ -175,7 +175,7 @@ namespace padiFS
             List<string> clientsList = new List<string>();
             clientsList.Add(clientName);
             md.Files.Add(filename, meta);
-            md.TempOpenFiles.Add(filename, clientsList);
+            md.OpenFiles.Add(filename, clientsList);
             // Update other replicas. CHANGE THIS IN THE FUTURE
             //ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
             List<object> context = new List<object>();
@@ -201,7 +201,7 @@ namespace padiFS
             }
 
             md.Files.Remove(filename);
-            md.TempOpenFiles.Remove(filename);
+            md.OpenFiles.Remove(filename);
             // Update other replicas. CHANGE THIS IN THE FUTURE
             //ThreadPool.QueueUserWorkItem(UpdateReplicas, md);
             List<object> context = new List<object>();
@@ -372,7 +372,7 @@ namespace padiFS
                             if (f != mostAccessedfile && !previousFiles.Contains(f))
                             {
                                 if (md.DataServersInfo[mostOverloadedServer].GetNumberAccesses()[f] > maxAccesses &&
-                                    (!md.TempOpenFiles.ContainsKey(f)))
+                                    (!md.OpenFiles.ContainsKey(f)))
                                 {
                                     maxAccesses = md.DataServersInfo[mostOverloadedServer].GetNumberAccesses()[f];
                                     secondMostAccessedfile = f;
@@ -494,7 +494,7 @@ namespace padiFS
                     if (replica != null)
                     {
                         replica.Ping();
-                        MetadataInfo info = new MetadataInfo(md.Primary, md.Address, md.Replicas, md.LiveDataServers, md.DeadDataServers, md.ServersLoad, md.Files, md.TempOpenFiles);
+                        MetadataInfo info = new MetadataInfo(md.Primary, md.Address, md.Replicas, md.LiveDataServers, md.DeadDataServers, md.ServersLoad, md.Files, md.OpenFiles);
                         replica.UpdateReplica(info);
                     }
                 }

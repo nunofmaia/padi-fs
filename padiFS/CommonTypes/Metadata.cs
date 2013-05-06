@@ -14,6 +14,10 @@ namespace padiFS
         private int writeQuorum;
         private List<string> dataServers;
 
+        public Metadata()
+        {
+        }
+
         public Metadata(string filename, int serversNumber, int readQuorum, int writeQuorum, List<string> dataServers)
         {
             this.filename = filename;

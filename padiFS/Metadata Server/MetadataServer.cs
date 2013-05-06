@@ -15,56 +15,71 @@ namespace padiFS
 {
     public class MetadataServer : MarshalByRefObject, IMetadataServer
     {
-        private static TcpChannel channel;
-        private MetadataState state;
-        private string name;
-        private string address;
-        private int port;
-        private int pingDataServerInterval = 25;
-        private int pingMetadataServerInterval = 5;
-        private double percentage = 0.2;
-        private string primary;
-        private Dictionary<string, string> replicas;
-        private Dictionary<string, string> clients;
-        private List<string> deadReplicas;
-        private Dictionary<string, string> liveDataServers;
-        private Dictionary<string, string> deadDataServers;
-        private Dictionary<string, int> serversLoad;
-        private Dictionary<string, Metadata> files;
-        private Dictionary<string, List<string>> tempOpenFiles;
-        private Dictionary<string, int> pendingFiles;
-        private Dictionary<string, DataInfo> dataServersInfo;
+        private int pingDataServerInterval;
+        private int pingMetadataServerInterval;
+        private int serializationInterval;
+        private double percentage;
+
+        private static TcpChannel Channel { set; get; }
+        private MetadataState State { set; get; }
+        public string Name { set; get; }
+        public string Address { set; get; }
+        public int Port { set; get; }
+        public string Primary { set; get; }
+        public SerializableDictionary<string, string> Replicas { set; get; }
+        public SerializableDictionary<string, string> Clients { set; get; }
+        public List<string> DeadReplicas { set; get; }
+        public SerializableDictionary<string, string> LiveDataServers { set; get; }
+        public SerializableDictionary<string, string> DeadDataServers { set; get; }
+        public SerializableDictionary<string, int> ServersLoad { set; get; }
+        public SerializableDictionary<string, Metadata> Files { set; get; }
+        public SerializableDictionary<string, List<string>> OpenFiles { set; get; }
+        public SerializableDictionary<string, int> PendingFiles { set; get; }
+        public SerializableDictionary<string, DataInfo> DataServersInfo { set; get; }
+        public Log Log { set; get; }
+
         private System.Timers.Timer pingDataServersTimer;
         private System.Timers.Timer pingPrimaryReplicaTimer;
+        private System.Timers.Timer serializationTimer;
 
-        public Log Log { private set; get; }
-
-        public double Percentage { get {
-            return this.percentage;}}
+        public MetadataServer()
+        {
+        }
 
         public MetadataServer(string name, string port)
         {
-            this.state = new NormalState();
-            this.name = name;
-            this.port = int.Parse(port);
-            this.address = "tcp://localhost:" + this.port + "/" + this.name;
-            this.primary = null;
-            this.replicas = new Dictionary<string, string>();
-            this.clients = new Dictionary<string, string>();
-            this.deadReplicas = new List<string>();
-            this.liveDataServers = new Dictionary<string, string>();
-            this.deadDataServers = new Dictionary<string, string>();
-            this.serversLoad = new Dictionary<string, int>();
-            this.files = new Dictionary<string, Metadata>();
-            this.tempOpenFiles = new Dictionary<string, List<string>>();
-            this.pendingFiles = new Dictionary<string, int>();
-            this.dataServersInfo = new Dictionary<string, DataInfo>();
+            this.State = new NormalState();
+            this.Name = name;
+            this.Port = int.Parse(port);
+            this.Address = "tcp://localhost:" + this.Port + "/" + this.Name;
+            this.Primary = null;
+            this.Replicas = new SerializableDictionary<string, string>();
+            this.Clients = new SerializableDictionary<string, string>();
+            this.DeadReplicas = new List<string>();
+            this.LiveDataServers = new SerializableDictionary<string, string>();
+            this.DeadDataServers = new SerializableDictionary<string, string>();
+            this.ServersLoad = new SerializableDictionary<string, int>();
+            this.Files = new SerializableDictionary<string, Metadata>();
+            this.OpenFiles = new SerializableDictionary<string, List<string>>();
+            this.PendingFiles = new SerializableDictionary<string, int>();
+            this.DataServersInfo = new SerializableDictionary<string, DataInfo>();
+
+            this.pingDataServerInterval = 25;
+            this.pingMetadataServerInterval = 5;
+            this.serializationInterval = 15;
+            this.percentage = 0.2;
+
+
             this.pingDataServersTimer = new System.Timers.Timer();
             pingDataServersTimer.Elapsed += new System.Timers.ElapsedEventHandler(pingDataServers);
             pingDataServersTimer.Interval = 1000 * pingDataServerInterval;
             this.pingPrimaryReplicaTimer = new System.Timers.Timer();
             pingPrimaryReplicaTimer.Elapsed += new System.Timers.ElapsedEventHandler(PingPrimaryReplica);
             pingPrimaryReplicaTimer.Interval = 1000 * pingMetadataServerInterval;
+
+            this.serializationTimer = new System.Timers.Timer();
+            serializationTimer.Elapsed += new System.Timers.ElapsedEventHandler(SerializeServer);
+            serializationTimer.Interval = 1000 * serializationInterval;
 
             string dir = Environment.CurrentDirectory + string.Format(@"\{0}", this.Name);
             if (!Directory.Exists(dir))
@@ -74,106 +89,48 @@ namespace padiFS
 
             this.Log = new padiFS.Log(dir + @"\Log.txt");
 
+            serializationTimer.Enabled = true;
+
             Console.WriteLine("ID: {0}", Util.MetadataServerId(name));
-        }
-
-        public Dictionary<string, DataInfo> DataServersInfo
-        {
-            get { return this.dataServersInfo; }
-        }
-
-        public Dictionary<string, Metadata> Files
-        {
-            get { return this.files; }
-        }
-
-        public Dictionary<string, List<string>> TempOpenFiles
-        {
-            get { return this.tempOpenFiles; }
-        }
-
-        public Dictionary<string, int> PendingFiles
-        {
-            get { return this.pendingFiles; }
-            set { this.pendingFiles = value; }
-        }
-
-        public Dictionary<string, int> ServersLoad
-        {
-            get { return this.serversLoad; }
-            set { this.serversLoad = value;}
-        }
-       
-        public Dictionary<string, string> LiveDataServers
-        {
-            get { return this.liveDataServers; }
-        }
-
-        public Dictionary<string, string> Replicas
-        {
-            get { return this.replicas; }
-        }
-
-        public Dictionary<string, string> Clients
-        {
-            get { return this.clients; }
-        }
-
-        public Dictionary<string, string> DeadDataServers
-        {
-            get { return this.deadDataServers; }
-        }
-        
-        public string Name
-        {
-            get { return this.name; }
-        }
-       
-        public string Primary
-        {
-            get { return this.primary; }
-            set { this.primary = value; }
-        }
-
-        public string Address
-        {
-            get { return this.address; }
-        }
-
-        public int Port
-        {
-            get { return this.port; }
         }
 
         protected void setStateFail()
         {
-            this.state = new FailedState();
+            this.State = new FailedState();
         }
         
         protected void setStateNormal()
         {
-            this.state = new NormalState();
+            this.State = new NormalState();
+        }
+
+        public double Percentage
+        {
+            get
+            {
+                return this.percentage;
+            }
         }
         
         // Project API
         public Metadata Open(string clientName, string filename)
         {
-            return this.state.Open(this, clientName, filename);
+            return this.State.Open(this, clientName, filename);
         }
 
         public void Close(string clientName, string filename)
         {
-            this.state.Close(this, clientName, filename);
+            this.State.Close(this, clientName, filename);
         }
 
         public Metadata Create(string clientName, string filename, int serversNumber, int readQuorum, int writeQuorum)
         {
-            return this.state.Create(this, clientName, filename, serversNumber, readQuorum, writeQuorum); 
+            return this.State.Create(this, clientName, filename, serversNumber, readQuorum, writeQuorum); 
         }
 
         public void Delete(string clientName, string filename)
         {
-            this.state.Delete(this, clientName, filename);
+            this.State.Delete(this, clientName, filename);
         }
         
         // Puppet Master Commands
@@ -191,19 +148,19 @@ namespace padiFS
         }
 
         public void Recover() {
-            foreach (string replica in replicas.Keys)
+            foreach (string replica in this.Replicas.Keys)
             {
                 try
                 {
-                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[replica]);
+                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), this.Replicas[replica]);
                     if (server != null)
                     {
                         if (server.Ping())
                         {
-                            this.primary = server.GetPrimary();
-                            Console.WriteLine("PRIMARY " + this.primary);
+                            this.Primary = server.GetPrimary();
+                            Console.WriteLine("PRIMARY " + this.Primary);
                             Console.WriteLine("REPLICA " + replica);
-                            if (this.primary == replica)
+                            if (this.Primary == replica)
                             {
                                 //MetadataInfo info = server.GetMetadataInfo();
                                 //UpdateReplica(info);
@@ -213,9 +170,9 @@ namespace padiFS
                             else
                             {
                                 // To prevent Lightning bolt failures
-                                if (replicas.ContainsKey(this.primary))
+                                if (this.Replicas.ContainsKey(this.Primary))
                                 {
-                                    IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[this.primary]);
+                                    IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), this.Replicas[this.Primary]);
                                     if (primary != null)
                                     {
                                         //MetadataInfo info = primary.GetMetadataInfo();
@@ -235,14 +192,14 @@ namespace padiFS
                 }
             }
 
-            foreach (string replica in replicas.Keys)
+            foreach (string replica in this.Replicas.Keys)
             {
-                if (!deadReplicas.Contains(replica))
+                if (!this.DeadReplicas.Contains(replica))
                 {
-                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[replica]);
+                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), this.Replicas[replica]);
                     if (server != null)
                     {
-                        server.Recovered(this.name);
+                        server.Recovered(this.Name);
                     }
                 }
             }
@@ -257,9 +214,9 @@ namespace padiFS
 
         public void Recovered(string name)
         {
-            if (deadReplicas.Contains(name))
+            if (this.DeadReplicas.Contains(name))
             {
-                deadReplicas.Remove(name);
+                this.DeadReplicas.Remove(name);
             }
         }
         
@@ -268,9 +225,9 @@ namespace padiFS
         public void RegisterDataServer(string name, string address)
         {
             Console.WriteLine("Data Server " + name + " : " + address);
-            liveDataServers.Add(name, address);
-            dataServersInfo.Add(name, null);
-            serversLoad.Add(name, 0);
+            this.LiveDataServers.Add(name, address);
+            this.DataServersInfo.Add(name, null);
+            this.ServersLoad.Add(name, 0);
 
             this.Log.Append(string.Format("REGISTER data {0} {1}", name, address));
         }
@@ -278,7 +235,7 @@ namespace padiFS
         public void RegisterClient(string name, string address)
         {
             Console.WriteLine("Client " + name + " : " + address);
-            clients.Add(name, address);
+            this.Clients.Add(name, address);
 
             this.Log.Append(string.Format("REGISTER client {0} {1}", name, address));
         }
@@ -286,35 +243,35 @@ namespace padiFS
 
         public void RegisterMetadataServer(string name, string address)
         {
-            this.state.RegisterMetadataServer(this, name, address);
+            this.State.RegisterMetadataServer(this, name, address);
         }
 
         public void UpdateReplica(MetadataInfo info)
         {
             SetPrimary(info.Primary);
-            this.replicas = info.Replicas;
+            this.Replicas = info.Replicas;
 
-            if (replicas.ContainsKey(name))
+            if (this.Replicas.ContainsKey(this.Name))
             {
-                replicas.Remove(name);
+                this.Replicas.Remove(this.Name);
             }
 
-            if (!replicas.ContainsKey(primary))
+            if (!this.Replicas.ContainsKey(this.Primary))
             {
-                this.replicas.Add(primary, info.Address);
+                this.Replicas.Add(this.Primary, info.Address);
             }
-            this.liveDataServers = info.LiveDataServers;
-            this.deadDataServers = info.DeadDataServers;
-            this.serversLoad = info.ServersLoad;
-            this.files = info.Files;
-            this.tempOpenFiles = info.OpenFiles;
+            this.LiveDataServers = info.LiveDataServers;
+            this.DeadDataServers = info.DeadDataServers;
+            this.ServersLoad = info.ServersLoad;
+            this.Files = info.Files;
+            this.OpenFiles = info.OpenFiles;
 
             Console.WriteLine("Updated metadata info.");
         }
 
         public MetadataInfo GetMetadataInfo()
         {
-            return new MetadataInfo(primary, address, replicas, liveDataServers, deadDataServers, serversLoad, files, tempOpenFiles);
+            return new MetadataInfo(this.Primary, this.Address, this.Replicas, this.LiveDataServers, this.DeadDataServers, this.ServersLoad, this.Files, this.OpenFiles);
         }
 
 
@@ -337,12 +294,12 @@ namespace padiFS
                 //    }
                 //}
 
-                dataServersInfo[name] = server.Ping();
+                this.DataServersInfo[name] = server.Ping();
                 Console.WriteLine(name + ": VIVO");
-                if (!liveDataServers.ContainsKey(name))
+                if (!this.LiveDataServers.ContainsKey(name))
                 {
-                    liveDataServers.Add(name, address);
-                    deadDataServers.Remove(name);
+                    this.LiveDataServers.Add(name, address);
+                    this.DeadDataServers.Remove(name);
                 }
 
                 //else
@@ -359,20 +316,20 @@ namespace padiFS
             {
                 Console.WriteLine(e.Message);
                 //Console.WriteLine(name + ": MORTO");
-                if (!deadDataServers.ContainsKey(name))
+                if (!this.DeadDataServers.ContainsKey(name))
                 {
-                    deadDataServers.Add(name, address);
-                    liveDataServers.Remove(name);
+                    this.DeadDataServers.Add(name, address);
+                    this.LiveDataServers.Remove(name);
                 }
             }
             catch (System.IO.IOException)
             {
                 //Console.WriteLine(e.Message);
                 Console.WriteLine(name + ": Desligado");
-                if (!deadDataServers.ContainsKey(name))
+                if (!this.DeadDataServers.ContainsKey(name))
                 {
-                    deadDataServers.Add(name, address);
-                    liveDataServers.Remove(name);
+                    this.DeadDataServers.Add(name, address);
+                    this.LiveDataServers.Remove(name);
                 }
             }
         }
@@ -380,13 +337,13 @@ namespace padiFS
 
         private void pingDataServers(object source, ElapsedEventArgs e)
         {
-            this.state.pingDataServers(this, source, e);
+            this.State.pingDataServers(this, source, e);
         }
 
         public void PingReplica(object threadContext)
         {
             string replica = (string)threadContext;
-            IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[replica]);
+            IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), this.Replicas[replica]);
 
             try
             {
@@ -404,7 +361,7 @@ namespace padiFS
             }
             catch (ServerNotAvailableException e)
             {
-                deadReplicas.Add(replica);
+                this.DeadReplicas.Add(replica);
                 Console.WriteLine(e.Message);
                 //Console.WriteLine("EXCEP: esta é a primary: {0}", replica);
                 //Console.WriteLine(replica + ": MORTO");
@@ -413,7 +370,7 @@ namespace padiFS
             catch (System.IO.IOException)
             {
                 Console.WriteLine("IOException");
-                deadReplicas.Add(replica);
+                this.DeadReplicas.Add(replica);
                 //Console.WriteLine(e.Message);
                 //Console.WriteLine("EXCEP: esta é a primary: {0}", replica);
                 //Console.WriteLine(replica + ": MORTO");
@@ -427,23 +384,31 @@ namespace padiFS
 
         private void PingPrimaryReplica(object source, ElapsedEventArgs e)
         {
-            this.state.PingPrimaryReplica(this, source, e);
+            this.State.PingPrimaryReplica(this, source, e);
+        }
+
+        private void SerializeServer(object source, ElapsedEventArgs e)
+        {
+            string directory = Environment.CurrentDirectory + string.Format(@"\{0}", this.Name);
+            string filename = "Backup.txt";
+
+            Util.SerializeObject(this, directory, filename);
         }
 
         public bool Ping()
         {
-            return this.state.Ping();
+            return this.State.Ping();
         }
 
         public string GetPrimary()
         {
-            return this.primary;
+            return this.Primary;
         }
 
         public void SetPrimary(string name)
         {
-            this.primary = name;
-            if (this.primary == this.name)
+            this.Primary = name;
+            if (this.Primary == this.Name)
             {
                 pingDataServersTimer.Enabled = true;
                 pingPrimaryReplicaTimer.Enabled = false;
@@ -460,16 +425,16 @@ namespace padiFS
 
         private void NextPrimaryReplica()
         {
-            int id = Util.MetadataServerId(this.name);
-            string replica = this.name;
+            int id = Util.MetadataServerId(this.Name);
+            string replica = this.Name;
 
-            foreach (string r in replicas.Keys)
+            foreach (string r in this.Replicas.Keys)
             {
-                if (r != primary)
+                if (r != this.Primary)
                 {
                     try
                     {
-                        IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), replicas[r]);
+                        IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), this.Replicas[r]);
                         if (server != null)
                         {
                             server.Ping();
@@ -492,13 +457,13 @@ namespace padiFS
 
         public string Dump()
         {
-            string s = "Metadata Server " + name + " dump:\r\nFiles:\r\n";
+            string s = "Metadata Server " + this.Name + " dump:\r\nFiles:\r\n";
 
             // files keepped by metadata server
-            foreach (string m in files.Keys)
+            foreach (string m in this.Files.Keys)
             {
-                s += files[m].ToString() + "\r\n";
-                foreach(string d in files[m].DataServers)
+                s += this.Files[m].ToString() + "\r\n";
+                foreach(string d in this.Files[m].DataServers)
                 {
                     s += "\t" + d + "\r\n";
                 }
@@ -506,24 +471,24 @@ namespace padiFS
 
             // files open in metadata server
             s += "Open Files:\r\n";
-            foreach (string m in tempOpenFiles.Keys)
+            foreach (string m in this.OpenFiles.Keys)
             {
-                s += files[m].ToString() + "\r\n";
-                foreach (string c in tempOpenFiles[m])
+                s += this.Files[m].ToString() + "\r\n";
+                foreach (string c in this.OpenFiles[m])
                 {
                     s += "\t" + c + "\r\n";
                 }
             }
             s += "Pending Files:\r\n";
-            foreach (string m in pendingFiles.Keys)
+            foreach (string m in this.PendingFiles.Keys)
             {
-                s += files[m].ToString() + "\r\n";
+                s += this.Files[m].ToString() + "\r\n";
             }
             // files open in metadata server
             s += "Replicas:\r\n";
-            foreach (string m in replicas.Keys)
+            foreach (string m in this.Replicas.Keys)
             {
-                s += replicas[m].ToString() + "\r\n";
+                s += this.Replicas[m].ToString() + "\r\n";
             }
 
 
@@ -534,23 +499,23 @@ namespace padiFS
         {
             if (this.PendingFiles.Count > 0)
             {
-                Dictionary<string, int> updated = new Dictionary<string, int>();
+                SerializableDictionary<string, int> updated = new SerializableDictionary<string, int>();
                 string command = string.Format("UPDATE {0}", address);
 
-                foreach (string f in pendingFiles.Keys)
+                foreach (string f in this.PendingFiles.Keys)
                 {
-                    Metadata meta = files[f];
+                    Metadata meta = this.Files[f];
                     meta.AddDataServers(address);
 
                     command += string.Format(" {0}", f);
 
-                    if (tempOpenFiles.ContainsKey(f))
+                    if (this.OpenFiles.ContainsKey(f))
                     {
-                        List<string> clients = tempOpenFiles[f];
+                        List<string> clients = this.OpenFiles[f];
 
                         foreach (string c in clients)
                         {
-                            IClient client = (IClient)Activator.GetObject(typeof(IClient), this.clients[c]);
+                            IClient client = (IClient)Activator.GetObject(typeof(IClient), this.Clients[c]);
 
                             if (client != null)
                             {
@@ -568,7 +533,7 @@ namespace padiFS
                     //    server.Create(input);
                     //}
 
-                    int n = pendingFiles[f] - 1;
+                    int n = this.PendingFiles[f] - 1;
 
                     if (n > 0)
                     {
@@ -577,7 +542,7 @@ namespace padiFS
 
                 }
 
-                pendingFiles = new Dictionary<string, int>(updated);
+                this.PendingFiles = new SerializableDictionary<string, int>(updated);
 
                 this.Log.Append(command);
 
@@ -609,7 +574,7 @@ namespace padiFS
         {
             if (eventType == 2)
             {
-                channel.StopListening(null);
+                Channel.StopListening(null);
                 Console.WriteLine("Exit");
             }
             return false;
@@ -630,11 +595,11 @@ namespace padiFS
         {
             string[] arguments = Util.SplitArguments(args[0]);
             MetadataServer ms = new MetadataServer(arguments[0], arguments[1]);
-            Console.Title = "Iurie's Metadata Server: " + ms.name;
+            Console.Title = "Iurie's Metadata Server: " + ms.Name;
             // Ficar esperar pedidos de Iurie
-            channel = new TcpChannel(ms.port);
-            ChannelServices.RegisterChannel(channel, true);
-            RemotingServices.Marshal(ms, ms.name, typeof(MetadataServer));
+            Channel = new TcpChannel(ms.Port);
+            ChannelServices.RegisterChannel(Channel, true);
+            RemotingServices.Marshal(ms, ms.Name, typeof(MetadataServer));
 
             // TEST AREA
             handler = new ConsoleEventDelegate(ConsoleEventCallback);
@@ -645,6 +610,8 @@ namespace padiFS
             //{
             //    Debugger.Launch();
             //}
+
+
             Console.ReadLine();
         }
 
@@ -692,7 +659,7 @@ namespace padiFS
                                 List<string> clientsList = new List<string>();
                                 clientsList.Add(clientName);
                                 this.Files.Add(filename, meta);
-                                this.TempOpenFiles.Add(filename, clientsList);
+                                this.OpenFiles.Add(filename, clientsList);
                             }
                         }
                         break;
@@ -701,12 +668,12 @@ namespace padiFS
                             string clientName = args[1];
                             string filename = args[2];
 
-                            if (this.TempOpenFiles.ContainsKey(filename))
+                            if (this.OpenFiles.ContainsKey(filename))
                             {
-                                List<string> clientsList = this.TempOpenFiles[filename];
+                                List<string> clientsList = this.OpenFiles[filename];
                                 if (!clientsList.Contains(clientName))
                                 {
-                                    this.TempOpenFiles[filename].Add(clientName);
+                                    this.OpenFiles[filename].Add(clientName);
                                 }
                             }
                             else
@@ -715,7 +682,7 @@ namespace padiFS
                                 {
                                     List<string> clientsList = new List<string>();
                                     clientsList.Add(clientName);
-                                    this.TempOpenFiles.Add(filename, clientsList);
+                                    this.OpenFiles.Add(filename, clientsList);
                                 }
                             }
                         }
@@ -727,9 +694,9 @@ namespace padiFS
 
                             if (this.Files.ContainsKey(filename))
                             {
-                                if (this.TempOpenFiles.ContainsKey(filename))
+                                if (this.OpenFiles.ContainsKey(filename))
                                 {
-                                    List<string> clientsList = this.TempOpenFiles[filename];
+                                    List<string> clientsList = this.OpenFiles[filename];
 
                                     if (clientsList.Contains(clientName))
                                     {
@@ -737,7 +704,7 @@ namespace padiFS
 
                                         if (clientsList.Count == 0)
                                         {
-                                            this.TempOpenFiles.Remove(filename);
+                                            this.OpenFiles.Remove(filename);
                                         }
                                     }
                                 }
@@ -752,7 +719,7 @@ namespace padiFS
                             if (this.Files.ContainsKey(filename))
                             {
                                 this.Files.Remove(filename);
-                                this.TempOpenFiles.Remove(filename);
+                                this.OpenFiles.Remove(filename);
                             }
                         }
                         break;
@@ -791,16 +758,16 @@ namespace padiFS
                         {
                             string address = args[1];
                             string[] files = Util.SliceArray(args, 2, args.Length);
-                            Dictionary<string, int> updated = new Dictionary<string, int>();
+                            SerializableDictionary<string, int> updated = new SerializableDictionary<string, int>();
                             bool contains = false;
                             foreach (string f in files)
                             {
                                 Metadata meta = this.Files[f];
                                 meta.AddDataServers(address);
 
-                                //if (this.TempOpenFiles.ContainsKey(f))
+                                //if (this.OpenFiles.ContainsKey(f))
                                 //{
-                                //    List<string> clients = this.TempOpenFiles[f];
+                                //    List<string> clients = this.OpenFiles[f];
 
                                 //    foreach (string c in clients)
                                 //    {
@@ -822,9 +789,9 @@ namespace padiFS
                                 //    server.Create(input);
                                 //}
 
-                                if (pendingFiles.ContainsKey(f))
+                                if (this.PendingFiles.ContainsKey(f))
                                 {
-                                    int n = pendingFiles[f] - 1;
+                                    int n = this.PendingFiles[f] - 1;
 
                                     if (n > 0)
                                     {
@@ -835,7 +802,7 @@ namespace padiFS
                             }
                             if (contains)
                             {
-                                this.PendingFiles = new Dictionary<string, int>(updated);
+                                this.PendingFiles = new SerializableDictionary<string, int>(updated);
                             }
                         }
                         break;
@@ -844,7 +811,7 @@ namespace padiFS
                             string primary = args[1];
                             this.Primary = primary;
 
-                            if (this.primary == this.name)
+                            if (this.Primary == this.Name)
                             {
                                 pingDataServersTimer.Enabled = true;
                                 pingPrimaryReplicaTimer.Enabled = false;

@@ -9,7 +9,7 @@ namespace padiFS
     [Serializable]
     public class Log
     {
-        public int Index { private set; get; }
+        public int Index { set; get; }
         private string Path { set; get; }
 
         public Log()

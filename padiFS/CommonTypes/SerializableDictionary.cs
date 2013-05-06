@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 using System.Collections.Generic;
 using System.Text;
 
-namespace teste
+namespace padiFS
 {
     [Serializable()]
     public class SerializableDictionary<TKey, TVal> : Dictionary<TKey, TVal>, IXmlSerializable, ISerializable

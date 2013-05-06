@@ -68,9 +68,9 @@ namespace padiFS
             return "";
         }
 
-        public static Dictionary<string, int> SortServerLoad(Dictionary<string, int> dic)
+        public static SerializableDictionary<string, int> SortServerLoad(SerializableDictionary<string, int> dic)
         {
-            Dictionary<string, int> res = new Dictionary<string,int>();
+            SerializableDictionary<string, int> res = new SerializableDictionary<string,int>();
 
             foreach (var item in dic.OrderBy(i => i.Value))
             {
@@ -167,13 +167,20 @@ namespace padiFS
 
         public static void SerializeObject(Object ob, string currentDir, string name)
         {
-            string path = currentDir + @"\" + name;
-            Console.WriteLine(path);
-            TextWriter tw = new StreamWriter(path);
-            System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(ob.GetType());
-            x.Serialize(tw, ob);
-            Console.WriteLine("object written to file");
-            tw.Close();
+            try
+            {
+                string path = currentDir + @"\" + name;
+                Console.WriteLine(path);
+                TextWriter tw = new StreamWriter(path);
+                System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(ob.GetType());
+                x.Serialize(tw, ob);
+                Console.WriteLine("object written to file");
+                tw.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.InnerException.Message);
+            }
         }
 
         public static Object DeserializeObject(Object ob, string currentDir, string name)
