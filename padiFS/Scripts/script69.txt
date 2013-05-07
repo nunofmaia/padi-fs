@@ -20,4 +20,4 @@ WRITE c-0, 0, "Ola jaquina"
 READ c-0, 0, default, 0
 CREATE c-0, f, 1, 1, 1
 COPY c-0, 0, default, 1, ". Tudo bem?"
-READ c-0 1, default, 1
+READ c-0, 1, default, 1

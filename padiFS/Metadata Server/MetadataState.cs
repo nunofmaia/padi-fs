@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Timers;
+using System.Text.RegularExpressions;
 
 namespace padiFS
 {
@@ -17,6 +18,7 @@ namespace padiFS
         public abstract void RegisterMetadataServer(MetadataServer md, string name, string address);
         public abstract void pingDataServers(MetadataServer md, object source, ElapsedEventArgs e);
         public abstract void PingPrimaryReplica(MetadataServer md, object source, ElapsedEventArgs e);
+        public abstract void AppendToLog(MetadataServer md, string command);
     }
 
     class FailedState : MetadataState
@@ -62,6 +64,11 @@ namespace padiFS
         {
             throw new ServerNotAvailableException("The server is not available and can't ping the primary replica.");
         }
+
+        public override void AppendToLog(MetadataServer md, string command)
+        {
+            throw new ServerNotAvailableException("The server is not available and can't append to log.");
+        }
     }
 
     class NormalState : MetadataState
@@ -70,7 +77,7 @@ namespace padiFS
         // Project API
         public override Metadata Open(MetadataServer md, string clientName, string filename)
         {
-            if(md.getMigratingList().Contains(filename))
+            if (md.getMigratingList().Contains(filename))
                 md.getMigration().WaitOne();
 
             // If already opened by one client
@@ -199,10 +206,23 @@ namespace padiFS
                 throw new FileNotFoundException("File does not exist.");
             }
 
+            string command = string.Format("DELETE {0} {1}", clientName, filename);
+            Metadata meta = md.Files[filename];
+            foreach (string address in meta.DataServers)
+            {
+                Match match = Regex.Match(address, @".*\/(d-\d+)$", RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    string name = match.Groups[1].Value;
+                    Console.Write(string.Format("Vou decrementar o {0}", name));
+                    md.ServersLoad[name]--;
+                    command += string.Format(" {0}", name);
+                }
+            }
+            md.ServersLoad = Util.SortServerLoad(md.ServersLoad);
             md.Files.Remove(filename);
             md.OpenFiles.Remove(filename);
             List<object> context = new List<object>();
-            string command = string.Format("DELETE {0} {1}", clientName, filename);
             context.Add(md);
             context.Add(command);
             ThreadPool.QueueUserWorkItem(AppendToLog, context);
@@ -526,6 +546,207 @@ namespace padiFS
                 catch (System.IO.IOException) { }
                 catch (System.Net.Sockets.SocketException) { }
             }
+        }
+
+        public override void AppendToLog(MetadataServer md, string command)
+        {
+            string[] args = command.Split(' ');
+            string code = args[0];
+
+            switch (code)
+            {
+                case "CREATE":
+                    {
+                        string clientName = args[1];
+                        string filename = args[2];
+                        int serversNumber = int.Parse(args[3]);
+                        int readQuorum = int.Parse(args[4]);
+                        int writeQuorum = int.Parse(args[5]);
+
+                        if (!md.Files.ContainsKey(filename))
+                        {
+                            if (md.LiveDataServers.Count < serversNumber)
+                            {
+                                if (!md.PendingFiles.ContainsKey(filename))
+                                {
+                                    md.PendingFiles.Add(filename, serversNumber - md.LiveDataServers.Count);
+                                }
+                            }
+
+                            List<string> servers = new List<string>();
+                            string[] chosen = Util.SliceArray(args, 6, args.Length);
+
+                            // Before sending the requests, a time stamp is added to the filename
+                            string f = DateTime.Now.ToString("o") + (char)0x7f + filename;
+                            foreach (string v in chosen)
+                            {
+                                servers.Add(md.LiveDataServers[v]);
+                                md.ServersLoad[v]++;
+                            }
+
+                            md.ServersLoad = Util.SortServerLoad(md.ServersLoad);
+                            Metadata meta = new Metadata(filename, serversNumber, readQuorum, writeQuorum, servers);
+                            List<string> clientsList = new List<string>();
+                            clientsList.Add(clientName);
+                            md.Files.Add(filename, meta);
+                            md.OpenFiles.Add(filename, clientsList);
+                        }
+                    }
+                    break;
+                case "OPEN":
+                    {
+                        string clientName = args[1];
+                        string filename = args[2];
+
+                        if (md.OpenFiles.ContainsKey(filename))
+                        {
+                            List<string> clientsList = md.OpenFiles[filename];
+                            if (!clientsList.Contains(clientName))
+                            {
+                                md.OpenFiles[filename].Add(clientName);
+                            }
+                        }
+                        else
+                        {
+                            if (md.Files.ContainsKey(filename))
+                            {
+                                List<string> clientsList = new List<string>();
+                                clientsList.Add(clientName);
+                                md.OpenFiles.Add(filename, clientsList);
+                            }
+                        }
+                    }
+                    break;
+                case "CLOSE":
+                    {
+                        string clientName = args[1];
+                        string filename = args[2];
+
+                        if (md.Files.ContainsKey(filename))
+                        {
+                            if (md.OpenFiles.ContainsKey(filename))
+                            {
+                                List<string> clientsList = md.OpenFiles[filename];
+
+                                if (clientsList.Contains(clientName))
+                                {
+                                    clientsList.Remove(clientName);
+
+                                    if (clientsList.Count == 0)
+                                    {
+                                        md.OpenFiles.Remove(filename);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case "DELETE":
+                    {
+                        string clientName = args[1];
+                        string filename = args[2];
+                        string[] servers = Util.SliceArray(args, 3, args.Length);
+
+                        if (md.Files.ContainsKey(filename))
+                        {
+                            md.Files.Remove(filename);
+                            md.OpenFiles.Remove(filename);
+
+                            foreach (string server in servers)
+                            {
+                                md.ServersLoad[server]--;
+                            }
+
+                            md.ServersLoad = Util.SortServerLoad(md.ServersLoad);
+                        }
+                    }
+                    break;
+                case "REGISTER":
+                    {
+                        string server = args[1];
+                        string name = args[2];
+                        string address = args[3];
+
+                        switch (server)
+                        {
+                            case "data":
+                                if (!md.DataServersInfo.ContainsKey(name))
+                                {
+                                    md.LiveDataServers.Add(name, address);
+                                    md.DataServersInfo.Add(name, null);
+                                    md.ServersLoad.Add(name, 0);
+                                }
+                                break;
+                            case "metadata":
+                                if (!md.Replicas.ContainsKey(name) && name != md.Name)
+                                {
+                                    md.Replicas.Add(name, address);
+                                }
+                                break;
+                            case "client":
+                                if (!md.Clients.ContainsKey(name))
+                                {
+                                    md.Clients.Add(name, address);
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case "UPDATE":
+                    {
+                        string name = args[1];
+                        string address = args[2];
+                        string[] files = Util.SliceArray(args, 3, args.Length);
+                        SerializableDictionary<string, int> updated = new SerializableDictionary<string, int>();
+                        bool contains = false;
+                        foreach (string f in files)
+                        {
+                            Metadata meta = md.Files[f];
+                            meta.AddDataServers(address);
+                            md.ServersLoad[name]++;
+                            md.ServersLoad = Util.SortServerLoad(md.ServersLoad);
+
+                            if (md.PendingFiles.ContainsKey(f))
+                            {
+                                int n = md.PendingFiles[f] - 1;
+
+                                if (n > 0)
+                                {
+                                    updated.Add(f, n);
+                                }
+                                contains = true;
+                            }
+                        }
+                        if (contains)
+                        {
+                            md.PendingFiles = new SerializableDictionary<string, int>(updated);
+                        }
+                    }
+                    break;
+                case "SET-PRIMARY":
+                    {
+                        string primary = args[1];
+                        md.Primary = primary;
+
+                        if (md.Primary == md.Name)
+                        {
+                            md.EnablePrimaryTimers();
+                        }
+                        else
+                        {
+                            md.EnableReplicaTimers();
+                        }
+
+                    }
+                    break;
+                case "TOKEN":
+                    {
+                        Console.WriteLine("Token changed");
+                    }
+                    break;
+            }
+
+            md.Log.Append(command);
         }
     }
 }

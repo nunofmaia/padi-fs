@@ -146,11 +146,36 @@ namespace padiFS
                             dscounter++;
                             registerDataServer(name, address);
                             processes.Add(name, address);
-                            UpdateFileMetadata(address);
+                            UpdateFileMetadata(name, address);
                         }
                         else
                         {
                             System.Windows.Forms.MessageBox.Show("A Data Server should be launched only after a Metadata Server");
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            IDataServer d = (IDataServer)Activator.GetObject(typeof(IDataServer), dataServers[name]);
+
+                            if (d != null)
+                            {
+                                d.Ping();
+                            }
+                        }
+                        catch (ServerNotAvailableException)
+                        {
+                        }
+                        catch (System.IO.IOException)
+                        {
+                            LaunchDataServer(name, port);
+                            registerDataServer(name, address);
+                        }
+                        catch (System.Net.Sockets.SocketException)
+                        {
+                            LaunchDataServer(name, port);
+                            registerDataServer(name, address);
                         }
                     }
 
@@ -328,7 +353,7 @@ namespace padiFS
             }
         }
 
-        private void UpdateFileMetadata(string address)
+        private void UpdateFileMetadata(string name, string address)
         {
             string primary = AskForPrimary();
 
@@ -336,7 +361,7 @@ namespace padiFS
 
             if (server != null)
             {
-                server.UpdateFileMetada(address);
+                server.UpdateFileMetada(name, address);
             }
         }
 
