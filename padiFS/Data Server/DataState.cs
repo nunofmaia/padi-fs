@@ -26,7 +26,7 @@ namespace padiFS
             File file = new File();
             string[] args = Util.SplitArguments(fileName);
 
-            file.Version = Convert.ToDateTime(args[0]);
+            file.Version = Convert.ToInt64(args[0]);
             file.Content = new byte[1];
 
             ds.CurrentDir = Environment.CurrentDirectory;
@@ -67,7 +67,7 @@ namespace padiFS
             ds.GetFreeze.WaitOne();
 
             string[] content = Util.SplitArguments(Util.ConvertByteArrayToString(bytearray));
-            string date = content[0];
+            string version = content[0];
             byte[] bytes = Util.ConvertStringToByteArray(content[1]);
 
             File newFile = new File();
@@ -79,9 +79,9 @@ namespace padiFS
                 oldFile = Util.DeserializeFile(path, oldFile);
             }
 
-            if (oldFile.Version < Convert.ToDateTime(date))
+            if (oldFile.Version < Convert.ToInt64(version))
             {
-                newFile.Version = Convert.ToDateTime(date);
+                newFile.Version = Convert.ToInt64(version);
                 newFile.Content = bytes;
                 ds.CurrentDir = Environment.CurrentDirectory;
                 string readPath = ds.CurrentDir + @"\" + ds.Name + @"\" + localFile + @".txt";

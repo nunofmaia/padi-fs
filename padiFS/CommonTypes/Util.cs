@@ -80,9 +80,9 @@ namespace padiFS
             return res;
         }
 
-        public static Dictionary<int, DateTime> SortVotes(Dictionary<DateTime, int> dic)
+        public static Dictionary<int, long> SortVotes(Dictionary<long, int> dic)
         {
-            Dictionary<int, DateTime> res = new Dictionary<int, DateTime>();
+            Dictionary<int, long> res = new Dictionary<int, long>();
 
             foreach (var item in dic.OrderBy(i => i.Value))
             {

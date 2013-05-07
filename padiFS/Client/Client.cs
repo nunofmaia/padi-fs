@@ -217,9 +217,9 @@ namespace padiFS
                 readsArray = new bool[servers.Count];
                 ReadCallDataServers(filename, semantic, servers);
 
-                Dictionary<DateTime, File> received = null;
-                Dictionary<DateTime, int> votes = null;
-                DateTime winner = new DateTime();
+                Dictionary<long, File> received = null;
+                Dictionary<long, int> votes = null;
+                long winner = 0;
 
                 while (!ReadVoting(readQuorum, ref received, ref votes, ref winner))
                 {
@@ -262,7 +262,7 @@ namespace padiFS
         }
 
         // Method that performs the voting count of answers from data servers
-        private bool ReadVoting(int readQuorum, ref Dictionary<DateTime, File> received, ref Dictionary<DateTime, int> votes, ref DateTime winner)
+        private bool ReadVoting(int readQuorum, ref Dictionary<long, File> received, ref Dictionary<long, int> votes, ref long winner)
         {
             int votingTimer = 0;
             int bestVote = 0;
@@ -288,8 +288,8 @@ namespace padiFS
                     Thread.Sleep(1000);
                 }
 
-                votes = new Dictionary<DateTime, int>();
-                received = new Dictionary<DateTime, File>();
+                votes = new Dictionary<long, int>();
+                received = new Dictionary<long, File>();
 
                 // Count votes
                 foreach (File f in readFiles)
@@ -306,7 +306,7 @@ namespace padiFS
                 }
 
                 // Sort votes and show the most voted
-                Dictionary<int, DateTime> sortedVotes = Util.SortVotes(votes);
+                Dictionary<int, long> sortedVotes = Util.SortVotes(votes);
 
                 bestVote = sortedVotes.Keys.Last();
                 winner = sortedVotes.Values.Last();
@@ -347,9 +347,9 @@ namespace padiFS
             readsArray = new bool[servers.Count];
             ReadCallDataServers(filename, semantic, servers);
 
-            Dictionary<DateTime, File> received = null;
-            Dictionary<DateTime, int> votes = null;
-            DateTime winner = new DateTime();
+            Dictionary<long, File> received = null;
+            Dictionary<long, int> votes = null;
+            long winner = 0;
 
             while (!ReadVoting(readQuorum, ref received, ref votes, ref winner))
             {
@@ -427,8 +427,10 @@ namespace padiFS
                 {
                     Console.WriteLine(e.Message);
                 }
-                catch (SystemException)
+                catch (SystemException e )
                 {
+                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
                 }
             }
         }
@@ -442,7 +444,7 @@ namespace padiFS
                 int writeQuorum = file.WriteQuorum;
                 writeFiles = new ConcurrentBag<int>();
                 string bytes = Util.ConvertByteArrayToString(bytearray);
-                byte[] content = Util.ConvertStringToByteArray(TimeStamp().ToString("o") + (char)0x7f + bytes);
+                byte[] content = Util.ConvertStringToByteArray(Token().ToString() + (char)0x7f + bytes);
 
                 writesArray = new bool[servers.Count];
                 WriteCallDataServers(filename, servers, content);
@@ -624,9 +626,9 @@ namespace padiFS
             readsArray = new bool[servers.Count];
             ReadCallDataServers(filename, semantics, servers);
 
-            Dictionary<DateTime, File> received = null;
-            Dictionary<DateTime, int> votes = null;
-            DateTime winner = new DateTime();
+            Dictionary<long, File> received = null;
+            Dictionary<long, int> votes = null;
+            long winner = 0;
 
             while (!ReadVoting(readQuorum, ref received, ref votes, ref winner))
             {
@@ -753,9 +755,9 @@ namespace padiFS
             }
         }
 
-        private DateTime TimeStamp()
+        private long Token()
         {
-            return bridge.GetTimestamp();
+            return bridge.GetToken();
         }
 
         public override object InitializeLifetimeService()

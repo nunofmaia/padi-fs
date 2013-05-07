@@ -9,7 +9,7 @@ namespace padiFS
     [Serializable]
     public class File
     {
-        private DateTime version;
+        private long version;
         private byte[] content;
 
         public byte[] Content
@@ -18,7 +18,7 @@ namespace padiFS
             set { content = value; }
         }
 
-        public DateTime Version
+        public long Version
         {
             get { return version; }
             set { version = value; }
@@ -26,9 +26,9 @@ namespace padiFS
 
         public File()
         {
-            this.version = new DateTime();
+            this.version = 0;
         }
-        public File(DateTime version, byte[] content)
+        public File(long version, byte[] content)
         {
             this.version = version;
             this.content = content;

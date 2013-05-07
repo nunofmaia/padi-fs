@@ -110,7 +110,7 @@ namespace padiFS
             return null;
         }
 
-        public DateTime GetTimestamp()
+        public long GetToken()
         {
             string primary = AskForPrimary();
             if (primary != null)
@@ -119,11 +119,11 @@ namespace padiFS
 
                 if (server != null)
                 {
-                    return server.GetTimestamp();
+                    return server.GetToken();
                 }
             }
 
-            return DateTime.MinValue;
+            return 0;
         }
     }
 }

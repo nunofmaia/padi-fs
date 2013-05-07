@@ -161,7 +161,7 @@ namespace padiFS
             List<string> chosen = ChooseBestServers(serversNumber, md);
 
             // Before sending the requests, a time stamp is added to the filename
-            string f = DateTime.Now.ToString("o") + (char)0x7f + filename;
+            string f = md.GetToken().ToString() + (char)0x7f + filename;
             foreach (string v in chosen)
             {
                 List<string> arguments = new List<string>();

@@ -19,6 +19,7 @@ namespace padiFS
         private int pingMetadataServerInterval;
         private int serializationInterval;
         private double percentage;
+        private long sequencer;
 
         private static TcpChannel Channel { set; get; }
         private MetadataState State { set; get; }
@@ -72,6 +73,7 @@ namespace padiFS
             this.pingMetadataServerInterval = 5;
             this.serializationInterval = 15;
             this.percentage = 0.2;
+            this.sequencer = 0;
 
 
             this.pingDataServersTimer = new System.Timers.Timer();
@@ -536,7 +538,7 @@ namespace padiFS
                         }
                     }
 
-                    string input = DateTime.Now.ToString("o") + (char)0x7f + meta.Filename;
+                    string input = GetToken().ToString() + (char)0x7f + meta.Filename;
 
                     int n = this.PendingFiles[f] - 1;
 
@@ -563,10 +565,13 @@ namespace padiFS
             }
         }
 
-        public DateTime GetTimestamp()
+        public long GetToken()
         {
-            this.Log.Append("TOKEN .|.");
-            return DateTime.Now;
+            lock (this)
+            {
+                this.Log.Append("TOKEN .|.");
+                return ++sequencer;
+            }
         }
 
         // TEST AREA
@@ -643,7 +648,7 @@ namespace padiFS
                                 string[] chosen = Util.SliceArray(args, 6, args.Length);
 
                                 // Before sending the requests, a time stamp is added to the filename
-                                string f = DateTime.Now.ToString("o") + (char)0x7f + filename;
+                                string f = GetToken().ToString() + (char)0x7f + filename;
                                 foreach (string v in chosen)
                                 {
                                     servers.Add(this.LiveDataServers[v]);
