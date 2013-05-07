@@ -160,11 +160,11 @@ namespace padiFS
         {
             if (client != null)
             {
-                string[] args = command.Replace(",", "").Split(' ');
-                string filename = args[2];
-                int nServers = int.Parse(args[3]);
-                int rQuorum = int.Parse(args[4]);
-                int wQuorum = int.Parse(args[5]);
+                string[] args = command.Replace(" ", "").Split(',');
+                string filename = args[1];
+                int nServers = int.Parse(args[2]);
+                int rQuorum = int.Parse(args[3]);
+                int wQuorum = int.Parse(args[4]);
 
                 client.Create(filename, nServers, rQuorum, wQuorum); 
             }
@@ -189,8 +189,8 @@ namespace padiFS
         {
             if (client != null)
             {
-                string[] args = command.Replace(",", "").Split(' ');
-                string filename = args[2];
+                string[] args = command.Replace(" ", "").Split(',');
+                string filename = args[1];
 
                 client.Open(filename);
             }
@@ -215,10 +215,10 @@ namespace padiFS
         {
             if (client != null)
             {
-                string[] args = command.Replace(",", "").Split(' ');
-                string fileRegister = args[2];
-                string semantics = args[3];
-                string register = args[4];
+                string[] args = command.Replace(" ", "").Split(',');
+                string fileRegister = args[1];
+                string semantics = args[2];
+                string register = args[3];
 
                 client.Read(fileRegister, semantics, register);
             }
@@ -245,16 +245,16 @@ namespace padiFS
             {
                 string source = "";
                 Match match = Regex.Match(command, "\"(.*)\"", RegexOptions.IgnoreCase);
-                string[] args = command.Replace(",", "").Split(' ');
+                string[] args = command.Replace(" ", "").Split(',');
                 if (match.Success)
                 {
                     source = match.Groups[1].Value;
                 }
                 else
                 {
-                    source = args[3];
+                    source = args[2];
                 }
-                string fileRegister = args[2];
+                string fileRegister = args[1];
 
                 int register = -1;
 
@@ -291,8 +291,8 @@ namespace padiFS
         {
             if (client != null)
             {
-                string[] args = command.Replace(",", "").Split(' ');
-                string filename = args[2];
+                string[] args = command.Replace(" ", "").Split(',');
+                string filename = args[1];
 
                 client.Close(filename);
             }
@@ -317,8 +317,8 @@ namespace padiFS
         {
             if (client != null)
             {
-                string[] args = command.Replace(",", "").Split(' ');
-                string filename = args[2];
+                string[] args = command.Replace(" ", "").Split(',');
+                string filename = args[1];
 
                 client.Delete(filename);
             }
@@ -345,21 +345,21 @@ namespace padiFS
             {
                 string source = "";
                 Match match = Regex.Match(command, "\"(.*)\"", RegexOptions.IgnoreCase);
-                string[] args = command.Replace(",", "").Split(' ');
+                string[] args = command.Replace(" ", "").Split(',');
                 if (match.Success)
                 {
                     source = match.Groups[1].Value;
                 }
                 else
                 {
-                    source = args[3];
+                    source = args[2];
                 }
                 
                 int fileRegister1;
-                Int32.TryParse(args[2], out fileRegister1);
-                string semantics = args[3];
+                Int32.TryParse(args[1], out fileRegister1);
+                string semantics = args[2];
                 int fileRegister2;
-                Int32.TryParse(args[4], out fileRegister2);
+                Int32.TryParse(args[3], out fileRegister2);
                 string salt = source;
 
                 client.Copy(fileRegister1, semantics, fileRegister2, salt);
@@ -384,7 +384,7 @@ namespace padiFS
         {
             if (client != null)
             {
-                string[] args = command.Replace(",", "").Split(' ');
+                string[] args = command.Split(' ');
                 string filename = args[2];
                 DirectoryInfo dir = Directory.GetParent(Environment.CurrentDirectory);
                 string path = dir.FullName + @"\Scripts\" + filename;

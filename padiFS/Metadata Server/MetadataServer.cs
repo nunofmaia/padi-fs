@@ -565,6 +565,7 @@ namespace padiFS
 
         public DateTime GetTimestamp()
         {
+            this.Log.Append("TOKEN .|.");
             return DateTime.Now;
         }
 
@@ -793,6 +794,11 @@ namespace padiFS
                                 pingDataServersTimer.Enabled = false;
                             }
 
+                        }
+                        break;
+                    case "TOKEN":
+                        {
+                            Console.WriteLine("Token changed");
                         }
                         break;
                 }

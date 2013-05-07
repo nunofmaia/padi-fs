@@ -734,80 +734,87 @@ namespace padiFS
         private void HandleCommand(string line)
         {
             string command = "null";
+            string process = null;
 
             Match match = Regex.Match(line, @"^(\w+)\s.*$", RegexOptions.IgnoreCase);
+            Match user = Regex.Match(line, @"([c|d|m]-\d+)", RegexOptions.IgnoreCase);
 
             if (match.Success)
             {
                 command = match.Groups[1].Value.ToLower();
+                if (user.Success)
+                {
+                    process = user.Groups[1].Value;
+                }
             }
+
             string[] args = line.Replace(",", "").Split(' ');
 
-            statusTextBox.Text += "command: " + line + "\r\n";
+            statusTextBox.Text += "> " + line + "\r\n";
             switch (command)
             {
                 case "fail":
-                    LaunchProcess(args[1]);
+                    LaunchProcess(process);
                     execute(new FailCommand(), line);
                     break;
 
                 case "recover":
-                    LaunchProcess(args[1]);
+                    LaunchProcess(process);
                     execute(new RecoverCommand(), line);
                     break;
 
                 case "freeze":
-                    LaunchProcess(args[1]);
+                    LaunchProcess(process);
                     execute(new FreezeCommand(), line);
                     break;
 
                 case "unfreeze":
-                    LaunchProcess(args[1]);
+                    LaunchProcess(process);
                     execute(new UnfreezeCommand(), line);
                     break;
 
                 case "create":
-                    LaunchProcess(args[1]);
+                    LaunchProcess(process);
                     execute(new CreateCommand(), line);
                     break;
 
                 case "open":
-                    LaunchProcess(args[1]);
+                    LaunchProcess(process);
                     execute(new OpenCommand(), line);
                     break;
 
                 case "close":
-                    LaunchProcess(args[1]);
+                    LaunchProcess(process);
                     execute(new CloseCommand(), line);
                     break;
 
                 case "read":
-                    LaunchProcess(args[1]);
+                    LaunchProcess(process);
                     execute(new ReadCommand(), line);
                     break;
 
                 case "write":
-                    LaunchProcess(args[1]);
+                    LaunchProcess(process);
                     execute(new WriteCommand(), line);
                     break;
 
                 case "delete":
-                    LaunchProcess(args[1]);
+                    LaunchProcess(process);
                     execute(new DeleteCommand(), line);
                     break;
 
                 case "copy":
-                    LaunchProcess(args[1]);
+                    LaunchProcess(process);
                     execute(new CopyCommand(), line);
                     break;
 
                 case "dump":
-                    LaunchProcess(args[1]);
+                    LaunchProcess(process);
                     statusTextBox.AppendText((string)execute(new DumpCommand(), line));
                     break;
 
                 case "exescript":
-                    LaunchProcess(args[1]);
+                    LaunchProcess(process);
                     new Thread(() => execute(new ExeScriptCommand(), line)).Start();
                     break;
 
@@ -999,8 +1006,14 @@ namespace padiFS
 
         public object execute(ICommand command, string line)
         {
-            string[] args = line.Replace(",", "").Split(' ');
-            string process = args[1];
+            //string[] args = line.Replace(",", "").Split(' ');
+            Match match = Regex.Match(line, @"([d|m|c]-\d+)", RegexOptions.IgnoreCase);
+            string process = "p";
+            if (match.Success)
+            {
+                process = match.Groups[1].Value;
+            }
+
             char code = process[0];
 
             object result = null;
@@ -1020,6 +1033,9 @@ namespace padiFS
                 case 'c':
                     IClient client = (IClient)Activator.GetObject(typeof(IClient), processes[process]);
                     result = command.execute(client, line);
+                    break;
+                default:
+                    System.Windows.Forms.MessageBox.Show("Iurie Master will kill you!");
                     break;
             }
 
