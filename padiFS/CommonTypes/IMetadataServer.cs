@@ -23,7 +23,7 @@ namespace padiFS
         void RegisterClient(string name, string address);
         DateTime GetTimestamp();
         MetadataInfo GetMetadataInfo();
-        void UpdateFileMetada(string address);
+        void UpdateFileMetada(string name, string address);
         //void UpdateReplica(MetadataInfo info);
         bool Ping();
         void SetPrimary(string name);
