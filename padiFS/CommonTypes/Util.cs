@@ -223,5 +223,17 @@ namespace padiFS
         {
             return (int)(alfa * average);
         }
+
+        public static string[] GetFileNamesFromDirectory(string directory)
+        {
+            string[] files = Directory.GetFiles(directory);
+            for (int i = 0; i < files.Length; i++)
+            {
+                string file = files[i];
+                files[i] = Path.GetFileNameWithoutExtension(file);
+            }
+
+            return files;
+        }
     }
 }

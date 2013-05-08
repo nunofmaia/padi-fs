@@ -275,6 +275,13 @@ namespace padiFS
                     }
                 }
             }
+
+            IDataServer data = (IDataServer)Activator.GetObject(typeof(IDataServer), address);
+
+            if (data != null)
+            {
+                data.RestoreFiles();
+            }
         }
 
         private void registerClients(string name, string address)

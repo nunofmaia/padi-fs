@@ -11,30 +11,30 @@ namespace padiFS
 {
     public class DataServer : MarshalByRefObject, IDataServer
     {
-        private static TcpChannel channel;
-        private string name;
-        private int port;
+        private static TcpChannel Channel { set; get; }
+        public string Name { set; get; }
+        public int Port { set; get; }
 
         private DataState state;
 
         private string currentDir;
-        private List<string> files;
+        public List<string> Files { set; get; }
         private DataInfo dataInfo;
         private ManualResetEvent freeze;
 
         public DataServer(string name, string port)
         {
-            this.name = name;
-            this.port = int.Parse(port);
+            this.Name = name;
+            this.Port = int.Parse(port);
             this.state = new NormalState();
             this.freeze = new ManualResetEvent(false);
-            this.files = new List<string>();
+            this.Files = new List<string>();
             this.dataInfo = new DataInfo();
             freeze.Set();
 
             //create new directory
             this.currentDir = Environment.CurrentDirectory;
-            string path = currentDir + @"\" + this.name;
+            string path = currentDir + @"\" + this.Name;
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
@@ -43,15 +43,15 @@ namespace padiFS
 
         public void AddFile(string s)
         {
-            if (!files.Contains(s))
+            if (!this.Files.Contains(s))
             {
-                files.Add(s);
+                this.Files.Add(s);
             }
         }
 
         public void RemoveFile(string s)
         {
-            files.Remove(s);
+            this.Files.Remove(s);
         }
         
         protected void setStateFail()
@@ -73,11 +73,6 @@ namespace padiFS
         {
             get { return currentDir;}
             set { currentDir = value; }
-        }
-
-        public string Name
-        {
-            get { return name; }
         }
 
         public DataInfo DataInfo 
@@ -130,7 +125,14 @@ namespace padiFS
         public void Recover()
         {
             this.setStateNormal();
+            RestoreFiles();
             Console.WriteLine("Uhf, recovered at last...");
+        }
+
+        public void RestoreFiles()
+        {
+            string path = Environment.CurrentDirectory + string.Format(@"\{0}", this.Name);
+            this.Files = Util.GetFileNamesFromDirectory(path).ToList();
         }
 
         
@@ -142,8 +144,8 @@ namespace padiFS
 
         public string Dump()
         {
-            string s = "Data Server " + name + " dump:\r\nFiles:\r\n";
-            foreach(string file in files){
+            string s = "Data Server " + this.Name + " dump:\r\nFiles:\r\n";
+            foreach(string file in this.Files){
                 s += "\t" + file + "\r\n";
             }
             return s;
@@ -158,12 +160,12 @@ namespace padiFS
         {
             string[] arguments = Util.SplitArguments(args[0]);
             DataServer ds = new DataServer(arguments[0], arguments[1]);
-            Console.Title = "Iurie's Data Server: " + ds.name;
+            Console.Title = "Iurie's Data Server: " + ds.Name;
             
             // Ficar esperar pedidos de Iurie
-            channel = new TcpChannel(ds.port);
-            ChannelServices.RegisterChannel(channel, true);
-            RemotingServices.Marshal(ds, ds.name, typeof(DataServer));
+            Channel = new TcpChannel(ds.Port);
+            ChannelServices.RegisterChannel(Channel, true);
+            RemotingServices.Marshal(ds, ds.Name, typeof(DataServer));
 
             Console.ReadLine();
         }
