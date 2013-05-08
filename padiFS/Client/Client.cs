@@ -28,8 +28,8 @@ namespace padiFS
         private int registersLimit;
         private int nextRegister;
 
-        private bool[] readsArray;
-        private bool[] writesArray;
+        //private bool[] readsArray;
+        //private bool[] writesArray;
 
         ManualResetEvent read;
         ManualResetEvent write;
@@ -170,7 +170,7 @@ namespace padiFS
             string server = (string)args[0];
             string filename = (string)args[1];
             string semantic = (string)args[2];
-            int i = (int)args[3];
+            //int i = (int)args[3];
             File file = null;
 
             IDataServer dataServer = (IDataServer)Activator.GetObject(typeof(IDataServer), server);
@@ -184,11 +184,11 @@ namespace padiFS
                     {
                         lock (this)
                         {
-                            if (!readsArray[i])
-                            {
+                            //if (!readsArray[i])
+                            //{
                                 readFiles.Add(file);
-                                readsArray[i] = true;
-                            }
+                                //readsArray[i] = true;
+                            //}
                         }
                     }
                 }
@@ -214,7 +214,7 @@ namespace padiFS
 
                 // Call all the data servers that have the file and wait for a majority
                 // Launch threads and wait for it. Compare the answers and return it.
-                readsArray = new bool[servers.Count];
+                //readsArray = new bool[servers.Count];
                 ReadCallDataServers(filename, semantic, servers);
 
                 Dictionary<long, File> received = null;
@@ -318,19 +318,19 @@ namespace padiFS
         // Method that perform calls to all data servers that store the file
         private void ReadCallDataServers(string filename, string semantic, List<string> servers)
         {
-            int i = 0;
+            //int i = 0;
             foreach (string s in servers)
             {
-                if (!readsArray[i])
-                {
+                //if (!readsArray[i])
+                //{
                     List<object> arguments = new List<object>();
-                    arguments.Add(servers[i]);
+                    arguments.Add(s);
                     arguments.Add(filename);
                     arguments.Add(semantic);
-                    arguments.Add(i);
+                    //arguments.Add(i);
                     ThreadPool.QueueUserWorkItem(ReadCallback, arguments);
-                }
-                i++;
+                //}
+                //i++;
             }
         }
 
@@ -344,7 +344,7 @@ namespace padiFS
 
             // Call all the data servers that have the file and wait for a majority
             // Launch threads and wait for it. Compare the answers and return it.
-            readsArray = new bool[servers.Count];
+            //readsArray = new bool[servers.Count];
             ReadCallDataServers(filename, semantic, servers);
 
             Dictionary<long, File> received = null;
@@ -400,7 +400,7 @@ namespace padiFS
             string server = (string)args[0];
             string filename = (string)args[1];
             byte[] bytearray = (byte[])args[2];
-            int i = (int)args[3];
+            //int i = (int)args[3];
 
             IDataServer dataServer = (IDataServer)Activator.GetObject(typeof(IDataServer), server);
 
@@ -415,11 +415,11 @@ namespace padiFS
                     {
                         lock (this)
                         {
-                            if (!writesArray[i])
-                            {
+                            //if (!writesArray[i])
+                            //{
                                 writeFiles.Add(intTest);
-                                writesArray[i] = true;
-                            }
+                                //writesArray[i] = true;
+                            //}
                         }
                     }
                 }
@@ -447,7 +447,7 @@ namespace padiFS
                 string bytes = Util.ConvertByteArrayToString(bytearray);
                 byte[] content = Util.ConvertStringToByteArray(Token().ToString() + (char)0x7f + bytes);
 
-                writesArray = new bool[servers.Count];
+                //writesArray = new bool[servers.Count];
                 WriteCallDataServers(filename, servers, content);
 
                 // Tries 5 times to reach a quorum before trying to write again
@@ -469,19 +469,19 @@ namespace padiFS
 
         private void WriteCallDataServers(string filename, List<string> servers, byte[] content)
         {
-            int i = 0;
+            //int i = 0;
             foreach (string s in servers)
             {
-                if (!writesArray[i])
-                {
+                //if (!writesArray[i])
+                //{
                     List<object> arguments = new List<object>();
                     arguments.Add(s);
                     arguments.Add(filename);
                     arguments.Add(content);
-                    arguments.Add(i);
+                    //arguments.Add(i);
                     ThreadPool.QueueUserWorkItem(WriteCallback, arguments);
-                }
-                i++;
+                //}
+                //i++;
             }
         }
 
@@ -624,7 +624,7 @@ namespace padiFS
 
             // Call all the data servers that have the file and wait for a majority
             // Launch threads and wait for it. Compare the answers and return it.
-            readsArray = new bool[servers.Count];
+            //readsArray = new bool[servers.Count];
             ReadCallDataServers(filename, semantics, servers);
 
             Dictionary<long, File> received = null;

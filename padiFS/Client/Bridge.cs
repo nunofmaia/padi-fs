@@ -25,15 +25,25 @@ namespace padiFS
 
         public Metadata Create(string clientName, string filename, int nServers, int rQuorum, int wQuorum)
         {
-            string primary = AskForPrimary();
-            if (primary != null)
+            bool executed = false;
+            while (!executed)
             {
-                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
-
-                if (server != null)
+                try
                 {
-                    Metadata meta = server.Create(clientName, filename, nServers, rQuorum, wQuorum);
-                    return meta;
+                    string primary = AskForPrimary();
+                    if (primary != null)
+                    {
+                        IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
+
+                        if (server != null)
+                        {
+                            Metadata meta = server.Create(clientName, filename, nServers, rQuorum, wQuorum);
+                            return meta;
+                        }
+                    }
+                }
+                catch (SystemException)
+                {
                 }
             }
 
@@ -42,19 +52,29 @@ namespace padiFS
 
         public Metadata Open(string clientName, string filename)
         {
-            string primary = AskForPrimary();
-            if (primary != null)
+            bool executed = false;
+            while (!executed)
             {
-                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
-
-                if (server != null)
+                try
                 {
-                    Metadata meta = server.Open(clientName, filename);
-                    if (meta != null)
+                    string primary = AskForPrimary();
+                    if (primary != null)
                     {
-                        Console.WriteLine(meta);
+                        IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
+
+                        if (server != null)
+                        {
+                            Metadata meta = server.Open(clientName, filename);
+                            if (meta != null)
+                            {
+                                Console.WriteLine(meta);
+                            }
+                            return meta;
+                        }
                     }
-                    return meta;
+                }
+                catch (SystemException)
+                {
                 }
             }
 
@@ -63,28 +83,48 @@ namespace padiFS
 
         public void Close(string clientName, string filename)
         {
-            string primary = AskForPrimary();
-            if (primary != null)
+            bool executed = false;
+            while (!executed)
             {
-                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
-
-                if (server != null)
+                try
                 {
-                    server.Close(clientName, filename);
+                    string primary = AskForPrimary();
+                    if (primary != null)
+                    {
+                        IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
+
+                        if (server != null)
+                        {
+                            server.Close(clientName, filename);
+                        }
+                    }
+                }
+                catch (SystemException)
+                {
                 }
             }
         }
 
         public void Delete(string clientName, string filename)
         {
-            string primary = AskForPrimary();
-            if (primary != null)
+            bool executed = false;
+            while (!executed)
             {
-                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
-
-                if (server != null)
+                try
                 {
-                    server.Delete(clientName, filename);
+                    string primary = AskForPrimary();
+                    if (primary != null)
+                    {
+                        IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
+
+                        if (server != null)
+                        {
+                            server.Delete(clientName, filename);
+                        }
+                    }
+                }
+                catch (SystemException)
+                {
                 }
             }
         }
@@ -112,14 +152,24 @@ namespace padiFS
 
         public long GetToken()
         {
-            string primary = AskForPrimary();
-            if (primary != null)
+            bool executed = false;
+            while (!executed)
             {
-                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
-
-                if (server != null)
+                try
                 {
-                    return server.GetToken();
+                    string primary = AskForPrimary();
+                    if (primary != null)
+                    {
+                        IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary]);
+
+                        if (server != null)
+                        {
+                            return server.GetToken();
+                        }
+                    }
+                }
+                catch (SystemException)
+                {
                 }
             }
 

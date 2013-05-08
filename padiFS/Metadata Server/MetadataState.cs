@@ -78,7 +78,9 @@ namespace padiFS
         public override Metadata Open(MetadataServer md, string clientName, string filename)
         {
             if (md.getMigratingList().Contains(filename))
+            {
                 md.getMigration().WaitOne();
+            }
 
             // If already opened by one client
             if (md.OpenFiles.ContainsKey(filename))
