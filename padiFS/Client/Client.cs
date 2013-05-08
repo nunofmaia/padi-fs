@@ -427,10 +427,11 @@ namespace padiFS
                 {
                     Console.WriteLine(e.Message);
                 }
-                catch (SystemException e )
+                catch (IOException)
                 {
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.StackTrace);
+                }
+                catch (SystemException)
+                {
                 }
             }
         }
