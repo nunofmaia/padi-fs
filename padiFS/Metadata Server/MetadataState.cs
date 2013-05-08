@@ -741,7 +741,8 @@ namespace padiFS
                     break;
                 case "TOKEN":
                     {
-                        Console.WriteLine("Token changed");
+                        long s = long.Parse(args[1]);
+                        md.Sequencer = s;
                     }
                     break;
             }

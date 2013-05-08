@@ -19,7 +19,6 @@ namespace padiFS
         private int pingMetadataServerInterval;
         private int serializationInterval;
         private double percentage;
-        private long sequencer;
 
         private static TcpChannel Channel { set; get; }
         private MetadataState State { set; get; }
@@ -27,6 +26,7 @@ namespace padiFS
         public string Address { set; get; }
         public int Port { set; get; }
         public string Primary { set; get; }
+        public long Sequencer { set; get; }
         public SerializableDictionary<string, string> Replicas { set; get; }
         public SerializableDictionary<string, string> Clients { set; get; }
         public List<string> DeadReplicas { set; get; }
@@ -73,7 +73,7 @@ namespace padiFS
             this.pingMetadataServerInterval = 5;
             this.serializationInterval = 15;
             this.percentage = 0.2;
-            this.sequencer = 0;
+            this.Sequencer = 0;
 
 
             this.pingDataServersTimer = new System.Timers.Timer();
@@ -142,7 +142,14 @@ namespace padiFS
 
         public Metadata Create(string clientName, string filename, int serversNumber, int readQuorum, int writeQuorum)
         {
-            return this.State.Create(this, clientName, filename, serversNumber, readQuorum, writeQuorum); 
+            Metadata meta;
+
+            lock (this)
+            {
+                meta = this.State.Create(this, clientName, filename, serversNumber, readQuorum, writeQuorum);
+            }
+
+            return meta;
         }
 
         public void Delete(string clientName, string filename)
@@ -517,6 +524,8 @@ namespace padiFS
                 s += this.Replicas[m].ToString() + "\r\n";
             }
 
+            s += "Sequencer: " + this.Sequencer + "\r\n";
+
 
             return s;
         }
@@ -582,8 +591,9 @@ namespace padiFS
         {
             lock (this)
             {
-                //this.Log.Append("TOKEN .|.");
-                return ++sequencer;
+                long s = ++this.Sequencer;
+                this.Log.Append("TOKEN " + s);
+                return s;
             }
         }
 
