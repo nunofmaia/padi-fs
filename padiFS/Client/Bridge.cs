@@ -96,6 +96,7 @@ namespace padiFS
                         if (server != null)
                         {
                             server.Close(clientName, filename);
+                            executed = true;
                         }
                     }
                 }
@@ -120,6 +121,7 @@ namespace padiFS
                         if (server != null)
                         {
                             server.Delete(clientName, filename);
+                            executed = true;
                         }
                     }
                 }

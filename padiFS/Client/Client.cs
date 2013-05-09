@@ -775,6 +775,12 @@ namespace padiFS
             channel = new TcpChannel(c.port);
             ChannelServices.RegisterChannel(channel, true);
             RemotingServices.Marshal(c, c.name, typeof(Client));
+
+            int origWidth = Console.WindowWidth;
+            int origHeight = Console.WindowHeight;
+
+            Console.SetWindowSize(origWidth, origHeight / 2);
+
             Console.ReadLine();
         }
     }

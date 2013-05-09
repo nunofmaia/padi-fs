@@ -308,25 +308,35 @@ namespace padiFS
 
             if (metadataServers.Count > 1)
             {
-                string primary_name = AskForPrimary(name);
-                if (primary_name != null)
+                bool executed = false;
+                while (!executed)
                 {
-                    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[name]);
-                    IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary_name]);
-                    if (primary != null)
+                    try
                     {
-                        replica.DeserializeServer();
-                        Log log = primary.GetLog();
-                        if (replica != null)
+                        string primary_name = AskForPrimary(name);
+                        if (primary_name != null)
                         {
-                            replica.UpdateLog(log);
+                            IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[name]);
+                            IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary_name]);
+                            if (primary != null)
+                            {
+                                replica.DeserializeServer();
+                                Log log = primary.GetLog();
+                                if (replica != null)
+                                {
+                                    replica.UpdateLog(log);
+                                }
+                                executed = true;
+                            }
+                        }
+                        else
+                        {
+                            IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
+                            server.SetPrimary(name);
+                            executed = true;
                         }
                     }
-                }
-                else
-                {
-                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
-                    server.SetPrimary(name);
+                    catch (SystemException) { }
                 }
 
                 foreach (string key in metadataServers.Keys)
@@ -362,13 +372,22 @@ namespace padiFS
 
         private void UpdateFileMetadata(string name, string address)
         {
-            string primary = AskForPrimary();
-
-            IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), metadataServers[primary]);
-
-            if (server != null)
+            bool executed = false;
+            while (!executed)
             {
-                server.UpdateFileMetada(name, address);
+                try
+                {
+                    string primary = AskForPrimary();
+
+                    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), metadataServers[primary]);
+
+                    if (server != null)
+                    {
+                        server.UpdateFileMetada(name, address);
+                        executed = true;
+                    }
+                }
+                catch (SystemException) { }
             }
         }
 

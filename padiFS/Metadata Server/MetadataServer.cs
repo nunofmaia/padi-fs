@@ -680,6 +680,12 @@ namespace padiFS
 
             // TEST AREA
             handler = new ConsoleEventDelegate(ConsoleEventCallback);
+
+            int origWidth = Console.WindowWidth;
+            int origHeight = Console.WindowHeight;
+
+            Console.SetWindowSize(origWidth, origHeight / 2);
+
             Console.ReadLine();
         }
 

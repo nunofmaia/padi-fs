@@ -167,6 +167,11 @@ namespace padiFS
             ChannelServices.RegisterChannel(Channel, true);
             RemotingServices.Marshal(ds, ds.Name, typeof(DataServer));
 
+            int origWidth = Console.WindowWidth;
+            int origHeight = Console.WindowHeight;
+
+            Console.SetWindowSize(origWidth, origHeight / 2);
+
             Console.ReadLine();
         }
     }
