@@ -135,37 +135,49 @@ receive some knowledge of the primary being alive is when they receive a
 command to update their log and execute. To bypass this situation, each
 replica asks the primary replica if it is alive.
 
+In order to keep everything as synchronized as possible, metadata servers use two
+ways of knowing their state at a certain point in time - a log and periodic backups.
+
 \bigskip
-\textbf{Logging}
+\textbf{Log}
 \smallskip
 
 We already mentioned that, for synchronization purposes, each replica keeps a log
 where it appends commands issued by the primary replica that represent important
 changes to its state. One possible approach to synchronize all the replicas was to
 send all the data stored by the primary replica to the other replicas but this
-information can become very large and pass this chuck of data through the network
+information can become very large and pass this chunck of data through the network
 was not the best way to do it. So, we took the other direction and chose the log
 implementation. This approach is must lighter than the other in the sense that only
 a string command is sent over the network and, when the command is received, each
 replica runs that same command on its own, updating their individual state.
 
 \bigskip
+\textbf{Backup}
+\smallskip
 
-Supposing the primary replica is down and can't send an heartbeat to the other replicas,
-those same replicas need to decide which replica will cover the main replica and
-begin accepting requests.
+The log helps the metadata server holding an history of what happened during the time
+it is running but we still find that having a backup in disk of the server's state is really
+helpful too. So, on a specified interval, the metadata server writes to disk a backup with
+all the data that it may need if something wrong happens.
 
+\bigskip
 
-%All the replicas need to know if the primary replica is well and good to 
-%keep executing the requests that clients are making. To keep track of this, 
-%the primary server sends a heartbeat along with a log of the servers that 
-%are available and unavailable so they can update their own list. Supposing 
-%the primary replica is down and can't send the other replicas the heartbeat 
-%they're expecting, the replicas need to cover the primary so the client can 
-%keep asking for create, open or close operations. To do this, the replicas 
-%send each other their ID's and the one with the lower ID is the new primary
-%replica. If a replica does not receive any response from the other, it 
-%means that it is not available either and this replica has no choice but to 
-%be the new primary server. When a replica recovers, asks the others who is 
-%the primary server and updates its state accordingly. During all this process, 
-%metadata servers can't respond to any request from the clients.
+Supposing the primary replica fails, it can't send an heartbeat to the other replicas. When
+those same replicas don't receive an answer from the primary one, they know that something
+wrong happend and they need to decide which replica will cover the main replica and
+begin accepting requests. In our implementation, the replica with the lowest ID will be
+the next primary replica. Since the log from the replica has the same length and content as
+the former primary server, the system continues to run normally.
+
+\medskip
+
+Eventually, replicas will recover and start running again. When this happens, the replica
+will be outdated, meaning that there is a high probability that the primary replica had
+already made a few more operations while the other replica was down. The recovered
+replica needs to update itself to the same state has the others. To prevent the primary
+replica to send the full log for the replica to execute, the replica gets the most recent
+backup from disk first to recreate its previous state and only after asks the primary
+server to send to it the missing lines from the log. With this method, we can lower the
+time spent on the recovering process since the replica only needs to run a very few
+number of commands comparing this number with the total of commands in the log.
