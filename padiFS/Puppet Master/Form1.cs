@@ -143,7 +143,7 @@ namespace padiFS
                             LaunchDataServer(name, port);
                             dataServers.Add(name, address);
                             activeDataServers.Add(name);
-                            dscounter++;
+                            dscounter = Int32.Parse(Convert.ToString(name[2]))+1;
                             registerDataServer(name, address);
                             processes.Add(name, address);
                             UpdateFileMetadata(name, address);

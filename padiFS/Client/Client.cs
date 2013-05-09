@@ -223,9 +223,12 @@ namespace padiFS
 
                 while (!ReadVoting(readQuorum, ref received, ref votes, ref winner))
                 {
-                    ReadCallDataServers(filename, semantic, servers);
+                    file = openFiles[filename];
+                    servers = file.DataServers;
                     received = null;
                     votes = null;
+                    readFiles = new ConcurrentBag<File>();
+                    ReadCallDataServers(filename, semantic, servers);
                 }
 
                 File selected = received[winner];
@@ -353,9 +356,12 @@ namespace padiFS
 
             while (!ReadVoting(readQuorum, ref received, ref votes, ref winner))
             {
-                ReadCallDataServers(filename, semantic, servers);
+                m = fileRegister[file];
+                servers = m.DataServers;
                 received = null;
                 votes = null;
+                readFiles = new ConcurrentBag<File>();
+                ReadCallDataServers(filename, semantic, servers);
             }
 
             File selected = received[winner];
@@ -457,6 +463,9 @@ namespace padiFS
                     timer++;
                     if (timer > 5)
                     {
+                        file = openFiles[filename];
+                        servers = file.DataServers;
+                        writeFiles = new ConcurrentBag<int>();
                         WriteCallDataServers(filename, servers, content);
                         timer = 0;
 

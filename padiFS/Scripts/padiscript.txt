@@ -1,7 +1,5 @@
 ﻿DUMP m-0
 DUMP d-0
+#DUMP d-1
+EXESCRIPT c-0 test.txt
 DUMP d-1
-DUMP c-0
-CREATE c-0, p, 2, 2, 2
-FREEZE d-0
-WRITE c-0, 0, "Text contents of the file. Contents are a string delimited by double quotes as this one"
