@@ -69,7 +69,7 @@ list until all the data servers request are available.
 %replies, the metadata server tells the client it's all good and the file 
 %was successfully created.
 
-\medskip
+\bigskip
 \textbf{Open}
 \smallskip
 
@@ -86,38 +86,86 @@ file.
 %that file opened. While the file is open, it cannot be copied if the data 
 %server that holds the file is not available.
 
+\bigskip
+\textbf{Close}
+\smallskip
+
+A client with an open file can close it whenever it decides to. The close
+operation requires the metadata server to check open files to be able to
+remove that client from the list of clients with that file open.
+
+\bigskip
+\textbf{Delete}
+\smallskip
+
 When a client asks to delete a file, the metadata server decreases the
 number of files for each server that holds the file and removes the 
-corresponding entry from the table where all the information is stored. 
-All this changes are also sent to the secondary metadata servers. 
-The system does not provide any functionality to clean the garbage that 
-the data servers keep stored.
+corresponding entry from the table where all the information is stored.
+If the file is open when the client tries to delete it, the server needs
+to remove the file entry from the open files as well.
+Although the file's entries are removed from the metadata server, they
+still remain untouched in the data server since the system does not provide
+any functionality to clean delete files from them.
 
-The primary metadata, from time to time, pings the data servers to know 
-which are available and which are not. When a data server is not 
-available, the metadata server will try to migrate the files stored on 
-that server to another one. The new server should be on the available 
-can't already have stored the file that needs to be copied. The 
-copy of the files should happen only if the file being copied isn't open. When 
-the file is fully copied to other server, meaning the metadata already sent 
-the request to an available server that has the file stored to copy it to the new 
-server and did receive the response saying the file was copied, the metadata 
-server has to update the list of servers that hold that file. The downside 
-of this process is that the file is no longer referenced to the old server 
-but the file is still there and there's is not a proper way to remove it.
+\subsubsection{Migration}
+
+From time to time, the primary replica pings the data servers to know
+which are available and which are not. The data server's response to the ping
+brings statistical information about that server - the number of accesses to
+the server. 
+
+%The primary metadata, from time to time, pings the data servers to know 
+%which are available and which are not. When a data server is not 
+%available, the metadata server will try to migrate the files stored on 
+%that server to another one. The new server should be on the available 
+%can't already have stored the file that needs to be copied. The 
+%copy of the files should happen only if the file being copied isn't open. When 
+%the file is fully copied to other server, meaning the metadata already sent 
+%the request to an available server that has the file stored to copy it to the new 
+%server and did receive the response saying the file was copied, the metadata 
+%server has to update the list of servers that hold that file. The downside 
+%of this process is that the file is no longer referenced to the old server 
+%but the file is still there and there's is not a proper way to remove it.
 
 \subsubsection{Failure and Recovery}
 
-All the replicas need to know if the primary replica is well and good to 
-keep executing the requests that clients are making. To keep track of this, 
-the primary server sends a heartbeat along with a log of the servers that 
-are available and unavailable so they can update their own list. Supposing 
-the primary replica is down and can't send the other replicas the heartbeat 
-they're expecting, the replicas need to cover the primary so the client can 
-keep asking for create, open or close operations. To do this, the replicas 
-send each other their ID's and the one with the lower ID is the new primary
-replica. If a replica does not receive any response from the other, it 
-means that it is not available either and this replica has no choice but to 
-be the new primary server. When a replica recovers, asks the others who is 
-the primary server and updates its state accordingly. During all this process, 
-metadata servers can't respond to any request from the clients.
+The replicas need to know if the primary replica is well and good to keep
+executing the requests being made or else the only time the replicas would
+receive some knowledge of the primary being alive is when they receive a
+command to update their log and execute. To bypass this situation, each
+replica asks the primary replica if it is alive.
+
+\bigskip
+\textbf{Logging}
+\smallskip
+
+We already mentioned that, for synchronization purposes, each replica keeps a log
+where it appends commands issued by the primary replica that represent important
+changes to its state. One possible approach to synchronize all the replicas was to
+send all the data stored by the primary replica to the other replicas but this
+information can become very large and pass this chuck of data through the network
+was not the best way to do it. So, we took the other direction and chose the log
+implementation. This approach is must lighter than the other in the sense that only
+a string command is sent over the network and, when the command is received, each
+replica runs that same command on its own, updating their individual state.
+
+\bigskip
+
+Supposing the primary replica is down and can't send an heartbeat to the other replicas,
+those same replicas need to decide which replica will cover the main replica and
+begin accepting requests.
+
+
+%All the replicas need to know if the primary replica is well and good to 
+%keep executing the requests that clients are making. To keep track of this, 
+%the primary server sends a heartbeat along with a log of the servers that 
+%are available and unavailable so they can update their own list. Supposing 
+%the primary replica is down and can't send the other replicas the heartbeat 
+%they're expecting, the replicas need to cover the primary so the client can 
+%keep asking for create, open or close operations. To do this, the replicas 
+%send each other their ID's and the one with the lower ID is the new primary
+%replica. If a replica does not receive any response from the other, it 
+%means that it is not available either and this replica has no choice but to 
+%be the new primary server. When a replica recovers, asks the others who is 
+%the primary server and updates its state accordingly. During all this process, 
+%metadata servers can't respond to any request from the clients.
