@@ -1,0 +1,123 @@
+\subsection{Metadata Server}
+
+Metadata servers maintain metadata information about the files stored
+in the data servers. This metadata holds relevant information about
+the files such as the file name, the number of servers used to store
+the contents of the file, the minimum number of data servers that should
+be contacted during the read and write operations and a list of the
+data servers that have the file stored. This servers also keep track of
+other replicas that may exist, which data servers are available or not as
+well as the number of files each one of them holds, the clients that can
+interact with the system and which files they have open and files that have
+to be updated because there are not enough data servers to answer to its
+requests. The reason why we keep knowledge of this things and more
+will be explained below on document.
+
+\subsubsection{Replication}
+
+As it was previously mentioned, there are 3 replicas of the metadata
+server. The purpose of these replicas is to have the content of the
+server replicated so that when a replica fails, there's another one
+that can reply to the requests made. This replication is made in a
+passive manner, which means that just one of the replicas will be
+responsible for all the operations. Passive replication
+is more useful in this system than active replication in a way that we
+can tolerate two failures and have always a server to be able to reply to
+any request made by the client. At any moment in time, the primary replica
+can fail and another one has to replace it but for this to happen without
+any problems, the replicas need to be synchronized. The primary replica is
+responsible for sending some kind of instruction to the other replicas for
+them to have the same state as the primary. To accomplish this, each replica
+logs the command issued by the primary one and behaves accordingly. As we
+go further in this paper, we'll explain how the log plays an important goal
+when a server recovers.
+
+\subsubsection{Handling Files}
+
+The primary server can reply to several requests from the client. This
+request are create, open, close and delete operations.
+
+\medskip
+\textbf{Create}
+\smallskip 
+
+When a client sends a request to create a file, the server saves a new
+registry for that file with the information sent with the request. The
+server informs the available data servers needed with the least amount
+of saved files to save a local copy of the file, updates the load
+of each data server tha will hold that file and sends the file's metadata
+to the client. When the client requests for the file to be replicated in
+a certain number of data servers is greater than the data servers that 
+exist at that moment, the metadata server sends the file's metadata to 
+the client with the data servers available and puts the file on a pending 
+lists so that when a new data server register, the metadata of the file 
+can be updated and sent back to the client. The file stays in the pending 
+list until all the data servers request are available.
+
+%The
+%primary replica must inform the necessary data servers that they need to
+%create a local copy of the file and wait for them to reply back. Then
+%it increases the number of files for each server and sends the new 
+%entry to the other two replicas so they can be up to date. It's important 
+%to mention that when a data server is down, the metadata server will try 
+%to send the request to another server. If there are no more servers to 
+%send the request to, the metadata server will wait for the data server 
+%to come up to send it the information it needs to create the file. A 
+%secondary replica can also be down when the primary one sends its new 
+%information. When this happens, the primary server will not wait for 
+%the reply of the other server. Just after this exchange of requests and
+%replies, the metadata server tells the client it's all good and the file 
+%was successfully created.
+
+\medskip
+\textbf{Open}
+\smallskip
+
+After creating a file, the client can operate on it right away. But when
+the file is closed, the client can request to open it. In this case, the
+metadta server sends to the client the metadata stored for that file. The
+server keeps record of what clients opened a certain file, so when a client
+opens a file, the metadata server adds it to the list of the corresponding
+file.
+
+%After creating a file, the client can open it. In this case, the metadata 
+%server sends the client all the information it has stored for that file.
+%The metadata server has a counter per file to know how many users have 
+%that file opened. While the file is open, it cannot be copied if the data 
+%server that holds the file is not available.
+
+When a client asks to delete a file, the metadata server decreases the
+number of files for each server that holds the file and removes the 
+corresponding entry from the table where all the information is stored. 
+All this changes are also sent to the secondary metadata servers. 
+The system does not provide any functionality to clean the garbage that 
+the data servers keep stored.
+
+The primary metadata, from time to time, pings the data servers to know 
+which are available and which are not. When a data server is not 
+available, the metadata server will try to migrate the files stored on 
+that server to another one. The new server should be on the available 
+can't already have stored the file that needs to be copied. The 
+copy of the files should happen only if the file being copied isn't open. When 
+the file is fully copied to other server, meaning the metadata already sent 
+the request to an available server that has the file stored to copy it to the new 
+server and did receive the response saying the file was copied, the metadata 
+server has to update the list of servers that hold that file. The downside 
+of this process is that the file is no longer referenced to the old server 
+but the file is still there and there's is not a proper way to remove it.
+
+\subsubsection{Failure and Recovery}
+
+All the replicas need to know if the primary replica is well and good to 
+keep executing the requests that clients are making. To keep track of this, 
+the primary server sends a heartbeat along with a log of the servers that 
+are available and unavailable so they can update their own list. Supposing 
+the primary replica is down and can't send the other replicas the heartbeat 
+they're expecting, the replicas need to cover the primary so the client can 
+keep asking for create, open or close operations. To do this, the replicas 
+send each other their ID's and the one with the lower ID is the new primary
+replica. If a replica does not receive any response from the other, it 
+means that it is not available either and this replica has no choice but to 
+be the new primary server. When a replica recovers, asks the others who is 
+the primary server and updates its state accordingly. During all this process, 
+metadata servers can't respond to any request from the clients.

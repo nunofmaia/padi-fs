@@ -1,0 +1,84 @@
+ 
+%
+%  $Description: Author guidelines and sample document in LaTeX 2.09$ 
+%
+%  $Author: ienne $
+%  $Date: 1995/09/15 15:20:59 $
+%  $Revision: 1.4 $
+%
+
+\documentclass[times, 10pt,twocolumn]{article} 
+\usepackage{padi-fs}
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{float}
+
+%\documentstyle[times,art10,twocolumn,latex8]{article}
+
+%------------------------------------------------------------------------- 
+% take the % away on next line to produce the final camera-ready version 
+\pagestyle{empty}
+
+%------------------------------------------------------------------------- 
+\begin{document}
+
+\title{PADI-FS}
+
+%\author{Paolo Ienne\\
+%Swiss Federal Institute of Technology\\ Microcomputing Laboratory \\ IN-F 
+%Ecublens, 1015 Lausanne, Switzerland\\ Paolo.Ienne@di.epfl.ch\\
+%% For a paper whose authors are all at the same institution, 
+%% omit the following lines up until the closing ``}''.
+%% Additional authors and addresses can be added with ``\and'', 
+%% just like the second author.
+%\and
+%Second Author\\
+%Institution2\\
+%First line of institution2 address\\ Second line of institution2 address\\ 
+%SecondAuthor@institution2.com\\
+%}
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+   PADI-FS is a simple distributed file system that allows users to manage
+   sets of files. Users that want to have their files replicated on several
+   machines and to be always available can use PADI-FS to fulfill their
+   needs and wishes. The system provides to the user some simple operations
+   for them to manipulate their files as if they were on their local machine.\\
+
+   This paper describes the architecture of the system being developed, the
+   solutions to the problems we can face when building this kind of system
+   and the reasons that led us to those same solutions, comparing them to
+   other possible approaches we thought were not appropriate for this system.
+\end{abstract}
+
+
+
+%------------------------------------------------------------------------- 
+\input{intro}
+
+%------------------------------------------------------------------------- 
+\input{architect}
+
+%------------------------------------------------------------------------- 
+\input{conclusion}
+
+%------------------------------------------------------------------------- 
+
+\bibliographystyle{padi-fs}
+\bibliography{padi-fs}
+
+\begin{thebibliography}{1}
+
+  \bibitem{notes} D. Borthakur {\em The Hadoop Distributed File System: Architecture and Design}  2007.
+
+  \bibitem{impj}  S. Ghemawat, H. Gobioff, and S. Leung {\em The Google File System} 2003.
+
+  \bibitem{norman} T. K. George Coulouris, Jean Dollimore and G. Blair {\em Distributed Systems: Concepts and Design Fifth Edition} Addison Wesley, 2011.
+
+\end{thebibliography}
+
+\end{document}
+

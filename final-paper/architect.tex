@@ -1,0 +1,33 @@
+\section{Architecture}
+
+The PADI-FS architecture is composed by three main components. First, the
+metadata server which keeps the file's metadata and is replicated by three
+replicas. Second, the data server which is responsible for storing the contents
+of the files. Exists more than one data server, allowing the contents of
+a given file to be replicated. And third, the client which is responsible for
+making the requests.\\
+
+The following figure is meant to illustrate the architecture of the system.\\
+
+\begin{figure}[H]
+	\center{\includegraphics[width=0.4\textwidth]{PADIFS.png}}
+  	\caption{System architecture.}
+\end{figure}
+
+These three components will be described in the sub-sections below to give
+a deep insight on the way each component works and how their implementation
+solves the different problems that can occur.
+
+There is also a fourth component on the system, denominated Puppet Master,
+which is a centralized controller that can issue commands to all the other
+components. Because this component only exists to simplify testing and
+debugging of the system, it's not described in this paper.
+
+%------------------------------------------------------------------------- 
+\input{metadata}
+
+%------------------------------------------------------------------------- 
+\input{data}
+
+%------------------------------------------------------------------------- 
+\input{client}
