@@ -20,5 +20,6 @@ namespace padiFS
         DataInfo Ping();
         void RemoveFromDataInfo(string file);
         void RestoreFiles();
+        bool isFreezed();
     }
 }

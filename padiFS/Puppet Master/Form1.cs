@@ -161,7 +161,8 @@ namespace padiFS
 
                             if (d != null)
                             {
-                                d.Ping();
+                                //d.Ping();
+                                d.isFreezed();
                             }
                         }
                         catch (ServerNotAvailableException)

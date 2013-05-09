@@ -16,6 +16,7 @@ namespace padiFS
         public int Port { set; get; }
 
         private DataState state;
+        private bool freezed;
 
         private string currentDir;
         public List<string> Files { set; get; }
@@ -31,6 +32,7 @@ namespace padiFS
             this.Files = new List<string>();
             this.dataInfo = new DataInfo();
             freeze.Set();
+            this.freezed = false;
 
             //create new directory
             this.currentDir = Environment.CurrentDirectory;
@@ -107,14 +109,22 @@ namespace padiFS
         public void Freeze()
         {
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
+            this.freezed = false;
             freeze.Reset();
             Console.WriteLine("Freezed!");
         }
         public void Unfreeze()
         {
             freeze.Set();
+            RestoreFiles();
             Console.WriteLine("Defrosting!");
         }
+
+        public bool isFreezed()
+        {
+            return this.freezed;
+        }
+
         public void Fail()
         {
             Thread.CurrentThread.Priority = ThreadPriority.Highest;
