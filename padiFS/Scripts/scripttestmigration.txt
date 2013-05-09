@@ -4,36 +4,36 @@ DUMP m-1
 DUMP d-1
 DUMP m-2
 DUMP m-3
-CREATE c-0 f1 2 2 2
-CREATE c-0 f2 1 1 1
-CREATE c-0 f3 1 1 1
-CREATE c-0 f4 1 1 1
-CREATE c-0 f5 1 1 1
-WRITE c-0 0 "Ola"
-WRITE c-0 0 "Ola"
-WRITE c-0 0 "Ola"
-WRITE c-0 0 "Ola"
-WRITE c-0 0 "Ola"
-WRITE c-0 1 "Ola"
-WRITE c-0 1 "Ola"
-WRITE c-0 2 "Ola"
-WRITE c-0 2 "Ola"
-WRITE c-0 2 "Ola"
-WRITE c-0 2 "Ola"
-WRITE c-0 2 "Ola"
-WRITE c-0 2 "Ola"
-WRITE c-0 2 "Ola"
-WRITE c-0 2 "Ola"
-WRITE c-0 2 "Ola"
-WRITE c-0 2 "Ola"
-WRITE c-0 2 "Ola"
-WRITE c-0 2 "Ola"
-WRITE c-0 2 "Ola"
-WRITE c-0 2 "Ola"
-WRITE c-0 2 "Ola"
-WRITE c-0 2 "Ola"
-WRITE c-0 4 "Ola"
-WRITE c-0 4 "Ola"
-CLOSE c-0 f1
+CREATE c-0, f1, 2, 2, 2
+CREATE c-0, f2, 1, 1, 1
+CREATE c-0, f3, 1, 1, 1
+CREATE c-0, f4, 1, 1, 1
+CREATE c-0, f5, 1, 1, 1
+WRITE c-0, 0, "Ola"
+WRITE c-0, 0, "Ola"
+WRITE c-0, 0, "Ola"
+WRITE c-0, 0, "Ola"
+WRITE c-0, 0, "Ola"
+WRITE c-0, 1, "Ola"
+WRITE c-0, 1, "Ola"
+WRITE c-0, 2, "Ola"
+WRITE c-0, 2, "Ola"
+WRITE c-0, 2, "Ola"
+WRITE c-0, 2, "Ola"
+WRITE c-0, 2, "Ola"
+WRITE c-0, 2, "Ola"
+WRITE c-0, 2, "Ola"
+WRITE c-0, 2, "Ola"
+WRITE c-0, 2, "Ola"
+WRITE c-0, 2, "Ola"
+WRITE c-0, 2, "Ola"
+WRITE c-0, 2, "Ola"
+WRITE c-0, 2, "Ola"
+WRITE c-0, 2, "Ola"
+WRITE c-0, 2, "Ola"
+WRITE c-0, 2, "Ola"
+WRITE c-0, 4, "Ola"
+WRITE c-0, 4, "Ola"
+CLOSE c-0, f1
 DUMP d-2
 EXESCRIPT c-0 scripttestmigrationexec.txt

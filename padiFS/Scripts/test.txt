@@ -1,0 +1,3 @@
+CREATE c-0, p, 2, 2, 2
+READ c-0, 0, default, 0
+#"Text contents of the file. Contents are a string delimited by double quotes as this one"

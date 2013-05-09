@@ -326,11 +326,11 @@ namespace padiFS
 
             foreach (string s in averageAccesses.Keys)
             {
-                if (averageAccesses[s] > max)
+                if (averageAccesses[s] >= max)
                 {
                     OverloadServers.Add(s);
                 }
-                else if (averageAccesses[s] < min)
+                else if (averageAccesses[s] <= min)
                 {
                     UnderloadServers.Add(s);
                 }
@@ -344,6 +344,7 @@ namespace padiFS
                 long maxFiles = Int64.MinValue;
                 long minFiles = Int64.MaxValue;
 
+
                 foreach (string s in OverloadServers)
                 {
                     if (md.DataServersInfo[s].GetTotalAccesses() > maxFiles && md.DataServersInfo[s].GetNumberAccesses().Count > 1)
@@ -355,6 +356,10 @@ namespace padiFS
 
                 string mostAccessedfile = "";
                 long maxAccesses = Int64.MinValue;
+
+                if (mostOverloadedServer == null)
+                    return;
+
                 foreach (string f in md.DataServersInfo[mostOverloadedServer].GetNumberAccesses().Keys)
                 {
                     if (md.DataServersInfo[mostOverloadedServer].GetNumberAccesses()[f] > maxAccesses)
@@ -403,7 +408,7 @@ namespace padiFS
                         {
                             if (!md.DataServersInfo[mostUnderloadedServer].GetNumberAccesses().ContainsKey(secondMostAccessedfile))
                             {
-                                Console.WriteLine("Migration");
+                                Console.WriteLine("Migration: File " + secondMostAccessedfile + " from " + mostOverloadedServer + " to " + mostUnderloadedServer);
                                 md.getMigratingList().Add(secondMostAccessedfile);
                                 md.getMigration().Reset();
 
@@ -416,7 +421,7 @@ namespace padiFS
                                 File file = readDataServer.Read(secondMostAccessedfile, "default");
 
                                 string toWrite = Util.ConvertByteArrayToString(file.Content);
-                                byte[] content = Util.ConvertStringToByteArray(file.Version.ToString("o") + (char)0x7f + toWrite);
+                                byte[] content = Util.ConvertStringToByteArray(file.Version.ToString() + (char)0x7f + toWrite);
 
                                 writeDataServer.Write(secondMostAccessedfile, content);
                                 readDataServer.RemoveFromDataInfo(secondMostAccessedfile);
@@ -444,6 +449,7 @@ namespace padiFS
                             else
                             {
                                 previousFiles.Add(secondMostAccessedfile);
+                                maxAccesses = Int64.MinValue;
                                 i--;
                             }
                         }
