@@ -176,11 +176,8 @@ namespace padiFS
                 {
                     try
                     {
-                        //if (server.Ping())
-                        //{
-                            primary = server.GetPrimary();
-                            return primary;
-                        //}
+                        primary = server.GetPrimary();
+                        return primary;
                     }
                     catch (Exception) { }
                 }

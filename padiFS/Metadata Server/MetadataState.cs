@@ -216,7 +216,6 @@ namespace padiFS
                 if (match.Success)
                 {
                     string name = match.Groups[1].Value;
-                    Console.Write(string.Format("Vou decrementar o {0}", name));
                     md.ServersLoad[name]--;
                     command += string.Format(" {0}", name);
                 }
@@ -295,7 +294,7 @@ namespace padiFS
         // HUGE REFACTORING NEEDED
         private void tryMigrate(MetadataServer md)
         {
-            Dictionary<string, int> averageAccesses = new Dictionary<string, int>();
+            Dictionary<string, int> sumAccesses = new Dictionary<string, int>();
             int averageAll = 0;
 
             foreach (string di in md.DataServersInfo.Keys)
@@ -309,21 +308,21 @@ namespace padiFS
                     }
                     if (md.DataServersInfo[di].GetNumberAccesses().Count != 0)
                     {
-                        averageAccesses.Add(di, (int)(dataAccess / md.DataServersInfo[di].GetNumberAccesses().Count));
+                        sumAccesses.Add(di, dataAccess);
                     }
                     else
                     {
-                        averageAccesses.Add(di, 0);
+                        sumAccesses.Add(di, 0);
                     }
                 }
             }
 
             int aux = 0;
-            foreach (string di in averageAccesses.Keys)
+            foreach (string di in sumAccesses.Keys)
             {
-                aux += averageAccesses[di];
+                aux += sumAccesses[di];
             }
-            averageAll = (int)(aux / averageAccesses.Count);
+            averageAll = (int)(aux / sumAccesses.Count);
 
             int min = averageAll - Util.IntervalAccesses(md.Percentage, averageAll);
             int max = averageAll + Util.IntervalAccesses(md.Percentage, averageAll);
@@ -331,13 +330,13 @@ namespace padiFS
             List<string> OverloadServers = new List<string>();
             List<string> UnderloadServers = new List<string>();
 
-            foreach (string s in averageAccesses.Keys)
+            foreach (string s in sumAccesses.Keys)
             {
-                if (averageAccesses[s] >= max)
+                if (sumAccesses[s] >= max)
                 {
                     OverloadServers.Add(s);
                 }
-                else if (averageAccesses[s] <= min)
+                else if (sumAccesses[s] <= min)
                 {
                     UnderloadServers.Add(s);
                 }
@@ -445,15 +444,6 @@ namespace padiFS
 
                                 ThreadPool.QueueUserWorkItem(AppendToLog, context);
 
-                                //foreach (string s in md.Replicas.Keys)
-                                //{
-                                //    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), md.Replicas[s]);
-
-                                //    if (replica != null)
-                                //    {
-                                //        replica.AppendToLog(command);
-                                //    }
-                                //}
                                 md.getMigration().Set();
                                 md.getMigratingList().Remove(secondMostAccessedfile);
                                 return;
@@ -525,26 +515,6 @@ namespace padiFS
             return chosen;
         }
 
-
-        //private void UpdateReplicas(object threadcontext)
-        //{
-        //    MetadataServer md = (MetadataServer)threadcontext;
-        //    foreach (string r in md.Replicas.Keys)
-        //    {
-        //        try
-        //        {
-        //            IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), md.Replicas[r]);
-        //            if (replica != null)
-        //            {
-        //                replica.Ping();
-        //                MetadataInfo info = new MetadataInfo(md.Primary, md.Address, md.Replicas, md.LiveDataServers, md.DeadDataServers, md.ServersLoad, md.Files, md.OpenFiles);
-        //                replica.UpdateReplica(info);
-        //            }
-        //        }
-        //        catch (ServerNotAvailableException) { }
-        //    }
-        //}
-
         // Primary metadata server append to log
         private void AppendToLog(object threadcontext)
         {
@@ -559,7 +529,6 @@ namespace padiFS
                     IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), md.Replicas[r]);
                     if (replica != null)
                     {
-                        replica.Ping();
                         replica.AppendToLog(command);
                     }
                 }
@@ -599,7 +568,6 @@ namespace padiFS
                             string[] chosen = Util.SliceArray(args, 6, args.Length);
 
                             // Before sending the requests, a time stamp is added to the filename
-                            //string f = md.GetToken().ToString() +(char)0x7f + filename;
                             foreach (string v in chosen)
                             {
                                 servers.Add(md.LiveDataServers[v]);

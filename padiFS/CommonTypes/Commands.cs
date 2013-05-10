@@ -166,7 +166,7 @@ namespace padiFS
                 int rQuorum = int.Parse(args[3]);
                 int wQuorum = int.Parse(args[4]);
 
-                client.Create(filename, nServers, rQuorum, wQuorum); 
+                client.Create(filename, nServers, rQuorum, wQuorum);
             }
 
             return null;
@@ -354,7 +354,7 @@ namespace padiFS
                 {
                     source = args[2];
                 }
-                
+
                 int fileRegister1;
                 Int32.TryParse(args[1], out fileRegister1);
                 string semantics = args[2];

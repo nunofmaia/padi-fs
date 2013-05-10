@@ -11,25 +11,17 @@ namespace padiFS
 
         public PadiFsException()
         {
-            
+
         }
 
-        public PadiFsException(string message) : base(message)
+        public PadiFsException(string message)
+            : base(message)
         {
 
         }
 
         public PadiFsException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
             : base(info, context) { }
-
-        // RETRIEVE SERIALIZED DATA FROM EXCEPTION
-
-        //public override void GetObjectData(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context)
-        //{
-        //    base.GetObjectData(info, context);
-        //    //info.AddValue("campo", campo);
-        //    //info.AddValue("mo", mo);
-        //}
     }
 
     [Serializable]

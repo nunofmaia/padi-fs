@@ -24,7 +24,6 @@ namespace padiFS
         long GetToken();
         MetadataInfo GetMetadataInfo();
         void UpdateFileMetada(string name, string address);
-        //void UpdateReplica(MetadataInfo info);
         bool Ping();
         void SetPrimary(string name);
         string GetPrimary();

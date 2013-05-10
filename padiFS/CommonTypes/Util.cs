@@ -50,7 +50,7 @@ namespace padiFS
 
         public static string[] SplitArguments(string arguments)
         {
-            return arguments.Split(new char[] {(char)0x7f});
+            return arguments.Split(new char[] { (char)0x7f });
         }
 
         public static byte[] ConvertStringToByteArray(string s)
@@ -70,7 +70,7 @@ namespace padiFS
 
         public static SerializableDictionary<string, int> SortServerLoad(SerializableDictionary<string, int> dic)
         {
-            SerializableDictionary<string, int> res = new SerializableDictionary<string,int>();
+            SerializableDictionary<string, int> res = new SerializableDictionary<string, int>();
 
             foreach (var item in dic.OrderBy(i => i.Value))
             {
@@ -100,11 +100,11 @@ namespace padiFS
             }
 
             // Print resulting Dictionary
-            Console.WriteLine("SORTED VOTES:");
-            foreach (int i in res.Keys)
-            {
-                Console.WriteLine(i + " => " + res[i]);
-            }
+            //Console.WriteLine("SORTED VOTES:");
+            //foreach (int i in res.Keys)
+            //{
+            //    Console.WriteLine(i + " => " + res[i]);
+            //}
 
             return res;
         }
@@ -147,20 +147,14 @@ namespace padiFS
 
         public static void SerializeObject(Object ob, string currentDir, string name)
         {
-            try
-            {
-                string path = currentDir + @"\" + name;
-                Console.WriteLine(path);
-                TextWriter tw = new StreamWriter(path);
-                System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(ob.GetType());
-                x.Serialize(tw, ob);
-                Console.WriteLine("Object written to file");
-                tw.Close();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.InnerException.Message);
-            }
+            string path = currentDir + @"\" + name;
+            Console.WriteLine(path);
+            TextWriter tw = new StreamWriter(path);
+            System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(ob.GetType());
+            x.Serialize(tw, ob);
+            Console.WriteLine("Object written to file");
+            tw.Close();
+
         }
 
         public static Object DeserializeObject(Object ob, string currentDir, string name)
@@ -219,7 +213,7 @@ namespace padiFS
         }
 
         //calculates the value that alows make the interval
-        public static int IntervalAccesses(double alfa, int average) 
+        public static int IntervalAccesses(double alfa, int average)
         {
             return (int)(alfa * average);
         }

@@ -164,7 +164,6 @@ namespace padiFS
 
                             if (d != null)
                             {
-                                //d.Ping();
                                 d.isFreezed();
                             }
                         }
@@ -284,22 +283,6 @@ namespace padiFS
                 catch (SystemException) { }
             }
 
-            //foreach (string key in activeMetadataServers)
-            //{
-            //    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
-
-            //    if (server != null)
-            //    {
-            //        try
-            //        {
-            //            server.RegisterDataServer(name, address);
-            //        }
-            //        catch (SystemException)
-            //        {
-            //        }
-            //    }
-            //}
-
             IDataServer data = (IDataServer)Activator.GetObject(typeof(IDataServer), address);
 
             if (data != null)
@@ -328,22 +311,6 @@ namespace padiFS
                 }
                 catch (SystemException) { }
             }
-
-            //foreach (string key in metadataServers.Keys)
-            //{
-            //    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
-
-            //    if (server != null)
-            //    {
-            //        try
-            //        {
-            //            server.RegisterClient(name, address);
-            //        }
-            //        catch (SystemException)
-            //        {
-            //        }
-            //    }
-            //}
         }
 
         private void registerMetadataServer(string name, string address)
@@ -382,30 +349,6 @@ namespace padiFS
                     }
                     catch (SystemException) { }
                 }
-
-                //foreach (string key in metadataServers.Keys)
-                //{
-                //    if (key != name)
-                //    {
-                //        IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
-                //        if (server != null)
-                //        {
-                //            try
-                //            {
-                //                server.RegisterMetadataServer(name, address);
-                //            }
-                //            catch (System.Net.Sockets.SocketException)
-                //            {
-                //            }
-                //            catch (System.IO.IOException)
-                //            {
-                //            }
-                //            catch (ServerNotAvailableException)
-                //            {
-                //            }
-                //        }
-                //    }
-                //}
             }
             else
             {
@@ -915,7 +858,7 @@ namespace padiFS
                     break;
 
                 default:
-                    System.Windows.Forms.MessageBox.Show("Invalid command. " + iurieCaptions[new Random().Next(0,4)]);
+                    System.Windows.Forms.MessageBox.Show("Invalid command. " + iurieCaptions[new Random().Next(0, 4)]);
                     break;
             }
 
@@ -1102,7 +1045,6 @@ namespace padiFS
 
         public object execute(ICommand command, string line)
         {
-            //string[] args = line.Replace(",", "").Split(' ');
             Match match = Regex.Match(line, @"([d|m|c]-\d+)", RegexOptions.IgnoreCase);
             string process = "p";
             if (match.Success)

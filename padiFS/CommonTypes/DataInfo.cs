@@ -10,24 +10,25 @@ namespace padiFS
     {
         public SerializableDictionary<string, int> NumberAccesses { set; get; }
 
-        public DataInfo() 
+        public DataInfo()
         {
             this.NumberAccesses = new SerializableDictionary<string, int>();
         }
 
         public void AddFile(string fileName)
         {
-            if(!this.NumberAccesses.ContainsKey(fileName)) {
-               this.NumberAccesses.Add(fileName, 0);
+            if (!this.NumberAccesses.ContainsKey(fileName))
+            {
+                this.NumberAccesses.Add(fileName, 0);
             }
         }
 
-        public int GetAccesses(string fileName) 
+        public int GetAccesses(string fileName)
         {
-            return this.NumberAccesses[fileName]; 
+            return this.NumberAccesses[fileName];
         }
 
-        public SerializableDictionary<string, int> GetNumberAccesses() 
+        public SerializableDictionary<string, int> GetNumberAccesses()
         {
             return this.NumberAccesses;
         }
@@ -38,14 +39,15 @@ namespace padiFS
             {
                 this.NumberAccesses[fileName]++;
             }
-            else 
+            else
             {
                 this.NumberAccesses.Add(fileName, 1);
             }
         }
 
         //count total accesses to data server
-        public int GetTotalAccesses() {
+        public int GetTotalAccesses()
+        {
             int total = 0;
             foreach (KeyValuePair<string, int> accesses in this.NumberAccesses)
             {

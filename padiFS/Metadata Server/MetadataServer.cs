@@ -174,8 +174,6 @@ namespace padiFS
             lock (this)
             {
                 this.setStateFail();
-                // Should we deactivate the timers!? Maybe we can get rid of if's checking if it's on
-                // failure or not. Pretty code! :)
                 pingPrimaryReplicaTimer.Enabled = false;
                 pingDataServersTimer.Enabled = false;
                 serializationTimer.Enabled = false;
@@ -297,12 +295,15 @@ namespace padiFS
 
         public void RegisterClient(string name, string address)
         {
-            Console.WriteLine("Client " + name + " : " + address);
-            this.Clients.Add(name, address);
-            string command = string.Format("REGISTER client {0} {1}", name, address);
-            
-            this.Log.Append(command);
-            ThreadPool.QueueUserWorkItem(AppendToLog, command);
+            if (!this.Clients.ContainsKey(name))
+            {
+                Console.WriteLine("Client " + name + " : " + address);
+                this.Clients.Add(name, address);
+                string command = string.Format("REGISTER client {0} {1}", name, address);
+
+                this.Log.Append(command);
+                ThreadPool.QueueUserWorkItem(AppendToLog, command);
+            }
         }
 
 
@@ -310,29 +311,6 @@ namespace padiFS
         {
             this.State.RegisterMetadataServer(this, name, address);
         }
-
-        //public void UpdateReplica(MetadataInfo info)
-        //{
-        //    SetPrimary(info.Primary);
-        //    this.Replicas = info.Replicas;
-
-        //    if (this.Replicas.ContainsKey(this.Name))
-        //    {
-        //        this.Replicas.Remove(this.Name);
-        //    }
-
-        //    if (!this.Replicas.ContainsKey(this.Primary))
-        //    {
-        //        this.Replicas.Add(this.Primary, info.Address);
-        //    }
-        //    this.LiveDataServers = info.LiveDataServers;
-        //    this.DeadDataServers = info.DeadDataServers;
-        //    this.ServersLoad = info.ServersLoad;
-        //    this.Files = info.Files;
-        //    this.OpenFiles = info.OpenFiles;
-
-        //    Console.WriteLine("Updated metadata info.");
-        //}
 
         public MetadataInfo GetMetadataInfo()
         {
@@ -615,16 +593,6 @@ namespace padiFS
 
                 this.Log.Append(command);
                 ThreadPool.QueueUserWorkItem(AppendToLog, command);
-
-                //foreach (string s in this.Replicas.Keys)
-                //{
-                //    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), this.Replicas[s]);
-
-                //    if (replica != null)
-                //    {
-                //        replica.AppendToLog(command);
-                //    }
-                //}
             }
         }
 
@@ -650,7 +618,6 @@ namespace padiFS
                     IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), this.Replicas[r]);
                     if (replica != null)
                     {
-                        //replica.Ping();
                         replica.AppendToLog(command);
                     }
                 }
@@ -660,28 +627,7 @@ namespace padiFS
             }
         }
 
-        // TEST AREA
-        private static void Exit(object sender, ConsoleCancelEventArgs e)
-        {
-            Console.WriteLine("Control+C hit. Shutting down.");
-            Environment.Exit(0);
-        }
-
-        private static bool ConsoleEventCallback(int eventType)
-        {
-            if (eventType == 2)
-            {
-                Channel.StopListening(null);
-                Console.WriteLine("Exit");
-            }
-            return false;
-        }
-        static ConsoleEventDelegate handler;   // Keeps it from getting garbage collected
-        // Pinvoke
-        private delegate bool ConsoleEventDelegate(int eventType);
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
-
+        // Keeps it from getting garbage collected
         public override object InitializeLifetimeService()
         {
             return null;
@@ -696,9 +642,6 @@ namespace padiFS
             Channel = new TcpChannel(ms.Port);
             ChannelServices.RegisterChannel(Channel, true);
             RemotingServices.Marshal(ms, ms.Name, typeof(MetadataServer));
-
-            // TEST AREA
-            handler = new ConsoleEventDelegate(ConsoleEventCallback);
 
             int origWidth = Console.WindowWidth;
             int origHeight = Console.WindowHeight;
@@ -721,21 +664,10 @@ namespace padiFS
 
         public void UpdateLog(string[] log)
         {
-            //int primaryIndex = log.Index;
-            //int index = this.Log.Index;
-
-            //Console.WriteLine("PRIMARY INDEX: " + primaryIndex);
-            //Console.WriteLine("ACTUAL INDEX: " + index);
-
-            //if (primaryIndex > index)
-            //{
-            //    string[] commands = log.Read(index + 1);
-
                 foreach (string command in log)
                 {
                     AppendToLog(command);
                 }
-            //}
         }
 
         public string[] GetLog(int logIndex)
