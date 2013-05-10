@@ -36,6 +36,8 @@ namespace padiFS
         private StreamReader script;
         private string scripts_dir;
 
+        private string[] iurieCaptions = { "Iurie will follow you until the end of world.", "Iurie doesn't care.", "STAAAP, Iurie is mad", "Iurie is sad :(" };
+
         public Form1()
         {
             ArrayList servers = new ArrayList();
@@ -102,7 +104,7 @@ namespace padiFS
                     {
                         LaunchMetadataServer(name, port);
                         metadataServers.Add(name, address);
-                        mscounter++;
+                        mscounter = Util.ProcessID(name) + 1;
                         registerMetadataServer(name, address);
                         activeMetadataServers.Add(name);
                         processes.Add(name, address);
@@ -143,10 +145,11 @@ namespace padiFS
                             LaunchDataServer(name, port);
                             dataServers.Add(name, address);
                             activeDataServers.Add(name);
-                            dscounter = Int32.Parse(Convert.ToString(name[2])) + 1;
+                            dscounter = Util.ProcessID(name) + 1;
                             registerDataServer(name, address);
                             processes.Add(name, address);
                             UpdateFileMetadata(name, address);
+
                         }
                         else
                         {
@@ -194,7 +197,7 @@ namespace padiFS
                         {
                             EnableButtons();
                         }
-                        ccounter++;
+                        ccounter = Util.ProcessID(name) + 1;
                         processes.Add(name, address);
                     }
 
@@ -463,6 +466,7 @@ namespace padiFS
                         dscounter++;
                         registerDataServer(ds_name, ds_address);
                         processes.Add(ds_name, ds_address);
+                        UpdateFileMetadata(ds_name, ds_address);
                     }
                     else
                     {
@@ -911,7 +915,7 @@ namespace padiFS
                     break;
 
                 default:
-                    System.Windows.Forms.MessageBox.Show("Invalid command");
+                    System.Windows.Forms.MessageBox.Show("Invalid command. " + iurieCaptions[new Random().Next(0,4)]);
                     break;
             }
 
@@ -1127,7 +1131,6 @@ namespace padiFS
                     result = command.execute(client, line);
                     break;
                 default:
-                    System.Windows.Forms.MessageBox.Show("Iurie Master will kill you!");
                     break;
             }
 

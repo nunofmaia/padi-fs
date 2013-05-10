@@ -5,10 +5,10 @@ RECOVER m-2
 UNFREEZE d-1
 # Start a client and create a file f1 with 1 data servers and 
 # read and write quora of 1
-CREATE c-1, f1, 2, 1, 1
-OPEN c-1, f1
+CREATE c-1,f1,2,1,1
+OPEN c-1,f1
 FREEZE d-1
-EXESCRIPT c-1 exe1.txt
+EXESCRIPT c-1 exe1_ps.txt
 # for some groups DUMP d-1 here could show that the write in the exescript has not happened
 UNFREEZE d-1
 DUMP c-1

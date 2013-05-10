@@ -8,7 +8,7 @@ namespace padiFS
     public class Bridge
     {
         private Dictionary<string, string> metadataServers;
-        //private string primary;
+        private string primary;
 
         public Dictionary<string, string> Servers
         {
@@ -44,6 +44,7 @@ namespace padiFS
                 }
                 catch (SystemException)
                 {
+                    primary = null;
                 }
             }
 
@@ -75,6 +76,7 @@ namespace padiFS
                 }
                 catch (SystemException)
                 {
+                    primary = null;
                 }
             }
 
@@ -102,6 +104,7 @@ namespace padiFS
                 }
                 catch (SystemException)
                 {
+                    primary = null;
                 }
             }
         }
@@ -127,29 +130,9 @@ namespace padiFS
                 }
                 catch (SystemException)
                 {
+                    primary = null;
                 }
             }
-        }
-
-        private string AskForPrimary()
-        {
-            foreach (string address in metadataServers.Values)
-            {
-                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
-                if (server != null)
-                {
-                    try
-                    {
-                        if (server.Ping())
-                        {
-                            return server.GetPrimary();
-                        }
-                    }
-                    catch (Exception) { }
-                }
-            }
-
-            return null;
         }
 
         public long GetToken()
@@ -172,10 +155,38 @@ namespace padiFS
                 }
                 catch (SystemException)
                 {
+                    primary = null;
                 }
             }
 
             return 0;
+        }
+
+        private string AskForPrimary()
+        {
+            if (primary != null)
+            {
+                return primary;
+            }
+
+            foreach (string address in metadataServers.Values)
+            {
+                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
+                if (server != null)
+                {
+                    try
+                    {
+                        //if (server.Ping())
+                        //{
+                            primary = server.GetPrimary();
+                            return primary;
+                        //}
+                    }
+                    catch (Exception) { }
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -99,7 +99,7 @@ namespace padiFS
 
             serializationTimer.Enabled = true;
 
-            Console.WriteLine("ID: {0}", Util.MetadataServerId(name));
+            Console.WriteLine("ID: {0}", Util.ProcessID(name));
         }
 
         protected void setStateFail()
@@ -431,9 +431,16 @@ namespace padiFS
         private void SerializeServer(object source, ElapsedEventArgs e)
         {
             string directory = Environment.CurrentDirectory + string.Format(@"\{0}", this.Name);
-            string filename = "Backup.txt";
+            string filename = "BackupTemp.txt";
+            string pathTemp = directory + @"\" + filename;
+            string path = directory + @"\" + "Backup.txt";
 
-            Util.SerializeObject(this, directory, filename);
+            try
+            {
+                Util.SerializeObject(this, directory, filename);
+                System.IO.File.Copy(pathTemp, path, true);
+            }
+            catch (Exception) { }
         }
 
         public void DeserializeServer()
@@ -491,7 +498,7 @@ namespace padiFS
 
         private void NextPrimaryReplica()
         {
-            int id = Util.MetadataServerId(this.Name);
+            int id = Util.ProcessID(this.Name);
             string replica = this.Name;
 
             foreach (string r in this.Replicas.Keys)
@@ -504,7 +511,7 @@ namespace padiFS
                         if (server != null)
                         {
                             server.Ping();
-                            int r_id = Util.MetadataServerId(r);
+                            int r_id = Util.ProcessID(r);
                             if (r_id < id)
                             {
                                 id = r_id;
@@ -626,7 +633,6 @@ namespace padiFS
             lock (this)
             {
                 long s = ++this.Sequencer;
-                Console.WriteLine(s);
                 string command = string.Format("TOKEN {0}", s);
                 this.Log.Append(command);
                 ThreadPool.QueueUserWorkItem(AppendToLog, command);
@@ -644,7 +650,7 @@ namespace padiFS
                     IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), this.Replicas[r]);
                     if (replica != null)
                     {
-                        replica.Ping();
+                        //replica.Ping();
                         replica.AppendToLog(command);
                     }
                 }

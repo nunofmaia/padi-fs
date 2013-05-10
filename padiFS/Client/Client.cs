@@ -18,7 +18,7 @@ namespace padiFS
         private string name;
         private int port;
         private Bridge bridge;
-        private Dictionary<string, Metadata> myFiles;
+        //private Dictionary<string, Metadata> myFiles;
         private Dictionary<string, Metadata> openFiles;
         private ConcurrentDictionary<string, File> historic;
         private ConcurrentBag<File> readFiles;
@@ -39,7 +39,7 @@ namespace padiFS
             this.name = name;
             this.port = int.Parse(port);
             this.bridge = new Bridge();
-            this.myFiles = new Dictionary<string, Metadata>();
+            //this.myFiles = new Dictionary<string, Metadata>();
             this.openFiles = new Dictionary<string, Metadata>(10);
             this.historic = new ConcurrentDictionary<string, File>();
             this.stringRegister = new byte[10][];
@@ -56,7 +56,7 @@ namespace padiFS
             {
                 Metadata meta = bridge.Create(this.name, filename, nServers, rQuorum, wQuorum);
 
-                myFiles.Add(filename, meta);
+                //myFiles.Add(filename, meta);
                 openFiles.Add(filename, meta);
 
                 AddToFileRegister(meta);
@@ -642,6 +642,8 @@ namespace padiFS
 
             while (!ReadVoting(readQuorum, ref received, ref votes, ref winner))
             {
+                m = fileRegister[file1];
+                servers = m.DataServers;
                 ReadCallDataServers(filename, semantics, servers);
                 readFiles = new ConcurrentBag<File>();
                 received = null;
@@ -749,9 +751,8 @@ namespace padiFS
 
         public void UpdateFileMetadata(string filename, Metadata metadata)
         {
-            if (myFiles.ContainsKey(filename))
+            if (openFiles.ContainsKey(filename))
             {
-                myFiles[filename] = metadata;
                 openFiles[filename] = metadata;
 
                 for (int i = 0; i < registersLimit; i++)
