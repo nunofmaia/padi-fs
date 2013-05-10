@@ -199,6 +199,32 @@ namespace padiFS
                         ccounter = Util.ProcessID(name) + 1;
                         processes.Add(name, address);
                     }
+                    else
+                    {
+                        try
+                        {
+                            IClient c = (IClient)Activator.GetObject(typeof(IClient), clients[name]);
+
+                            if (c != null)
+                            {
+                                // Need to call a method that does nothing...
+                                c.ToString();
+                            }
+                        }
+                        catch (System.IO.IOException)
+                        {
+                            LaunchClient(name, port);
+                            registerClients(name, address);
+                            UpdateClientServer(name);
+                        }
+                        catch (System.Net.Sockets.SocketException)
+                        {
+                            LaunchClient(name, port);
+                            registerClients(name, address);
+                            UpdateClientServer(name);
+                        }
+
+                    }
 
                     break;
             }
