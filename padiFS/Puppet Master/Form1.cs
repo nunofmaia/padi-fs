@@ -66,9 +66,9 @@ namespace padiFS
             activeDataServers = new List<string>();
             activeMetadataServers = new List<string>();
             processes = new Dictionary<string, string>();
-            
+
             script = null;
-            scripts_dir = Environment.CurrentDirectory + @"\Scripts"; 
+            scripts_dir = Environment.CurrentDirectory + @"\Scripts";
             if (!Directory.Exists(scripts_dir))
             {
                 Directory.CreateDirectory(scripts_dir);
@@ -143,7 +143,7 @@ namespace padiFS
                             LaunchDataServer(name, port);
                             dataServers.Add(name, address);
                             activeDataServers.Add(name);
-                            dscounter = Int32.Parse(Convert.ToString(name[2]))+1;
+                            dscounter = Int32.Parse(Convert.ToString(name[2])) + 1;
                             registerDataServer(name, address);
                             processes.Add(name, address);
                             UpdateFileMetadata(name, address);
@@ -262,20 +262,40 @@ namespace padiFS
         // REGISTERING SITE
         private void registerDataServer(string name, string address)
         {
-            foreach (string key in activeMetadataServers)
+            bool executed = false;
+            while (!executed)
             {
-                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
-
-                if (server != null)
+                try
                 {
-                    try {
-                        server.RegisterDataServer(name, address);
-                    }
-                    catch (SystemException)
+                    string primary_name = AskForPrimary();
+                    if (primary_name != null)
                     {
+                        IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary_name]);
+                        if (primary != null)
+                        {
+                            primary.RegisterDataServer(name, address);
+                            executed = true;
+                        }
                     }
                 }
+                catch (SystemException) { }
             }
+
+            //foreach (string key in activeMetadataServers)
+            //{
+            //    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
+
+            //    if (server != null)
+            //    {
+            //        try
+            //        {
+            //            server.RegisterDataServer(name, address);
+            //        }
+            //        catch (SystemException)
+            //        {
+            //        }
+            //    }
+            //}
 
             IDataServer data = (IDataServer)Activator.GetObject(typeof(IDataServer), address);
 
@@ -287,21 +307,40 @@ namespace padiFS
 
         private void registerClients(string name, string address)
         {
-            foreach (string key in metadataServers.Keys)
+            bool executed = false;
+            while (!executed)
             {
-                IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
-
-                if (server != null)
+                try
                 {
-                    try
+                    string primary_name = AskForPrimary();
+                    if (primary_name != null)
                     {
-                        server.RegisterClient(name, address);
-                    }
-                    catch (SystemException)
-                    {
+                        IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[primary_name]);
+                        if (primary != null)
+                        {
+                            primary.RegisterClient(name, address);
+                            executed = true;
+                        }
                     }
                 }
+                catch (SystemException) { }
             }
+
+            //foreach (string key in metadataServers.Keys)
+            //{
+            //    IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
+
+            //    if (server != null)
+            //    {
+            //        try
+            //        {
+            //            server.RegisterClient(name, address);
+            //        }
+            //        catch (SystemException)
+            //        {
+            //        }
+            //    }
+            //}
         }
 
         private void registerMetadataServer(string name, string address)
@@ -322,11 +361,12 @@ namespace padiFS
                             if (primary != null)
                             {
                                 replica.DeserializeServer();
-                                Log log = primary.GetLog();
+                                string[] log = primary.GetLog(-1);
                                 if (replica != null)
                                 {
                                     replica.UpdateLog(log);
                                 }
+                                primary.RegisterMetadataServer(name, address);
                                 executed = true;
                             }
                         }
@@ -340,29 +380,29 @@ namespace padiFS
                     catch (SystemException) { }
                 }
 
-                foreach (string key in metadataServers.Keys)
-                {
-                    if (key != name)
-                    {
-                        IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
-                        if (server != null)
-                        {
-                            try
-                            {
-                                server.RegisterMetadataServer(name, address);
-                            }
-                            catch (System.Net.Sockets.SocketException)
-                            {
-                            }
-                            catch (System.IO.IOException)
-                            {
-                            }
-                            catch (ServerNotAvailableException)
-                            {
-                            }
-                        }
-                    }
-                }
+                //foreach (string key in metadataServers.Keys)
+                //{
+                //    if (key != name)
+                //    {
+                //        IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), (string)metadataServers[key]);
+                //        if (server != null)
+                //        {
+                //            try
+                //            {
+                //                server.RegisterMetadataServer(name, address);
+                //            }
+                //            catch (System.Net.Sockets.SocketException)
+                //            {
+                //            }
+                //            catch (System.IO.IOException)
+                //            {
+                //            }
+                //            catch (ServerNotAvailableException)
+                //            {
+                //            }
+                //        }
+                //    }
+                //}
             }
             else
             {

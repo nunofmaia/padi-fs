@@ -12,6 +12,8 @@ namespace padiFS
         public int Index { set; get; }
         public string Path { set; get; }
 
+        private Object thisLock = new Object();
+
         public Log()
         {
         }
@@ -24,7 +26,7 @@ namespace padiFS
 
         public void Append(string command)
         {
-            lock (this)
+            lock (thisLock)
             {
                 using (StreamWriter sw = System.IO.File.AppendText(this.Path))
                 {
@@ -38,19 +40,21 @@ namespace padiFS
         {
             List<string> commands = new List<string>();
 
-            using (StreamReader sr = new StreamReader(this.Path))
+            lock (thisLock)
             {
-                for (int i = 0; i < offset; i++)
+                using (StreamReader sr = new StreamReader(this.Path))
                 {
-                    sr.ReadLine();
-                }
+                    for (int i = 0; i < offset; i++)
+                    {
+                        sr.ReadLine();
+                    }
 
-                while (!sr.EndOfStream)
-                {
-                    commands.Add(sr.ReadLine());
+                    while (!sr.EndOfStream)
+                    {
+                        commands.Add(sr.ReadLine());
+                    }
                 }
             }
-
             return commands.ToArray();
         }
     }

@@ -243,11 +243,18 @@ namespace padiFS
         {
             // If the server doesn't have the new metadata registered,
             // registers it and introduces to it "Hi, I'm Iurie's metadata server"
-            if (!md.Replicas.ContainsKey(name))
+            if (!md.Replicas.ContainsKey(name) && (name != md.Name))
             {
                 Console.WriteLine("Metadata Server " + name + " : " + address);
                 md.Replicas.Add(name, address);
-                md.Log.Append(string.Format("REGISTER metadata {0} {1}", name, address));
+                string command = string.Format("REGISTER metadata {0} {1}", name, address);
+
+                md.Log.Append(command);
+
+                List<object> context = new List<object>();
+                context.Add(md);
+                context.Add(command);
+                ThreadPool.QueueUserWorkItem(AppendToLog, context);
 
                 IMetadataServer server = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), address);
                 if (server != null)
@@ -431,17 +438,22 @@ namespace padiFS
                                 meta.DataServers.Remove(readServer);
                                 md.ServersLoad[mostOverloadedServer]--;
 
+                                List<object> context = new List<object>();
+                                context.Add(md);
+                                context.Add(command);
                                 md.Log.Append(command);
 
-                                foreach (string s in md.Replicas.Keys)
-                                {
-                                    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), md.Replicas[s]);
+                                ThreadPool.QueueUserWorkItem(AppendToLog, context);
 
-                                    if (replica != null)
-                                    {
-                                        replica.AppendToLog(command);
-                                    }
-                                }
+                                //foreach (string s in md.Replicas.Keys)
+                                //{
+                                //    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), md.Replicas[s]);
+
+                                //    if (replica != null)
+                                //    {
+                                //        replica.AppendToLog(command);
+                                //    }
+                                //}
                                 md.getMigration().Set();
                                 md.getMigratingList().Remove(secondMostAccessedfile);
                                 return;
@@ -533,6 +545,7 @@ namespace padiFS
         //    }
         //}
 
+        // Primary metadata server append to log
         private void AppendToLog(object threadcontext)
         {
             List<object> context = (List<object>)threadcontext;
@@ -556,6 +569,7 @@ namespace padiFS
             }
         }
 
+        // Replica metadata server append to log
         public override void AppendToLog(MetadataServer md, string command)
         {
             string[] args = command.Split(' ');
@@ -585,7 +599,7 @@ namespace padiFS
                             string[] chosen = Util.SliceArray(args, 6, args.Length);
 
                             // Before sending the requests, a time stamp is added to the filename
-                            string f = DateTime.Now.ToString("o") + (char)0x7f + filename;
+                            //string f = md.GetToken().ToString() +(char)0x7f + filename;
                             foreach (string v in chosen)
                             {
                                 servers.Add(md.LiveDataServers[v]);

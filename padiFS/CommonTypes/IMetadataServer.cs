@@ -31,8 +31,8 @@ namespace padiFS
         void Recovered(string name);
 
         void AppendToLog(string command);
-        void UpdateLog(Log log);
-        Log GetLog();
+        void UpdateLog(string[] log);
+        string[] GetLog(int logIndex);
 
         void DeserializeServer();
     }

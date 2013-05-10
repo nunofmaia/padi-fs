@@ -39,6 +39,7 @@ namespace padiFS
         public SerializableDictionary<string, DataInfo> DataServersInfo { set; get; }
         public Log Log { set; get; }
         private ManualResetEvent migration;
+        private ManualResetEvent gettingLog;
         private List<string> migrating;
 
         private System.Timers.Timer pingDataServersTimer;
@@ -67,6 +68,7 @@ namespace padiFS
             this.PendingFiles = new SerializableDictionary<string, int>();
             this.DataServersInfo = new SerializableDictionary<string, DataInfo>();
             this.migration = new ManualResetEvent(true);
+            this.gettingLog = new ManualResetEvent(true);
             this.migrating = new List<string>();
 
             this.pingDataServerInterval = 25;
@@ -176,11 +178,18 @@ namespace padiFS
                 // failure or not. Pretty code! :)
                 pingPrimaryReplicaTimer.Enabled = false;
                 pingDataServersTimer.Enabled = false;
+                serializationTimer.Enabled = false;
             }
             Console.WriteLine("On Failure!");
         }
 
         public void Recover() {
+
+            lock (this)
+            {
+                this.setStateNormal();
+            }
+            Console.WriteLine("Uhf, recovered at last...");
 
             foreach (string replica in this.Replicas.Keys)
             {
@@ -196,8 +205,12 @@ namespace padiFS
                             Console.WriteLine("REPLICA " + replica);
                             if (this.Primary == replica)
                             {
-                                Log log = server.GetLog();
+                                serializationTimer.Enabled = false;
+                                gettingLog.Reset();
+                                string[] log = server.GetLog(this.Log.Index);
                                 UpdateLog(log);
+                                gettingLog.Set();
+                                serializationTimer.Enabled = true;
                             }
                             else
                             {
@@ -207,7 +220,7 @@ namespace padiFS
                                     IMetadataServer primary = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), this.Replicas[this.Primary]);
                                     if (primary != null)
                                     {
-                                        Log log = primary.GetLog();
+                                        string[] log = server.GetLog(this.Log.Index);
                                         UpdateLog(log);
                                     }
                                 }
@@ -246,12 +259,6 @@ namespace padiFS
                     }
                 }
             }
-
-            lock (this)
-            {
-                this.setStateNormal();
-            }
-            Console.WriteLine("Uhf, recovered at last...");
         }
 
         public void Recovered(string name)
@@ -280,7 +287,9 @@ namespace padiFS
                     this.DataServersInfo.Add(name, null);
                     this.ServersLoad.Add(name, 0);
 
-                    this.Log.Append(string.Format("REGISTER data {0} {1}", name, address));
+                    string command = string.Format("REGISTER data {0} {1}", name, address);
+                    this.Log.Append(command);
+                    ThreadPool.QueueUserWorkItem(AppendToLog, command);
                 }
             }
 
@@ -290,8 +299,10 @@ namespace padiFS
         {
             Console.WriteLine("Client " + name + " : " + address);
             this.Clients.Add(name, address);
-
-            this.Log.Append(string.Format("REGISTER client {0} {1}", name, address));
+            string command = string.Format("REGISTER client {0} {1}", name, address);
+            
+            this.Log.Append(command);
+            ThreadPool.QueueUserWorkItem(AppendToLog, command);
         }
 
 
@@ -596,16 +607,17 @@ namespace padiFS
                 this.PendingFiles = new SerializableDictionary<string, int>(updated);
 
                 this.Log.Append(command);
+                ThreadPool.QueueUserWorkItem(AppendToLog, command);
 
-                foreach (string s in this.Replicas.Keys)
-                {
-                    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), this.Replicas[s]);
+                //foreach (string s in this.Replicas.Keys)
+                //{
+                //    IMetadataServer replica = (IMetadataServer)Activator.GetObject(typeof(IMetadataServer), this.Replicas[s]);
 
-                    if (replica != null)
-                    {
-                        replica.AppendToLog(command);
-                    }
-                }
+                //    if (replica != null)
+                //    {
+                //        replica.AppendToLog(command);
+                //    }
+                //}
             }
         }
 
@@ -614,6 +626,7 @@ namespace padiFS
             lock (this)
             {
                 long s = ++this.Sequencer;
+                Console.WriteLine(s);
                 string command = string.Format("TOKEN {0}", s);
                 this.Log.Append(command);
                 ThreadPool.QueueUserWorkItem(AppendToLog, command);
@@ -692,6 +705,7 @@ namespace padiFS
 
         public void AppendToLog(string command)
         {
+            gettingLog.WaitOne();
             lock (typeof(MetadataServer))
             {
                 this.State.AppendToLog(this, command);
@@ -699,28 +713,29 @@ namespace padiFS
         }
 
 
-        public void UpdateLog(Log log)
+        public void UpdateLog(string[] log)
         {
-            int primaryIndex = log.Index;
-            int index = this.Log.Index;
+            //int primaryIndex = log.Index;
+            //int index = this.Log.Index;
 
-            Console.WriteLine("PRIMARY INDEX: " + primaryIndex);
-            Console.WriteLine("ACTUAL INDEX: " + index);
+            //Console.WriteLine("PRIMARY INDEX: " + primaryIndex);
+            //Console.WriteLine("ACTUAL INDEX: " + index);
 
-            if (primaryIndex > index)
-            {
-                string[] commands = log.Read(index + 1);
+            //if (primaryIndex > index)
+            //{
+            //    string[] commands = log.Read(index + 1);
 
-                foreach (string command in commands)
+                foreach (string command in log)
                 {
                     AppendToLog(command);
                 }
-            }
+            //}
         }
 
-        public Log GetLog()
+        public string[] GetLog(int logIndex)
         {
-            return this.Log;
+            string[] commands = this.Log.Read(logIndex + 1);           
+            return commands;
         }
 
         public void EnablePrimaryTimers()
