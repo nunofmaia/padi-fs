@@ -47,12 +47,18 @@ server informs the available data servers needed with the least amount
 of saved files to save a local copy of the file, updates the load
 of each data server tha will hold that file and sends the file's metadata
 to the client. When the client requests for the file to be replicated in
-a certain number of data servers is greater than the data servers that 
-exist at that moment, the metadata server sends the file's metadata to 
-the client with the data servers available and puts the file on a pending 
-lists so that when a new data server register, the metadata of the file 
-can be updated and sent back to the client. The file stays in the pending 
-list until all the data servers request are available.
+a certain number of data servers is  and that number is greater than the 
+data servers that exist at that moment, the metadata server sends the 
+file's metadata to the client with the data servers available and puts the 
+file on a pending lists so that when a new data server register, the metadata 
+of the file can be updated and sent back to the client. The file stays in the 
+pending list until all the data servers requested are available.
+
+After a new data server registers itself with the metadata server, the latter
+is responsible for updating the metadata of files currently on the pending
+list, adding the data server to their list and removing the files if they already
+have the number of data servers needed, and for sending the create instruction
+to the data server.
 
 %The
 %primary replica must inform the necessary data servers that they need to
@@ -107,12 +113,59 @@ Although the file's entries are removed from the metadata server, they
 still remain untouched in the data server since the system does not provide
 any functionality to clean delete files from them.
 
+\bigskip
+
+There are other file operations that don't have direct participation from the
+metadata servers like read, write and copy operations. However, metadata servers
+play an important role when this operations occur. The primary replica has a sequencer
+that is responsible for deliver a unique version number to the client when it performs
+write operations to the data servers. This mechanism ensures that any new version of a
+file will have a greater number than older versions. This sequence number will be
+synchronized to the other replicas so that, when the old primary fails the new one can
+still continue the sequence of numbers started before.
+
 \subsubsection{Migration}
 
 From time to time, the primary replica pings the data servers to know
 which are available and which are not. The data server's response to the ping
 brings statistical information about that server - the number of accesses to
-the server. 
+the server. The number of accesses to the server correspond to the number
+of accesses made to each file that the server holds. When this number is
+starting to be to high, we need to consider the migration of the files to another
+data server to have a more evenly distribution of accesses across all the data
+servers available. We propose a migration algorithm that we believe it is able
+to perform its task in a very simple manner and at the same time maintain
+a good balance between the accesses to each data server. The first part of the
+algorithm can be described by the following steps:
+
+\begin{enumerate}
+
+\item Calculate the sum of the accesses to each file of each data server;
+\item Calculate the average of the values calculated in the step before;
+\item Using the average of accesses to each data server, define an interval with
+a margin of 20\%;
+\item Finally, list all the data servers that are currently off the interval
+
+\end{enumerate}
+
+After this steps, we need to know which server, from the list of servers that do not
+fit in the specified interval, is the most overloaded and which server, from the list
+of servers that fit the interval, is the one with the least number of files.
+
+Having those servers selected, we begin to choose closed files. Most people would
+think that the most accessed file should be the one to be moved to another server
+but the probability of that file to keep being accessed is too high which means that
+we would have to move this file from server to server for a long time. Having that said,
+we should begin by picking closed files starting by the second most accessed file from
+the most accessed server on the list. Those files are transfered to the server with
+the least number of accesses and then verified to check if everything went fine. It is
+important to remember once again that for the files to be transfered to another
+server they can't be open by any client meaning that only files that are not being used
+at that moment can be moved.
+
+After the migration, the metadata server updates the metadata of the files transfered
+so that when the clients open them again, they have an updated list of where the files
+are located.
 
 %The primary metadata, from time to time, pings the data servers to know 
 %which are available and which are not. When a data server is not 

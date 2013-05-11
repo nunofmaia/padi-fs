@@ -1,6 +1,6 @@
 \subsection{Client}
 
-The client can create, open, read, write, close and delete files. When
+The client can create, open, read, write, copy, close and delete files. When
 it is created, it is provided the contact of the all metadata servers
 and one of these is a primary server. 
 The client can contact the primary metadata server to create, open,
@@ -12,16 +12,19 @@ When a client requests the metadata server to create a new file, it
 specifies the name of the file, the number of data servers used to
 store the file and the number of data servers it needs to obtain a read
 and write quorum. The size of quorums cannot exceed the number of data
-servers used to store the file.
+servers used to store the file. In response, the metadata server sends back the
+metadata of the file that the clients save in a list of open files.
 
 \subsubsection{Open}
 
 If a client wants to open a file, it sends a request to the primary
-metadata server to open it and the primary server answers with a list
-of data servers where the file is stored, the local name of the file and 
-the size of read and write quorums.
+metadata server to open it and the primary server answers with the file
+metadata which has the list of data servers where the file is stored, the local name
+of the file and the size of read and write quorums.
 
 \subsubsection{Read and Write}
+
+% Talk about the Copy operation
 
 When reading and writing, the client contacts directly with the data server,
 since it already knows where is the file. During the write of

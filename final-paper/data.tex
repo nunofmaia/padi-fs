@@ -9,7 +9,7 @@ Data servers store files with a version composed by a
 monotonically increasing number, that starts with 0, and a timestamp.
 The files also have a byte array with the content of the file.
 
-\subsubsection{Data Servers and Metadata Server}
+\subsubsection{Communication with Metadata Servers}
 
 The first action of a data server is to inform the metadata servers that
 it is available to receive requests to store files. The metadata
@@ -17,14 +17,22 @@ server should register the data server as available and reply to it saying
 that the registration was successful. The data server waits for the
 reply and if it does not receive any, it resends the message.
 
-The data server receives a regular message, an heartbeat, from the primary
-metadata server. This way, the data server does not have to keep
-registered which metadata server is the primary.
-This heartbeat is useful for the primary metadata server to keep track of
-which servers are available to store new files and to avoid clients
-from waiting for data servers to come up to have a majority quorum.
+Servers receive a message from the primary metadata server in a regular
+interval. This message is more like a request in the sense that data server
+will answer this message with the number of accesses made to its files
+for the purposes that we already mentioned when we talked about metadata
+servers. But dispite of the statistical information sent to the metadata server that are
+currently handling all the requests, this response is also useful for the metadata
+server to know what are the data servers available.
 
-We choose to give the responsibility to the metadata server of asking to
+%The data server receives a regular message, an heartbeat, from the primary
+%metadata server. This way, the data server does not have to keep
+%registered which metadata server is the primary.
+%This heartbeat is useful for the primary metadata server to keep track of
+%which servers are available to store new files and to avoid clients
+%from waiting for data servers to come up to have a majority quorum.
+
+We chose to give the responsibility to the metadata server of asking to
 every data server if it is alive and wait for an answer because, in a large
 system, the workload of the data servers will be higher compared to the
 workload of the metadata servers. Data servers perform operations on larger
@@ -60,7 +68,7 @@ confirmation to the other data server and this one sends back a response
 to the metadata server.
 The data servers involved in the copy do not keep track of each other.
 
-\subsubsection{Reading and Writing to Data Servers}
+\subsubsection{Handling requests}
 
 Clients ask data servers to read or write files. This requests are
 processed as they arrive to the server without having any priority or 
