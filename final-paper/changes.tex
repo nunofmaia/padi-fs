@@ -27,8 +27,8 @@ versioning the files with just a version number or a timestamp. First, we tried 
 just the timestamps but this brought another problem to our hands because, since the
 timestamp was being provided by the primary metadata server, we had to make sure that
 when that server fails, the replica would still provide a consistent timestamp to the client.
-In order to get this all this process working, we had to synchronize the clocks of the existing
-metadata servers. We thought that would rise the complexity of the project, so we found
+In order to get all this process working, we had to synchronize the clocks of the existing
+metadata servers. We thought that that would rise the complexity of the project, so we found
 out a way to provide a version number for the files and, at the same time, have that same
 number synchronized in all the replicas. We use a sequencer that provides a version number
 to client when it wants to write a new version of the file and increments itself so that when
@@ -41,9 +41,9 @@ the ones delivered before.
 \subsection{Synchronization and recovering}
 
 In the previous paper, we mentioned that after the state of the primary metadata server had
-changed that we needed to send those same changes to the other replicas so they would
+changed, we needed to send those same changes to the other replicas so they would
 have the same state as the primary one at all time. Our first implementation of this process
-was not very elegant because we were sending the all information of the main replica to
+was not very elegant because we were sending all the information of the main replica to
 the others. Having this said, we thought in an alternative way of doing this synchronization
 and, at the same time, provide a way to ease the process of recovering when a server had
 previously failed.
