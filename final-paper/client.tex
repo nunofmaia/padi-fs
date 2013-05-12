@@ -20,30 +20,27 @@ metadata of the file that the clients save in a list of open files.
 If a client wants to open a file, it sends a request to the primary
 metadata server to open it and the primary server answers with the file
 metadata which has the list of data servers where the file is stored, the local name
-of the file and the size of read and write quorums.
+of the file and the size of read and write quorums. Like in the create operation, the
+metadata server sends back the metadata of the requested file.
 
 \subsubsection{Read and Write}
 
-% Talk about the Copy operation
+For reading and writing files, the client needs to contact with the data servers
+that hold that file in their local disk. During this operations, the client blocks
+itself until it receives a confirmation from the data servers. The number of data
+servers needed for the client to know that it's OK to go on with its request is known
+as a quorum. The quorum for reads and writes is defined on the creation of each file.
+If the quorum is not reached, because the number of data servers that have the file
+is not enough or due to communication problems or server failures, the client tries
+to make the request again after a certain time, fetching once again the file's metadata
+in case the metadata had been updated in the meantime.
 
-When reading and writing, the client contacts directly with the data server,
-since it already knows where is the file. During the write of
-the file in the data servers, the client must block until it receives the
-confirmation from the quorum. The size of this quorum is defined in
-metadata servers when the file is created. Like in write operation, when the
-client performs a read operation it also blocks until the data servers send 
-back a response and then achieve a majority quorum.
-If the client requests to read or write a file and the number of data
-servers that answer is less than required to obtain quorum, due to
-communication or server failures, the client is put on
-hold and continues to try to contact the data servers until it gets a
-majority quorum.
-In the event of a data server freeze, the messages that a client sends are
-buffered. When the server unfreezes, it sends an answer for each request
-that is in its buffer. In this case, the client considers just the first
-answer, ignoring the other ones.
-The client doesn't control the file version number. This number is
-controlled by data server.
+When performing writes, to updated the version number of a file, the client needs to
+request a new sequence number to the metadata so that the version can be greater
+than the old one.
+
+Reading operations can have a different behaviour depending on its type. There are
+two types of reading operations: 
 
 \begin{itemize}
 \item Default Read - The client makes a request to the data server to read
@@ -54,3 +51,14 @@ older version.
 a file and waits for a majority quorum to retrieve a file with a version equal or
 greater than the version of the last file read.
 \end{itemize}
+
+It's also worth mentioning that clients have two buffers, a string buffer and a file
+register and each one of this buffers have a file associated. The string buffer is
+responsible to save the file's contents while the file register holds the metadata
+of a given file.
+
+Clients can also perform copy operations where it can take the contents of a
+given file and copy them to another one.
+
+
+

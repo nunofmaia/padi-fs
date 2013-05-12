@@ -12,6 +12,44 @@ metadata servers.
 
 \subsection{Migration algorithm}
 
+At the time of the previous paper, we did not have a clear idea of how to make
+the migration of files from a data server. This time, we came up with an algorithm
+to migrate files from one that data server to another by knowing which data servers
+are accessed the most and sending their files to servers that do not have a lot of
+activity at that moment.
+
 \subsection{Versioning of files}
 
+Our original idea was to have a version number and a timestamp on each file to know
+which versions are more recent. Having this two properties in each file's version would
+become a little bit redundant since we should be able to accomplish the task of
+versioning the files with just a version number or a timestamp. First, we tried to use
+just the timestamps but this brought another problem to our hands because, since the
+timestamp was being provided by the primary metadata server, we had to make sure that
+when that server fails, the replica would still provide a consistent timestamp to the client.
+In order to get this all this process working, we had to synchronize the clocks of the existing
+metadata servers. We thought that would rise the complexity of the project, so we found
+out a way to provide a version number for the files and, at the same time, have that same
+number synchronized in all the replicas. We use a sequencer that provides a version number
+to client when it wants to write a new version of the file and increments itself so that when
+another client requests for a version number, the number won't be the same as before.
+For each number delivered to a client, the metadata server updates its log and send that
+information to the other replicas. This simplifies all the process and makes sure that when
+a fail occur in a certain metadata server, the versions numbers will still be consistent with
+the ones delivered before.
+
 \subsection{Synchronization and recovering}
+
+In the previous paper, we mentioned that after the state of the primary metadata server had
+changed that we needed to send those same changes to the other replicas so they would
+have the same state as the primary one at all time. Our first implementation of this process
+was not very elegant because we were sending the all information of the main replica to
+the others. Having this said, we thought in an alternative way of doing this synchronization
+and, at the same time, provide a way to ease the process of recovering when a server had
+previously failed.
+This new approach consists of having a log and periodic backups. Instead of sending all
+the data stored in the main replica, we just send commands for the replicas to execute
+by them selves in order to reflect the changes made to the primary replica. As for the
+backups, they are useful for recover from a previous state before requesting the primary server the last changes starting at the time of the last backup.
+This changes reduce the work load of the primary server, allowing the replicas to do some
+work for them selves, and the time lost when recovering a replica.
