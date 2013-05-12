@@ -35,7 +35,7 @@ when a server recovers.
 \subsubsection{Handling Files}
 
 The primary server can reply to several requests from the client. This
-request are create, open, close and delete operations.
+requests are create, open, close and delete operations.
 
 \medskip
 \textbf{Create}
@@ -45,12 +45,12 @@ When a client sends a request to create a file, the server saves a new
 registry for that file with the information sent with the request. The
 server informs the available data servers needed with the least amount
 of saved files to save a local copy of the file, updates the load
-of each data server tha will hold that file and sends the file's metadata
+of each data server that will hold that file and sends the file's metadata
 to the client. When the client requests for the file to be replicated in
-a certain number of data servers is  and that number is greater than the 
-data servers that exist at that moment, the metadata server sends the 
+a certain number of data servers and that number is greater than the 
+data servers available at that moment, the metadata server sends the 
 file's metadata to the client with the data servers available and puts the 
-file on a pending lists so that when a new data server register, the metadata 
+file on a pending lists so that when a new data server registers, the metadata 
 of the file can be updated and sent back to the client. The file stays in the 
 pending list until all the data servers requested are available.
 
@@ -81,7 +81,7 @@ to the data server.
 
 After creating a file, the client can operate on it right away. But when
 the file is closed, the client can request to open it. In this case, the
-metadta server sends to the client the metadata stored for that file. The
+metadata server sends to the client the metadata stored for that file. The
 server keeps record of what clients opened a certain file, so when a client
 opens a file, the metadata server adds it to the list of the corresponding
 file.
@@ -106,12 +106,12 @@ remove that client from the list of clients with that file open.
 
 When a client asks to delete a file, the metadata server decreases the
 number of files for each server that holds the file and removes the 
-corresponding entry from the table where all the information is stored.
+corresponding entry from the table where all the metadata for that file is stored.
 If the file is open when the client tries to delete it, the server needs
 to remove the file entry from the open files as well.
 Although the file's entries are removed from the metadata server, they
 still remain untouched in the data server since the system does not provide
-any functionality to clean delete files from them.
+any functionality to clean deleted files from them.
 
 \bigskip
 
@@ -150,7 +150,7 @@ a margin of 20\%;
 
 After this steps, we need to know which server, from the list of servers that do not
 fit in the specified interval, is the most overloaded and which server, from the list
-of servers that fit the interval, is the one with the least number of files.
+of servers that do not fit the interval, is the one with the least number of files.
 
 Having those servers selected, we begin to choose closed files. Most people would
 think that the most accessed file should be the one to be moved to another server
