@@ -6,7 +6,7 @@ file is stored using the local file system, in a local file with a
 state and all files of the data server are written to disk.
 
 Data servers store files with a version composed by a
-monotonically increasing number, that starts with 0, and a timestamp.
+monotonically increasing number, that starts with 0.
 The files also have a byte array with the content of the file.
 
 \subsubsection{Communication with Metadata Servers}
@@ -17,11 +17,11 @@ server should register the data server as available and reply to it saying
 that the registration was successful. The data server waits for the
 reply and if it does not receive any, it resends the message.
 
-Servers receive a message from the primary metadata server in a regular
-interval. This message is more like a request in the sense that data server
+Data servers receive a message from the primary metadata server in a regular
+interval. This message is more like a request in the sense that the data server
 will answer this message with the number of accesses made to its files
 for the purposes that we already mentioned when we talked about metadata
-servers. But dispite of the statistical information sent to the metadata server that are
+servers. But despite of the statistical information sent to the metadata server that are
 currently handling all the requests, this response is also useful for the metadata
 server to know what are the data servers available.
 
@@ -53,20 +53,28 @@ metadata servers.
 When the data server fails or freezes, it stops answering heartbeats from
 the metadata servers. If the primary metadata server does not receive an
 answer in a certain time, it believes the data server is unavailable
-and this servers stops receiving requests from the metadata server to
+and this server stops receiving requests from the metadata server to
 create new files.
 
 Each time the metadata server asks the data server to create a new file
 with a given name, the data server tries to create the file and answers
 to the metadata servers if the operation was successful or not.
 
-The metadata server may request one data server to send a copy of one file
-to another data server. This request is treated as any other request.
-The data server that is going to copy the file asks the other data server
-to write his version of the file. After writing the version it sends the 
-confirmation to the other data server and this one sends back a response 
-to the metadata server.
-The data servers involved in the copy do not keep track of each other.
+During migration, the two data servers involved in the copying of the file
+do not know each other. The migration operation, from the point of view of data
+servers is simply a read a operation on the source data server and a create and
+write operation on the destination data server. In this operation, the primary
+metadata server is a client of the data servers, as such, the metadata server
+stores temporarily the file sent by the source data server and waits for the
+reply to the write operation perform on the destination.
+
+%The metadata server may request one data server to send a copy of one file
+%to another data server. This request is treated as any other request.
+%The data server that is going to copy the file asks the other data server
+%to write his version of the file. After writing the version it sends the 
+%confirmation to the other data server and this one sends back a response 
+%to the metadata server.
+%The data servers involved in the copy do not keep track of each other.
 
 \subsubsection{Handling requests}
 
@@ -76,15 +84,16 @@ reordering. It is simpler to buffer the requests as they arrive and to
 perform them later.
 
 Every file written in data servers have a version composed by a version
-number that is incremented every time the file is written and a timestamp
-from the last writing. This timestamp allows the data server to know if it is
-receiving an earlier version than the version it has stored.
+number, previously requested by the client to the primary metadata server,
+that is incremented every time the file is written. This version number allows
+the data server to know if it is receiving an earlier version than the version
+it has stored.
 
 When the data server is requested to store a new version of the file, it has 
 to check if this version is more recent than the version of the file it has 
-stored. If it's not, the server discards the new file otherwise increments 
-the version number and stores the file on disk. The data server always answers
-to the client that it has received the file.
+stored. If it's not, the server discards the new file otherwise updates 
+the version number with the new and stores the file on disk. The data server
+always answers to the client that it has received the file.
 
 This solution raises the problem of destroying the previous work of other 
 clients. When a client tries to write a file on disk, it does not know if 
